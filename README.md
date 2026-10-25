@@ -8,7 +8,7 @@ FieldWorks is an Android WebView shell around the FieldWorks fieldbook prototype
 
 Push changes under app/, update the root Gradle files, or start **Build FieldWorks APK** from the repository's Actions tab. The workflow builds a signed release APK and saves it as a 30-day artifact on the workflow run.
 
-The workflow uses the existing repository secrets: KEYSTORE_BASE64, STORE_PASSWORD, KEY_ALIAS, and KEY_PASSWORD. It restores the existing keystore into the temporary runner directory and never writes it to the repository. Do not replace or regenerate that keystore if you need updates to install over earlier signed builds.
+The workflow uses the existing repository secrets: KEYSTORE_BASE64, STORE_PASSWORD, and KEY_PASSWORD. It reads the signing alias from the keystore itself, restores the existing keystore into the temporary runner directory, and never writes it to the repository. The KEY_ALIAS secret can remain set but is not used. Do not replace or regenerate the keystore if you need updates to install over earlier signed builds.
 
 ## Version numbering
 
