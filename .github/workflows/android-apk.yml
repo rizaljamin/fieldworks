@@ -43,7 +43,7 @@ jobs:
       - name: Set app version
         shell: bash
         run: |
-          RUN_INDEX=$((GITHUB_RUN_NUMBER - 4))
+          RUN_INDEX=$((GITHUB_RUN_NUMBER - 6))
           MINOR=$((1 + RUN_INDEX / 30))
           BUILD=$((RUN_INDEX % 30 + 1))
           VERSION_NAME="0.${MINOR} build $(printf '%02d' "$BUILD")"
@@ -59,12 +59,21 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$STORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$STORE_PASSWORD" ] || [ -z "$KEY_PASSWORD" ]; then
             echo "One or more Android signing secrets are missing."
             exit 1
           fi
           KEYSTORE_PATH="$RUNNER_TEMP/fieldworks-release.keystore"
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+          if ! KEY_LIST="$(keytool -list -keystore "$KEYSTORE_PATH" -storepass "$STORE_PASSWORD" 2>&1)"; then
+            echo "Could not read the keystore. Check STORE_PASSWORD."
+            exit 1
+          fi
+          KEY_ALIAS="$(printf '%s\n' "$KEY_LIST" | awk -F, '/PrivateKeyEntry/ { alias=$1; gsub(/^[[:space:]]+|[[:space:]]+$/, "", alias); count++ } END { if (count != 1) exit 1; print alias }')" || {
+            echo "Expected exactly one private-key entry in the keystore."
+            exit 1
+          }
+          unset KEY_LIST
           echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
           echo "ANDROID_KEYSTORE_PASSWORD=$STORE_PASSWORD" >> "$GITHUB_ENV"
           echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
