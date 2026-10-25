@@ -1,4 +1,6 @@
 plugins { id 'com.android.application' }
+def appVersionCode = providers.gradleProperty('versionCode').orElse('1').get().toInteger()
+def appVersionName = providers.gradleProperty('versionName').orElse('0.1 build 01').get()
 android {
     namespace 'com.fieldworks.app'
     compileSdk 35
@@ -6,8 +8,8 @@ android {
         applicationId 'com.fieldworks.app'
         minSdk 23
         targetSdk 35
-        versionCode (System.getenv('VERSION_CODE') ?: '1').toInteger()
-        versionName System.getenv('VERSION_NAME') ?: '0.1 build 01'
+        versionCode appVersionCode
+        versionName appVersionName
     }
     signingConfigs {
         release {
