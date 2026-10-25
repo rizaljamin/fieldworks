@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
         android:allowBackup="false"
-        android:icon="@drawable/ic_fieldworks"
+        android:icon="@drawable/launcher_fieldworks"
         android:label="FieldWorks"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
