@@ -45,12 +45,17 @@ jobs:
         shell: bash
         run: |
           RUN_INDEX=$((GITHUB_RUN_NUMBER - 6))
+          MAJOR=0
           MINOR=$((1 + RUN_INDEX / 30))
+          PATCH=00
           BUILD=$((RUN_INDEX % 30 + 1))
-          VERSION_NAME="0.${MINOR} build $(printf '%02d' "$BUILD")"
+          BUILD_LABEL=$(printf '%02d' "$BUILD")
+          VERSION_NAME="V${MAJOR}.${MINOR}.${PATCH} Build ${BUILD_LABEL}"
+          APK_FILENAME="FieldWorks ${VERSION_NAME}.apk"
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "APK_FILENAME=$APK_FILENAME" >> "$GITHUB_ENV"
           echo "VERSION_CODE=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
-          echo "Building FieldWorks $VERSION_NAME (versionCode $GITHUB_RUN_NUMBER)"
+          echo "Building $APK_FILENAME (versionCode $GITHUB_RUN_NUMBER)"
 
       - name: Restore the existing release keystore
         shell: bash
@@ -80,13 +85,16 @@ jobs:
           echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
           echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
 
-      - name: Build signed release APK
-        run: gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease
+      - name: Build and name signed release APK
+        shell: bash
+        run: |
+          gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/$APK_FILENAME"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FieldWorks-${{ env.VERSION_NAME }}-APK
-          path: app/build/outputs/apk/release/app-release.apk
+          name: ${{ env.APK_FILENAME }}
+          path: app/build/outputs/apk/release/${{ env.APK_FILENAME }}
           if-no-files-found: error
           retention-days: 30
