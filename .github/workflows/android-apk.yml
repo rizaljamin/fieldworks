@@ -31,16 +31,13 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Android 35 SDK
-        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+        run: yes | sdkmanager --licenses >/dev/null && sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set app version
         shell: bash
         run: |
-          RUN_INDEX=$((GITHUB_RUN_NUMBER - 1))
+          RUN_INDEX=$((GITHUB_RUN_NUMBER - 2))
           MINOR=$((1 + RUN_INDEX / 30))
           BUILD=$((RUN_INDEX % 30 + 1))
           VERSION_NAME="0.${MINOR} build $(printf '%02d' "$BUILD")"
@@ -77,3 +74,4 @@ jobs:
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
+
