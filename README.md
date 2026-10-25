@@ -12,7 +12,7 @@ The workflow uses the existing repository secrets: KEYSTORE_BASE64, STORE_PASSWO
 
 ## Version numbering
 
-The workflow starts at 0.1 build 01, then increments the build number on each workflow run. After build 30 it advances to 0.2 build 01. Android versionCode uses the workflow run number.
+Every generated APK uses the filename format `FieldWorks VX.X.YY Build ZZ.apk` (for example, `FieldWorks V0.1.00 Build 19.apk`). The build number increments on each workflow run. After Build 30, the version advances to V0.2.00 Build 01. Android versionCode uses the workflow run number.
 
 ## Current development storage
 
