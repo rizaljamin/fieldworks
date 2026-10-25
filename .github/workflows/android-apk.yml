@@ -16,6 +16,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - name: Check out source
         uses: actions/checkout@v6
@@ -32,12 +35,15 @@ jobs:
           gradle-version: '8.9'
 
       - name: Install Android 35 SDK
-        run: yes | sdkmanager --licenses >/dev/null && sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+        run: |
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set app version
         shell: bash
         run: |
-          RUN_INDEX=$((GITHUB_RUN_NUMBER - 2))
+          RUN_INDEX=$((GITHUB_RUN_NUMBER - 3))
           MINOR=$((1 + RUN_INDEX / 30))
           BUILD=$((RUN_INDEX % 30 + 1))
           VERSION_NAME="0.${MINOR} build $(printf '%02d' "$BUILD")"
@@ -74,4 +80,3 @@ jobs:
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
-
