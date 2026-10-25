@@ -1,0 +1,33 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.fieldworks.app'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.fieldworks.app'
+        minSdk 23
+        targetSdk 35
+        versionCode (System.getenv('VERSION_CODE') ?: '1').toInteger()
+        versionName System.getenv('VERSION_NAME') ?: '0.1 build 01'
+    }
+    signingConfigs {
+        release {
+            def storePath = System.getenv('ANDROID_KEYSTORE_PATH')
+            if (storePath != null && !storePath.isBlank()) {
+                storeFile file(storePath)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (System.getenv('ANDROID_KEYSTORE_PATH') != null) signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
