@@ -2,7 +2,7 @@
 
 # FieldWorks Android
 
-FieldWorks is an Android fieldbook app for documenting hands-on projects with photos, videos, text, and voice notes. The current development build includes guest entry, a demo username/password form, project creation, project stages, a pinned project, and project albums.
+FieldWorks is an Android fieldbook app for documenting hands-on projects with photos, videos, text, and voice notes. The current development build includes guest entry, a demo username/password form, project creation, project stages, a pinned project, project albums, and photo/video capture from the camera, device folders, or Google Drive through Android’s file picker.
 
 ## Build an APK with GitHub Actions
 

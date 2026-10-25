@@ -1,6 +1,7 @@
 plugins { id 'com.android.application' }
 
 dependencies {
+    implementation 'androidx.core:core:1.15.0'
     implementation 'androidx.webkit:webkit:1.15.0'
 }
 def appVersionCode = providers.gradleProperty('versionCode').orElse('1').get().toInteger()
