@@ -2,7 +2,7 @@
 
 # FieldWorks Android
 
-FieldWorks is an Android WebView shell around the FieldWorks fieldbook prototype. It includes guest entry, a demo username/password form, project creation, project stages, and photo, video, text, and voice journal capture.
+FieldWorks is an Android fieldbook app for documenting hands-on projects with photos, videos, text, and voice notes. The current development build includes guest entry, a demo username/password form, project creation, project stages, a pinned project, and project albums.
 
 ## Build an APK with GitHub Actions
 
@@ -14,6 +14,8 @@ The workflow uses the existing repository secrets: KEYSTORE_BASE64, STORE_PASSWO
 
 The workflow starts at 0.1 build 01, then increments the build number on each workflow run. After build 30 it advances to 0.2 build 01. Android versionCode uses the workflow run number.
 
-## Prototype limitations
+## Current development storage
 
-The sign-in form is a visual demo and accepts any non-empty username/password; Google and Facebook buttons are placeholders. Project records are demo data held in the embedded page, not a synced production account.
+Project records, reminders, and captured media are saved in IndexedDB on the device and persist across app launches and app updates. Data is currently device-local and does not sync to a cloud account. Clearing app storage or uninstalling the app removes the saved fieldbook.
+
+The username/password form currently accepts any non-empty values. Google and Facebook sign-in are not connected yet.
