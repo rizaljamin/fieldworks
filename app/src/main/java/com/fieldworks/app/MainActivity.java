@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(android.graphics.Color.rgb(8, 44, 80));
         getWindow().setNavigationBarColor(android.graphics.Color.rgb(8, 44, 80));
+
         webView = new WebView(this);
         webView.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
         WebSettings settings = webView.getSettings();
@@ -35,7 +36,8 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
+                    FileChooserParams params) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
                 fileCallback = callback;
                 Intent picker = new Intent(Intent.ACTION_GET_CONTENT);
@@ -43,26 +45,44 @@ public class MainActivity extends Activity {
                 picker.setType("*/*");
                 picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
                 picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                try { startActivityForResult(Intent.createChooser(picker, "Choose photos or videos"), FILE_CHOOSER_REQUEST); }
-                catch (Exception error) { fileCallback = null; return false; }
+                try {
+                    startActivityForResult(Intent.createChooser(picker, "Choose photos or videos"),
+                            FILE_CHOOSER_REQUEST);
+                } catch (Exception error) {
+                    fileCallback = null;
+                    return false;
+                }
                 return true;
             }
+
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 runOnUiThread(() -> {
                     boolean audioRequested = false;
-                    for (String resource : request.getResources()) if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) audioRequested = true;
-                    if (!audioRequested) { request.deny(); return; }
-                    if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                    for (String resource : request.getResources()) {
+                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
+                            audioRequested = true;
+                        }
+                    }
+                    if (!audioRequested) {
+                        request.deny();
+                        return;
+                    }
+                    if (checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+                            == PackageManager.PERMISSION_GRANTED) {
                         request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
                     } else {
                         pendingPermission = request;
-                        requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, AUDIO_PERMISSION_REQUEST);
+                        requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},
+                                AUDIO_PERMISSION_REQUEST);
                     }
                 });
             }
+
             @Override
-            public void onPermissionRequestCanceled(PermissionRequest request) { if (pendingPermission == request) pendingPermission = null; }
+            public void onPermissionRequestCanceled(PermissionRequest request) {
+                if (pendingPermission == request) pendingPermission = null;
+            }
         });
         setContentView(webView);
         webView.loadUrl("file:///android_asset/index.html");
@@ -72,19 +92,28 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_CHOOSER_REQUEST && fileCallback != null) {
-            fileCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+            Uri[] results = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+            fileCallback.onReceiveValue(results);
             fileCallback = null;
         }
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == AUDIO_PERMISSION_REQUEST && pendingPermission != null) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) pendingPermission.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
-            else pendingPermission.deny();
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                pendingPermission.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+            } else {
+                pendingPermission.deny();
+            }
             pendingPermission = null;
         }
     }
+
     @Override
-    public void onBackPressed() { if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed(); }
+    public void onBackPressed() {
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
+    }
 }
