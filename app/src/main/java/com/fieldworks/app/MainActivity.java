@@ -5,9 +5,11 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -20,8 +22,13 @@ import androidx.core.content.FileProvider;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
     private static class LocalContentWebViewClient extends WebViewClientCompat {
@@ -58,12 +65,15 @@ public class MainActivity extends Activity {
     private static final int AUDIO_PERMISSION_REQUEST = 1202;
     private static final int CAMERA_PHOTO_REQUEST = 1203;
     private static final int CAMERA_VIDEO_REQUEST = 1204;
+    private static final int MEDIA_PICKER_REQUEST = 1205;
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
     private PermissionRequest pendingPermission;
     private File captureFile;
     private String captureKind;
     private int captureProjectId;
+    private int importProjectId;
+    private String importKind;
     private volatile String pendingFileSource = "folders";
 
     private final class MediaBridge {
@@ -75,6 +85,11 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void capture(String kind, int projectId) {
             runOnUiThread(() -> launchCamera(kind, projectId));
+        }
+
+        @JavascriptInterface
+        public void pickMedia(String kind, int projectId) {
+            runOnUiThread(() -> launchMediaPicker(kind, projectId));
         }
 
         @JavascriptInterface
@@ -195,6 +210,120 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void launchMediaPicker(String kind, int projectId) {
+        boolean video = "video".equals(kind);
+        importKind = video ? "video" : "photo";
+        importProjectId = projectId;
+        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        picker.addCategory(Intent.CATEGORY_OPENABLE);
+        picker.setType(video ? "video/*" : "image/*");
+        picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        try {
+            startActivityForResult(picker, MEDIA_PICKER_REQUEST);
+        } catch (Exception error) {
+            notifyCameraError("Could not open the photo or video picker.");
+        }
+    }
+
+    private String displayName(Uri uri) {
+        String name = null;
+        try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int column = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (column >= 0) name = cursor.getString(column);
+            }
+        } catch (Exception ignored) {
+            // Fall back to a generated name when a provider omits display metadata.
+        }
+        if (name == null || name.trim().isEmpty()) {
+            name = "fieldworks-" + System.currentTimeMillis()
+                    + ("video".equals(importKind) ? ".mp4" : ".jpg");
+        }
+        return name.replaceAll("[\\\\/\\r\\n]", "_");
+    }
+
+    private File copyImportedMedia(Uri uri) throws IOException {
+        File directory = new File(getFilesDir(), "fieldworks_media");
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IOException("Could not prepare FieldWorks media storage.");
+        }
+        String originalName = displayName(uri);
+        String extension = "";
+        int dot = originalName.lastIndexOf('.');
+        if (dot >= 0 && dot < originalName.length() - 1) {
+            String candidate = originalName.substring(dot).toLowerCase()
+                    .replaceAll("[^a-z0-9.]", "");
+            if (candidate.length() <= 10) extension = candidate;
+        }
+        if (extension.isEmpty()) {
+            String mime = getContentResolver().getType(uri);
+            String guessed = mime == null ? null : android.webkit.MimeTypeMap
+                    .getSingleton().getExtensionFromMimeType(mime);
+            extension = "." + (guessed != null ? guessed
+                    : ("video".equals(importKind) ? "mp4" : "jpg"));
+        }
+        File target = File.createTempFile("fieldworks_import_", extension, directory);
+        try (InputStream input = getContentResolver().openInputStream(uri);
+             FileOutputStream output = new FileOutputStream(target)) {
+            if (input == null) throw new IOException("Could not read the selected media.");
+            byte[] buffer = new byte[16 * 1024];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            output.flush();
+        } catch (IOException error) {
+            target.delete();
+            throw error;
+        }
+        if (target.length() == 0) {
+            target.delete();
+            throw new IOException("The selected media file was empty.");
+        }
+        return target;
+    }
+
+    private List<Uri> selectedUris(Intent data) {
+        List<Uri> uris = new ArrayList<>();
+        if (data == null) return uris;
+        if (data.getClipData() != null) {
+            for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+                Uri uri = data.getClipData().getItemAt(i).getUri();
+                if (uri != null) uris.add(uri);
+            }
+        } else if (data.getData() != null) {
+            uris.add(data.getData());
+        }
+        return uris;
+    }
+
+    private void importSelectedMedia(Intent data) {
+        List<Uri> uris = selectedUris(data);
+        if (uris.isEmpty()) {
+            notifyCameraError("No media was selected.");
+            return;
+        }
+        JSONArray imports = new JSONArray();
+        List<File> copiedFiles = new ArrayList<>();
+        for (Uri uri : uris) {
+            try {
+                File file = copyImportedMedia(uri);
+                copiedFiles.add(file);
+                JSONObject item = new JSONObject();
+                item.put("url", "https://appassets.androidplatform.net/media/"
+                        + Uri.encode(file.getName()));
+                item.put("name", displayName(uri));
+                item.put("kind", importKind);
+                imports.put(item);
+            } catch (Exception error) {
+                for (File file : copiedFiles) file.delete();
+                notifyCameraError("Could not import the selected media. Please try again.");
+                return;
+            }
+        }
+        String script = "window.onFieldWorksImportBatch && window.onFieldWorksImportBatch("
+                + imports + "," + importProjectId + ")";
+        webView.evaluateJavascript(script, null);
+    }
+
     private void notifyCameraError(String message) {
         if (webView != null) {
             webView.evaluateJavascript("window.toast && window.toast("
@@ -205,6 +334,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == MEDIA_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) importSelectedMedia(data);
+            return;
+        }
         if (requestCode == CAMERA_PHOTO_REQUEST || requestCode == CAMERA_VIDEO_REQUEST) {
             if (resultCode == RESULT_OK && captureFile != null
                     && captureFile.isFile() && captureFile.length() > 0) {
