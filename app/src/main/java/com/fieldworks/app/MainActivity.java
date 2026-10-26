@@ -19,6 +19,10 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import androidx.core.content.FileProvider;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -277,10 +281,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setStatusBarColor(android.graphics.Color.rgb(8, 44, 80));
+        getWindow().setStatusBarColor(android.graphics.Color.rgb(247, 244, 235));
         getWindow().setNavigationBarColor(android.graphics.Color.rgb(8, 44, 80));
 
         webView = new WebView(this);
+        ViewCompat.setOnApplyWindowInsetsListener(webView, (view, windowInsets) -> {
+            Insets safeInsets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            view.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
+            return windowInsets;
+        });
+        new WindowInsetsControllerCompat(getWindow(), webView).setAppearanceLightStatusBars(true);
         webView.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -354,6 +365,7 @@ public class MainActivity extends Activity {
             }
         });
         setContentView(webView);
+        ViewCompat.requestApplyInsets(webView);
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
