@@ -1,17 +1,17 @@
 # FieldWorks Privacy Policy — DRAFT
 
-> **Draft for review — not ready to publish.** Replace every bracketed field, confirm the product and Firebase configuration, and obtain legal review before using this as the live policy or submitting it to an app store.
+> **Draft for review — not ready to publish.** Confirm the product and Firebase configuration and obtain legal review before using this as the live policy or submitting it to an app store. The effective date and data protection officer details still need confirmation.
 
 **Effective date:** [DD Month YYYY]  
 **Last updated:** 26 October 2026  
-**Data controller / operator:** [Full legal name and registered address]  
-**Privacy contact:** [Privacy email address]  
+**Data controller / operator:** Rizal Bin Jamin, No 9, Jalan Suasana 4/5, Bandar Tun Hussein Onn, 43200 Cheras, Malaysia  
+**Privacy contact:** rizaljamin@gmail.com  
 **App:** FieldWorks for Android  
 **Package name:** com.fieldworks.app
 
 ## 1. About this policy
 
-This notice explains how [Full legal name] (“FieldWorks”, “we”, “us”) handles information when you use the FieldWorks Android app. It is drafted for users in the United States, the European Economic Area (EEA), Malaysia, and Singapore. Privacy laws differ across the United States and Asia; this notice does not replace any country-specific notice required where FieldWorks is offered.
+This notice explains how Rizal Bin Jamin (“FieldWorks”, “we”, “us”) handles information when you use the FieldWorks Android app. It is drafted for users in the United States, the European Economic Area (EEA), Malaysia, and Singapore. Privacy laws differ across the United States and Asia; this notice does not replace any country-specific notice required where FieldWorks is offered.
 
 FieldWorks is a project journal for recording project details and moments such as photos, videos, written notes, and voice notes.
 
@@ -79,13 +79,13 @@ Google and other service providers process information under their own terms and
 
 Project content and media remain in the app’s local storage on your device until you delete them, clear the app’s storage, or uninstall the app. Uninstalling or clearing storage can permanently remove local project records and media. FieldWorks cannot recover local-only content after it is removed.
 
-Firebase Authentication retains account information under Google’s Firebase terms and configuration. The current app does not provide an in-app account deletion feature. To request deletion of a FieldWorks sign-in account, contact [Privacy email address] from the email address associated with the account. Account deletion does not erase project content stored locally on your device; delete that content in the app or clear app storage separately.
+Firebase Authentication retains account information under Google’s Firebase terms and configuration. The current app does not provide an in-app account deletion feature. To request deletion of a FieldWorks sign-in account, contact rizaljamin@gmail.com from the email address associated with the account. Account deletion does not erase project content stored locally on your device; delete that content in the app or clear app storage separately.
 
 We will retain information we receive directly only as long as needed for the purpose collected, unless a longer period is required by law or needed to resolve a dispute.
 
 ## 7. Your privacy choices and rights
 
-You may manage camera and microphone permissions in Android settings, choose whether to sign in, and delete local projects or media using the app’s available controls. You may request access to, correction of, or deletion of account information by contacting [Privacy email address].
+You may manage camera and microphone permissions in Android settings, choose whether to sign in, and delete local projects or media using the app’s available controls. You may request access to, correction of, or deletion of account information by contacting rizaljamin@gmail.com.
 
 ### EEA
 
@@ -93,11 +93,11 @@ If the GDPR applies, you may have rights to access, correct, erase, restrict, or
 
 ### United States
 
-Depending on where you live and whether the relevant law applies to FieldWorks, you may have rights to know/access, correct, delete, or obtain a copy of personal information, and to opt out of sale, sharing, targeted advertising, or certain profiling. FieldWorks does not sell personal information or share it for cross-context behavioral advertising. Submit requests to [Privacy email address]. We will verify and respond as required by applicable law.
+Depending on where you live and whether the relevant law applies to FieldWorks, you may have rights to know/access, correct, delete, or obtain a copy of personal information, and to opt out of sale, sharing, targeted advertising, or certain profiling. FieldWorks does not sell personal information or share it for cross-context behavioral advertising. Submit requests to rizaljamin@gmail.com. We will verify and respond as required by applicable law.
 
 ### Malaysia and Singapore
 
-Where applicable, you may request access to or correction of your personal data and raise questions or complaints by contacting [Privacy email address]. We will handle requests in accordance with the Malaysian Personal Data Protection Act 2010, as amended, Singapore’s Personal Data Protection Act 2012, and other applicable local requirements.
+Where applicable, you may request access to or correction of your personal data and raise questions or complaints by contacting rizaljamin@gmail.com. We will handle requests in accordance with the Malaysian Personal Data Protection Act 2010, as amended, Singapore’s Personal Data Protection Act 2012, and other applicable local requirements.
 
 ### Other Asian markets
 
@@ -109,7 +109,7 @@ We use reasonable safeguards appropriate to the current app design. Project cont
 
 ## 9. Children
 
-FieldWorks is intended for [confirm intended age group]. We do not knowingly collect personal information from children where doing so would require parental consent that we have not obtained. If you believe a child has provided account information, contact [Privacy email address].
+FieldWorks is intended for people aged 18 and older and is not directed to children. We do not knowingly collect personal information from anyone under 18. If you believe someone under 18 has provided account information, contact rizaljamin@gmail.com so we can review and take appropriate action.
 
 ## 10. Changes to this notice
 
@@ -119,19 +119,19 @@ We may update this notice as the app changes or legal requirements change. We wi
 
 For privacy requests or questions:
 
-**[Full legal name]**  
-**[Postal address]**  
-**Email:** [Privacy email address]  
+**Rizal Bin Jamin**  
+**No 9, Jalan Suasana 4/5, Bandar Tun Hussein Onn, 43200 Cheras, Malaysia**  
+**Email:** rizaljamin@gmail.com  
 **Data protection officer (if appointed or required):** [DPO name and contact details]
 
 ---
 
 ## Internal launch checklist — remove before publication
 
-- Insert the full legal operator name, registered address, and monitored privacy email. Do not publish with placeholders.
+- Confirm that the stated operator name and postal address are the correct legal operator details, and that the privacy email is monitored.
 - Confirm Firebase project settings, enabled authentication providers, account deletion workflow, data-processing terms, Firebase data location/transfer arrangements, and any Google Play data collected in the production build.
 - Add a working account deletion route. Ensure account removal also explains what happens to locally stored project data.
-- Decide the minimum user age and whether student users may include children or minors; assess COPPA, GDPR child-consent rules, and relevant local requirements.
+- Add and verify an age 18+ confirmation in sign-up and guest entry before release; the current app does not enforce this minimum age. Assess applicable children's privacy requirements.
 - Confirm whether analytics, crash reporting, notifications, cloud sync, billing, or team sharing will be added. Update this notice and the app-store data disclosures before enabling any such features.
 - Add country-specific notices or rights handling before marketing in other Asian countries and relevant US states.
 - Confirm applicable Malaysia PDPA notice language and cross-border transfer safeguards; confirm Singapore PDPA obligations if serving Singapore users.
