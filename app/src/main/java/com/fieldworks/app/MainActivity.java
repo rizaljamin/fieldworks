@@ -547,6 +547,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            importProjectId = savedInstanceState.getInt("fieldworks.importProjectId", 0);
+            importKind = savedInstanceState.getString("fieldworks.importKind");
+            captureProjectId = savedInstanceState.getInt("fieldworks.captureProjectId", 0);
+            captureKind = savedInstanceState.getString("fieldworks.captureKind");
+            String capturePath = savedInstanceState.getString("fieldworks.captureFile");
+            if (capturePath != null) captureFile = new File(capturePath);
+        }
         getWindow().setStatusBarColor(android.graphics.Color.rgb(247, 244, 235));
         getWindow().setNavigationBarColor(android.graphics.Color.rgb(8, 44, 80));
 
@@ -776,6 +784,10 @@ public class MainActivity extends Activity {
     }
 
     private void importSelectedMedia(Intent data) {
+        if (importProjectId <= 0) {
+            notifyCameraError("Project selection expired. Reopen the project and choose media again.");
+            return;
+        }
         List<Uri> uris = selectedUris(data);
         if (uris.isEmpty()) {
             notifyCameraError("No media was selected.");
@@ -812,6 +824,16 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("fieldworks.importProjectId", importProjectId);
+        outState.putString("fieldworks.importKind", importKind);
+        outState.putInt("fieldworks.captureProjectId", captureProjectId);
+        outState.putString("fieldworks.captureKind", captureKind);
+        if (captureFile != null) outState.putString("fieldworks.captureFile", captureFile.getAbsolutePath());
+        super.onSaveInstanceState(outState);
+    }
+
+@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == MEDIA_PICKER_REQUEST) {
