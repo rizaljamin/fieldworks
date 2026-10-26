@@ -22,6 +22,20 @@ import androidx.core.content.FileProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.GoogleAuthProvider;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.CustomCredential;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialException;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException;
+import android.os.CancellationSignal;
+import java.util.concurrent.Executor;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
 import org.json.JSONObject;
@@ -132,6 +146,69 @@ public class MainActivity extends Activity {
         return "Could not sign in: " + (error == null ? "Please try again." : error.getLocalizedMessage());
     }
 
+    private String resourceString(String name) {
+        int id = getResources().getIdentifier(name, "string", getPackageName());
+        return id == 0 ? "" : getString(id);
+    }
+
+    private void launchGoogleSignIn() {
+        String clientId = resourceString("default_web_client_id");
+        if (clientId.isEmpty()) {
+            sendAuthResult(false, "Google setup is incomplete. Download the refreshed Firebase config and rebuild.", "");
+            return;
+        }
+        GetGoogleIdOption googleOption = new GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(clientId)
+                .setAutoSelectEnabled(false)
+                .build();
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleOption)
+                .build();
+        CredentialManager manager = CredentialManager.create(this);
+        Executor executor = getMainExecutor();
+        manager.getCredentialAsync(this, request, new CancellationSignal(), executor,
+                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                    @Override
+                    public void onResult(GetCredentialResponse response) {
+                        Credential credential = response.getCredential();
+                        if (!(credential instanceof CustomCredential)
+                                || !GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                                    .equals(credential.getType())) {
+                            sendAuthResult(false, "Google returned an unsupported sign-in credential.", "");
+                            return;
+                        }
+                        try {
+                            GoogleIdTokenCredential googleCredential =
+                                    GoogleIdTokenCredential.createFrom(credential.getData());
+                            AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(
+                                    googleCredential.getIdToken(), null);
+                            FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
+                                    .addOnCompleteListener(task -> {
+                                        if (task.isSuccessful()) {
+                                            FirebaseUser user = task.getResult().getUser();
+                                            sendAuthResult(true, "Signed in with Google.",
+                                                    user == null ? googleCredential.getId() : user.getEmail());
+                                        } else {
+                                            sendAuthResult(false, authErrorMessage(task.getException()), "");
+                                        }
+                                    });
+                        } catch (GoogleIdTokenParsingException error) {
+                            sendAuthResult(false, "Could not read the Google sign-in response. Please try again.", "");
+                        }
+                    }
+
+                    @Override
+                    public void onError(GetCredentialException error) {
+                        String message = error.getLocalizedMessage();
+                        if (message == null || message.trim().isEmpty()) {
+                            message = "Google sign-in was cancelled or could not start.";
+                        }
+                        sendAuthResult(false, message, "");
+                    }
+                });
+    }
+
     private final class AuthBridge {
         @JavascriptInterface
         public void signIn(String email, String password) {
@@ -169,6 +246,11 @@ public class MainActivity extends Activity {
                         user.updateProfile(profile).addOnCompleteListener(profileTask ->
                                 sendAuthResult(true, "Your FieldWorks account is ready.", user.getEmail()));
                     });
+        }
+
+        @JavascriptInterface
+        public void startGoogle() {
+            runOnUiThread(() -> launchGoogleSignIn());
         }
 
         @JavascriptInterface

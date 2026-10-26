@@ -12,7 +12,20 @@
           "package_name": "com.fieldworks.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "727653441843-5u0u856de3u602tqqs3d0fa4i8ds11p0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fieldworks.app",
+            "certificate_hash": "ac7dbecff81ec929a690feb5581ee74ee3b6d557"
+          }
+        },
+        {
+          "client_id": "727653441843-21o387nfo0ht5vla5b012cs0v34uua7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCpYTKFvfFFR4XTQEjHUy79RdzGbqO3jqg"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "727653441843-21o387nfo0ht5vla5b012cs0v34uua7n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
