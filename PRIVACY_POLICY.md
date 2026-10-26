@@ -2,14 +2,14 @@
 
 **Effective date:** 26 October 2026  
 **Last updated:** 26 October 2026  
-**Data controller / operator:** Rizal Bin Jamin, No 10, Taman Putra Perdana, 47310 Puchong  
+**Data controller / operator:** Radar Venture, No 10, Taman Putra Perdana, 47310 Puchong  
 **Privacy contact:** rizaljamin@gmail.com  
 **App:** FieldWorks for Android  
 **Package name:** com.fieldworks.app
 
 ## 1. About this policy
 
-This notice explains how Rizal Bin Jamin (“FieldWorks”, “we”, “us”) handles information when you use the FieldWorks Android app. It applies to users in the United States, the European Economic Area (EEA), Malaysia, and Singapore. Privacy laws differ across the United States and Asia, and this notice is supplemented by any mandatory local rights or notices that apply to you.
+This notice explains how Radar Venture (“FieldWorks”, “we”, “us”) handles information when you use the FieldWorks Android app. It applies to users in the United States, the European Economic Area (EEA), Malaysia, and Singapore. Privacy laws differ across the United States and Asia, and this notice is supplemented by any mandatory local rights or notices that apply to you.
 
 FieldWorks is a project journal for recording project details and moments such as photos, videos, written notes, and voice notes.
 
@@ -117,6 +117,6 @@ We may update this notice as the app changes or legal requirements change. We wi
 
 For privacy requests or questions:
 
-**Rizal Bin Jamin**  
+**Radar Venture**  
 **No 10, Taman Putra Perdana, 47310 Puchong**  
 **Email:** rizaljamin@gmail.com
