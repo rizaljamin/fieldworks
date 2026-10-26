@@ -33,7 +33,6 @@ import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException;
 import android.os.CancellationSignal;
 import java.util.concurrent.Executor;
 import androidx.webkit.WebViewAssetLoader;
@@ -178,24 +177,20 @@ public class MainActivity extends Activity {
                             sendAuthResult(false, "Google returned an unsupported sign-in credential.", "");
                             return;
                         }
-                        try {
-                            GoogleIdTokenCredential googleCredential =
-                                    GoogleIdTokenCredential.createFrom(credential.getData());
-                            AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(
-                                    googleCredential.getIdToken(), null);
-                            FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
-                                    .addOnCompleteListener(task -> {
-                                        if (task.isSuccessful()) {
-                                            FirebaseUser user = task.getResult().getUser();
-                                            sendAuthResult(true, "Signed in with Google.",
-                                                    user == null ? googleCredential.getId() : user.getEmail());
-                                        } else {
-                                            sendAuthResult(false, authErrorMessage(task.getException()), "");
-                                        }
-                                    });
-                        } catch (GoogleIdTokenParsingException error) {
-                            sendAuthResult(false, "Could not read the Google sign-in response. Please try again.", "");
-                        }
+                        GoogleIdTokenCredential googleCredential =
+                                GoogleIdTokenCredential.createFrom(credential.getData());
+                        AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(
+                                googleCredential.getIdToken(), null);
+                        FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        FirebaseUser user = task.getResult().getUser();
+                                        sendAuthResult(true, "Signed in with Google.",
+                                                user == null ? googleCredential.getId() : user.getEmail());
+                                    } else {
+                                        sendAuthResult(false, authErrorMessage(task.getException()), "");
+                                    }
+                                });
                     }
 
                     @Override
