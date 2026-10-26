@@ -2,7 +2,7 @@
 
 **Effective date:** 26 October 2026  
 **Last updated:** 26 October 2026  
-**Data controller / operator:** Rizal Bin Jamin, No 9, Jalan Suasana 4/5, Bandar Tun Hussein Onn, 43200 Cheras, Malaysia  
+**Data controller / operator:** Rizal Bin Jamin, No 10, Taman Putra Perdana, 47310 Puchong  
 **Privacy contact:** rizaljamin@gmail.com  
 **App:** FieldWorks for Android  
 **Package name:** com.fieldworks.app
@@ -118,5 +118,5 @@ We may update this notice as the app changes or legal requirements change. We wi
 For privacy requests or questions:
 
 **Rizal Bin Jamin**  
-**No 9, Jalan Suasana 4/5, Bandar Tun Hussein Onn, 43200 Cheras, Malaysia**  
+**No 10, Taman Putra Perdana, 47310 Puchong**  
 **Email:** rizaljamin@gmail.com
