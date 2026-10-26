@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "727653441843",
+    "project_id": "fieldworks-512712",
+    "storage_bucket": "fieldworks-512712.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:727653441843:android:6df7b3fbddb519cb0bde46",
+        "android_client_info": {
+          "package_name": "com.fieldworks.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpYTKFvfFFR4XTQEjHUy79RdzGbqO3jqg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,7 +2,7 @@
 
 # FieldWorks Android
 
-FieldWorks is an Android fieldbook app for documenting hands-on projects with photos, videos, text, and voice notes. The current development build includes guest entry, a demo username/password form, project creation, project stages, a pinned project, project albums, and photo/video capture from the camera, device folders, or Google Drive through Android’s file picker.
+FieldWorks is an Android fieldbook app for documenting hands-on projects with photos, videos, text, and voice notes. The current development build includes guest entry, Firebase email account creation, sign-in and password reset, project creation, project stages, a pinned project, project albums, and photo/video capture from the camera, device folders, or Google Drive through Android’s file picker.
 
 ## Build an APK with GitHub Actions
 
@@ -18,4 +18,4 @@ Every generated APK uses the filename format `FieldWorks VX.X.YY Build ZZ.apk` (
 
 Project records, reminders, and captured media are saved in IndexedDB on the device and persist across app launches and app updates. Data is currently device-local and does not sync to a cloud account. Clearing app storage or uninstalling the app removes the saved fieldbook.
 
-The username/password form currently accepts any non-empty values. Google and Facebook sign-in are not connected yet.
+Email/password authentication uses Firebase Authentication. Enable Email/Password in the Firebase console. Google and Facebook buttons remain inactive until their Firebase and provider-console setup is completed. Authentication identifies the user; project records and media remain stored locally on each device and do not sync between devices.
