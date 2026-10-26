@@ -19,6 +19,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import androidx.core.content.FileProvider;
+import android.widget.FrameLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -285,14 +286,18 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(android.graphics.Color.rgb(8, 44, 80));
 
         webView = new WebView(this);
-        ViewCompat.setOnApplyWindowInsetsListener(webView, (view, windowInsets) -> {
+        webView.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
+        FrameLayout appContainer = new FrameLayout(this);
+        appContainer.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
+        ViewCompat.setOnApplyWindowInsetsListener(appContainer, (view, windowInsets) -> {
             Insets safeInsets = windowInsets.getInsets(
                     WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             view.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
             return windowInsets;
         });
-        new WindowInsetsControllerCompat(getWindow(), webView).setAppearanceLightStatusBars(true);
-        webView.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
+        new WindowInsetsControllerCompat(getWindow(), appContainer).setAppearanceLightStatusBars(true);
+        appContainer.addView(webView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -364,8 +369,8 @@ public class MainActivity extends Activity {
                 if (pendingPermission == request) pendingPermission = null;
             }
         });
-        setContentView(webView);
-        ViewCompat.requestApplyInsets(webView);
+        setContentView(appContainer);
+        ViewCompat.requestApplyInsets(appContainer);
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
