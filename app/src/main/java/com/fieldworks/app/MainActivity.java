@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaRecorder;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -104,6 +105,7 @@ public class MainActivity extends Activity {
     private static final int CAMERA_PHOTO_REQUEST = 1203;
     private static final int CAMERA_VIDEO_REQUEST = 1204;
     private static final int MEDIA_PICKER_REQUEST = 1205;
+    private static final int NATIVE_AUDIO_PERMISSION_REQUEST = 1206;
     private WebView webView;
     private BillingClient billingClient;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
@@ -114,6 +116,11 @@ public class MainActivity extends Activity {
     private PermissionRequest pendingPermission;
     private File captureFile;
     private String captureKind;
+    private MediaRecorder voiceRecorder;
+    private File voiceFile;
+    private long voiceProjectId;
+    private String voiceAlbumId = "";
+    private boolean voicePermissionPending;
     private long captureProjectId;
     private long importProjectId;
     private String importKind;
@@ -133,6 +140,21 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void pickMedia(String kind, long projectId) {
             runOnUiThread(() -> launchMediaPicker(kind, projectId));
+        }
+
+        @JavascriptInterface
+        public void startVoice(long projectId, String albumId) {
+            runOnUiThread(() -> requestVoicePermissionAndStart(projectId, albumId));
+        }
+
+        @JavascriptInterface
+        public void stopVoice() {
+            runOnUiThread(() -> finishVoiceRecording(true));
+        }
+
+        @JavascriptInterface
+        public void cancelVoice() {
+            runOnUiThread(() -> finishVoiceRecording(false));
         }
 
         @JavascriptInterface
@@ -648,6 +670,101 @@ public class MainActivity extends Activity {
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
+    private void requestVoicePermissionAndStart(long projectId, String albumId) {
+        if (projectId <= 0 || voiceRecorder != null || voicePermissionPending) return;
+        voiceProjectId = projectId;
+        voiceAlbumId = albumId == null ? "" : albumId;
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startVoiceRecording();
+        } else {
+            voicePermissionPending = true;
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},
+                    NATIVE_AUDIO_PERMISSION_REQUEST);
+        }
+    }
+
+    private void startVoiceRecording() {
+        File directory = new File(getFilesDir(), "fieldworks_media");
+        if (!directory.exists() && !directory.mkdirs()) {
+            notifyVoiceStatus("error", "Could not prepare FieldWorks audio storage.");
+            return;
+        }
+        try {
+            voiceFile = File.createTempFile("fieldworks_voice_", ".m4a", directory);
+            MediaRecorder recorder = new MediaRecorder();
+            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            recorder.setAudioEncodingBitRate(96000);
+            recorder.setAudioSamplingRate(44100);
+            recorder.setOutputFile(voiceFile.getAbsolutePath());
+            recorder.prepare();
+            recorder.start();
+            voiceRecorder = recorder;
+            notifyVoiceStatus("recording", "");
+        } catch (Exception error) {
+            releaseVoiceRecorder();
+            if (voiceFile != null) voiceFile.delete();
+            voiceFile = null;
+            voiceProjectId = 0L;
+            voiceAlbumId = "";
+            notifyVoiceStatus("error", "Could not start microphone recording. Check microphone permission and try again.");
+        }
+    }
+
+    private void finishVoiceRecording(boolean save) {
+        if (voicePermissionPending) {
+            voicePermissionPending = false;
+            voiceProjectId = 0L;
+            voiceAlbumId = "";
+            notifyVoiceStatus("canceled", "Recording canceled.");
+            return;
+        }
+        if (voiceRecorder == null) {
+            if (!save) notifyVoiceStatus("canceled", "Recording canceled.");
+            return;
+        }
+        boolean valid = false;
+        if (save) {
+            try {
+                voiceRecorder.stop();
+                valid = voiceFile != null && voiceFile.isFile() && voiceFile.length() > 0;
+            } catch (RuntimeException error) {
+                notifyVoiceStatus("error", "Recording was too short. Record for a moment longer and try again.");
+            }
+        }
+        releaseVoiceRecorder();
+        if (save && valid) {
+            String url = "https://appassets.androidplatform.net/media/" + Uri.encode(voiceFile.getName());
+            String script = "window.onFieldWorksVoiceCapture && window.onFieldWorksVoiceCapture("
+                    + JSONObject.quote(url) + "," + JSONObject.quote(voiceFile.getName()) + ","
+                    + voiceProjectId + "," + JSONObject.quote(voiceAlbumId) + ")";
+            if (webView != null) webView.evaluateJavascript(script, null);
+        } else {
+            if (voiceFile != null) voiceFile.delete();
+            notifyVoiceStatus(save ? "error" : "canceled",
+                    save ? "The recording could not be saved. Please try again." : "Recording canceled.");
+        }
+        voiceFile = null;
+        voiceProjectId = 0L;
+        voiceAlbumId = "";
+    }
+
+    private void releaseVoiceRecorder() {
+        if (voiceRecorder != null) {
+            try { voiceRecorder.reset(); } catch (Exception ignored) { }
+            try { voiceRecorder.release(); } catch (Exception ignored) { }
+            voiceRecorder = null;
+        }
+    }
+
+    private void notifyVoiceStatus(String state, String message) {
+        if (webView != null) {
+            webView.evaluateJavascript("window.onFieldWorksVoiceStatus && window.onFieldWorksVoiceStatus("
+                    + JSONObject.quote(state) + "," + JSONObject.quote(message) + ")", null);
+        }
+    }
+
     private void launchCamera(String kind, long projectId) {
         boolean video = "video".equals(kind);
         captureKind = video ? "video" : "photo";
@@ -876,6 +993,18 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == NATIVE_AUDIO_PERMISSION_REQUEST) {
+            voicePermissionPending = false;
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && voiceProjectId > 0) {
+                startVoiceRecording();
+            } else {
+                voiceProjectId = 0L;
+                voiceAlbumId = "";
+                notifyVoiceStatus("error", "Microphone permission was denied. Allow it to record a voice note.");
+            }
+            return;
+        }
         if (requestCode == AUDIO_PERMISSION_REQUEST && pendingPermission != null) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 pendingPermission.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
@@ -895,6 +1024,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (billingClient != null) billingClient.endConnection();
+        if (voiceRecorder != null) finishVoiceRecording(false);
         super.onDestroy();
     }
 
