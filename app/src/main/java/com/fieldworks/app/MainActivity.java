@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -666,6 +667,29 @@ public class MainActivity extends Activity {
         }
     }
 
+    private File cameraResultFallback(Intent data) {
+        try {
+            importKind = captureKind;
+            if (data != null && data.getData() != null) return copyImportedMedia(data.getData());
+            if (!"photo".equals(captureKind) || data == null || data.getExtras() == null) return null;
+            Object thumbnail = data.getExtras().get("data");
+            if (!(thumbnail instanceof Bitmap)) return null;
+            File directory = new File(getFilesDir(), "fieldworks_media");
+            if (!directory.exists() && !directory.mkdirs()) return null;
+            File fallback = File.createTempFile("fieldworks_camera_fallback_", ".jpg", directory);
+            try (FileOutputStream output = new FileOutputStream(fallback)) {
+                if (!((Bitmap) thumbnail).compress(Bitmap.CompressFormat.JPEG, 92, output)) {
+                    fallback.delete();
+                    return null;
+                }
+                output.flush();
+            }
+            return fallback.length() > 0 ? fallback : null;
+        } catch (Exception error) {
+            return null;
+        }
+    }
+
     private void launchMediaPicker(String kind, int projectId) {
         boolean video = "video".equals(kind);
         importKind = video ? "video" : "photo";
@@ -677,7 +701,7 @@ public class MainActivity extends Activity {
         try {
             startActivityForResult(picker, MEDIA_PICKER_REQUEST);
         } catch (Exception error) {
-            notifyCameraError("Could not open the photo or video picker.");
+            notifyCameraError("Could not open the photo or video picker (" + error.getClass().getSimpleName() + "). " + (error.getMessage() == null ? "" : error.getMessage()));
         }
     }
 
@@ -771,7 +795,7 @@ public class MainActivity extends Activity {
                 imports.put(item);
             } catch (Exception error) {
                 for (File file : copiedFiles) file.delete();
-                notifyCameraError("Could not import the selected media. Please try again.");
+                notifyCameraError("Media import failed (" + error.getClass().getSimpleName() + "). " + (error.getMessage() == null ? "Please try another file." : error.getMessage()));
                 return;
             }
         }
@@ -795,6 +819,12 @@ public class MainActivity extends Activity {
             return;
         }
         if (requestCode == CAMERA_PHOTO_REQUEST || requestCode == CAMERA_VIDEO_REQUEST) {
+            if (resultCode == RESULT_OK
+                    && (captureFile == null || !captureFile.isFile() || captureFile.length() == 0)) {
+                File fallback = cameraResultFallback(data);
+                if (captureFile != null) captureFile.delete();
+                captureFile = fallback;
+            }
             if (resultCode == RESULT_OK && captureFile != null
                     && captureFile.isFile() && captureFile.length() > 0) {
                 String url = "https://appassets.androidplatform.net/media/"
@@ -805,8 +835,11 @@ public class MainActivity extends Activity {
                         + JSONObject.quote(captureFile.getName()) + ","
                         + captureProjectId + ")";
                 webView.evaluateJavascript(script, null);
-            } else if (captureFile != null) {
-                captureFile.delete();
+            } else {
+                if (resultCode == RESULT_OK) {
+                    notifyCameraError("Camera returned no saved media. Retry or choose an existing photo.");
+                }
+                if (captureFile != null) captureFile.delete();
             }
             captureFile = null;
             return;
