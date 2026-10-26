@@ -2,7 +2,7 @@ name: Build FieldWorks APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, billing-test-v0.2]
     paths:
       - 'app/**'
       - 'settings.gradle'
@@ -52,8 +52,10 @@ jobs:
           BUILD_LABEL=$(printf '%02d' "$BUILD")
           VERSION_NAME="V${MAJOR}.${MINOR}.${PATCH} Build ${BUILD_LABEL}"
           APK_FILENAME="FieldWorks ${VERSION_NAME}.apk"
+          AAB_FILENAME="FieldWorks ${VERSION_NAME}.aab"
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
           echo "APK_FILENAME=$APK_FILENAME" >> "$GITHUB_ENV"
+          echo "AAB_FILENAME=$AAB_FILENAME" >> "$GITHUB_ENV"
           echo "VERSION_CODE=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
           echo "Building $APK_FILENAME (versionCode $GITHUB_RUN_NUMBER)"
 
@@ -88,8 +90,9 @@ jobs:
       - name: Build and name signed release APK
         shell: bash
         run: |
-          gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease
+          gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease :app:bundleRelease
           cp app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/$APK_FILENAME"
+          cp app/build/outputs/bundle/release/app-release.aab "app/build/outputs/bundle/release/$AAB_FILENAME"
 
       - name: Prepare release bundle with assets and build memo
         shell: bash
@@ -98,6 +101,7 @@ jobs:
           ASSET_DIR="$BUNDLE_DIR/assets"
           mkdir -p "$ASSET_DIR"
           cp "app/build/outputs/apk/release/$APK_FILENAME" "$BUNDLE_DIR/$APK_FILENAME"
+          cp "app/build/outputs/bundle/release/$AAB_FILENAME" "$BUNDLE_DIR/$AAB_FILENAME"
           cp "app/src/main/res/drawable-nodpi/launcher_fieldworks.png" "$ASSET_DIR/"
           cp "app/src/main/assets/fieldworks-icon.png" "$ASSET_DIR/"
           cp "app/src/main/assets/fieldworks-logo.png" "$ASSET_DIR/"
@@ -107,6 +111,7 @@ jobs:
           FieldWorks Android build memo
           Version: $VERSION_NAME
           APK: $APK_FILENAME
+          AAB: $AAB_FILENAME
           Version code: $VERSION_CODE
           Source commit: $GITHUB_SHA
           Branch: $GITHUB_REF_NAME
@@ -120,6 +125,14 @@ jobs:
         with:
           name: ${{ env.APK_FILENAME }}
           path: app/build/outputs/apk/release/${{ env.APK_FILENAME }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload signed AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.AAB_FILENAME }}
+          path: app/build/outputs/bundle/release/${{ env.AAB_FILENAME }}
           if-no-files-found: error
           retention-days: 30
 
