@@ -20,6 +20,20 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import androidx.core.content.FileProvider;
 import android.widget.FrameLayout;
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryPurchasesParams;
+import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Map;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -88,6 +102,11 @@ public class MainActivity extends Activity {
     private static final int CAMERA_VIDEO_REQUEST = 1204;
     private static final int MEDIA_PICKER_REQUEST = 1205;
     private WebView webView;
+    private BillingClient billingClient;
+    private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
+    private static final String[] SUBSCRIPTION_PRODUCT_IDS = {
+            "fieldworks_student_annual", "fieldworks_personal_annual", "fieldworks_business_annual"
+    };
     private ValueCallback<Uri[]> fileCallback;
     private PermissionRequest pendingPermission;
     private File captureFile;
@@ -120,6 +139,208 @@ public class MainActivity extends Activity {
             File file = new File(directory, name);
             if (file.getParentFile().equals(directory)) file.delete();
         }
+    }
+
+    private final class BillingBridge {
+        @JavascriptInterface
+        public void loadProducts() {
+            runOnUiThread(() -> connectBilling());
+        }
+
+        @JavascriptInterface
+        public void purchase(String productId) {
+            runOnUiThread(() -> launchSubscriptionPurchase(productId));
+        }
+
+        @JavascriptInterface
+        public void restorePurchases() {
+            runOnUiThread(() -> queryOwnedSubscriptions());
+        }
+    }
+
+    private void connectBilling() {
+        if (billingClient == null) {
+            billingClient = BillingClient.newBuilder(this)
+                    .setListener((billingResult, purchases) -> {
+                        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
+                                && purchases != null) {
+                            for (Purchase purchase : purchases) processSubscriptionPurchase(purchase);
+                        } else if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.USER_CANCELED) {
+                            sendBillingMessage(false, "Google Play could not complete the purchase. Please try again.");
+                        }
+                    })
+                    .enablePendingPurchases(PendingPurchasesParams.newBuilder()
+                            .enableOneTimeProducts().build())
+                    .enableAutoServiceReconnection()
+                    .build();
+        }
+        if (billingClient.isReady()) {
+            querySubscriptionProducts();
+            queryOwnedSubscriptions();
+            return;
+        }
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(BillingResult result) {
+                if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    querySubscriptionProducts();
+                    queryOwnedSubscriptions();
+                } else {
+                    sendBillingMessage(false, "Google Play billing is unavailable on this device.");
+                }
+            }
+
+            @Override
+            public void onBillingServiceDisconnected() {
+                // BillingClient automatically reconnects on the next request.
+            }
+        });
+    }
+
+    private void querySubscriptionProducts() {
+        List<QueryProductDetailsParams.Product> products = new ArrayList<>();
+        for (String productId : SUBSCRIPTION_PRODUCT_IDS) {
+            products.add(QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(productId)
+                    .setProductType(BillingClient.ProductType.SUBS)
+                    .build());
+        }
+        QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                .setProductList(products).build();
+        billingClient.queryProductDetailsAsync(params, (result, response) -> {
+            if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                sendBillingMessage(false, "Subscription plans are not available yet.");
+                return;
+            }
+            subscriptionProducts.clear();
+            JSONObject catalog = new JSONObject();
+            for (ProductDetails details : response.getProductDetailsList()) {
+                subscriptionProducts.put(details.getProductId(), details);
+                String formattedPrice = "";
+                List<ProductDetails.SubscriptionOfferDetails> offers = details.getSubscriptionOfferDetails();
+                if (offers != null && !offers.isEmpty()) {
+                    List<ProductDetails.PricingPhase> phases =
+                            offers.get(0).getPricingPhases().getPricingPhaseList();
+                    if (!phases.isEmpty()) formattedPrice = phases.get(phases.size() - 1).getFormattedPrice();
+                }
+                try { catalog.put(details.getProductId(), formattedPrice); } catch (Exception ignored) {}
+            }
+            sendBillingCallback("onFieldWorksBillingProducts", catalog);
+        });
+    }
+
+    private void launchSubscriptionPurchase(String productId) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            sendBillingMessage(false, "Sign in to a FieldWorks account before subscribing.");
+            return;
+        }
+        ProductDetails details = subscriptionProducts.get(productId);
+        if (details == null) {
+            connectBilling();
+            sendBillingMessage(false, "This plan is not configured in Google Play yet.");
+            return;
+        }
+        List<ProductDetails.SubscriptionOfferDetails> offers = details.getSubscriptionOfferDetails();
+        if (offers == null || offers.isEmpty()) {
+            sendBillingMessage(false, "This subscription has no active annual offer in Google Play.");
+            return;
+        }
+        BillingFlowParams.ProductDetailsParams productParams =
+                BillingFlowParams.ProductDetailsParams.newBuilder()
+                        .setProductDetails(details)
+                        .setOfferToken(offers.get(0).getOfferToken())
+                        .build();
+        BillingFlowParams params = BillingFlowParams.newBuilder()
+                .setProductDetailsParamsList(java.util.Collections.singletonList(productParams))
+                .setObfuscatedAccountId(obfuscateAccountId(user.getUid()))
+                .build();
+        BillingResult result = billingClient.launchBillingFlow(this, params);
+        if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+            sendBillingMessage(false, result.getDebugMessage());
+        }
+    }
+
+    private String obfuscateAccountId(String uid) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(uid.getBytes("UTF-8"));
+            StringBuilder hex = new StringBuilder();
+            for (byte value : digest) hex.append(String.format(java.util.Locale.US, "%02x", value));
+            return hex.toString();
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private void queryOwnedSubscriptions() {
+        if (billingClient == null || !billingClient.isReady()) return;
+        QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.SUBS).build();
+        billingClient.queryPurchasesAsync(params, (result, purchases) -> {
+            if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                boolean found = false;
+                for (Purchase purchase : purchases) {
+                    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED
+                            && hasFieldWorksProduct(purchase)) {
+                        found = true;
+                        processSubscriptionPurchase(purchase);
+                    }
+                }
+                if (!found) sendBillingEntitlement(false, "");
+            }
+        });
+    }
+
+    private boolean hasFieldWorksProduct(Purchase purchase) {
+        for (String product : purchase.getProducts()) {
+            for (String expected : SUBSCRIPTION_PRODUCT_IDS) {
+                if (expected.equals(product)) return true;
+            }
+        }
+        return false;
+    }
+
+    private void processSubscriptionPurchase(Purchase purchase) {
+        if (purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED
+                || !hasFieldWorksProduct(purchase)) return;
+        String productId = purchase.getProducts().isEmpty() ? "" : purchase.getProducts().get(0);
+        if (purchase.isAcknowledged()) {
+            sendBillingEntitlement(true, productId);
+            return;
+        }
+        AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(purchase.getPurchaseToken()).build();
+        billingClient.acknowledgePurchase(params, result -> {
+            if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                sendBillingEntitlement(true, productId);
+            } else {
+                sendBillingMessage(false, "Payment completed, but Google Play acknowledgement failed. Tap Restore purchase.");
+            }
+        });
+    }
+
+    private void sendBillingCallback(String callback, JSONObject payload) {
+        if (webView == null) return;
+        runOnUiThread(() -> webView.evaluateJavascript(
+                "window." + callback + " && window." + callback + "(" + payload + ")", null));
+    }
+
+    private void sendBillingMessage(boolean success, String message) {
+        JSONObject payload = new JSONObject();
+        try {
+            payload.put("success", success);
+            payload.put("message", message == null ? "" : message);
+        } catch (Exception ignored) {}
+        sendBillingCallback("onFieldWorksBillingMessage", payload);
+    }
+
+    private void sendBillingEntitlement(boolean active, String productId) {
+        JSONObject payload = new JSONObject();
+        try {
+            payload.put("active", active);
+            payload.put("productId", productId == null ? "" : productId);
+        } catch (Exception ignored) {}
+        sendBillingCallback("onFieldWorksBillingEntitlement", payload);
     }
 
     private void sendAuthResult(boolean success, String message, String email) {
@@ -277,6 +498,12 @@ public class MainActivity extends Activity {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             return user == null ? "" : (user.getEmail() == null ? "" : user.getEmail());
         }
+        
+        @JavascriptInterface
+        public String currentUid() {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            return user == null ? "" : user.getUid();
+        }
     }
 
     @Override
@@ -314,6 +541,7 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new LocalContentWebViewClient(assetLoader));
         webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
         webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
+        webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
@@ -571,4 +799,11 @@ public class MainActivity extends Activity {
         if (webView != null && webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
     }
+
+    @Override
+    protected void onDestroy() {
+        if (billingClient != null) billingClient.endConnection();
+        super.onDestroy();
+    }
+
 }
