@@ -114,8 +114,8 @@ public class MainActivity extends Activity {
     private PermissionRequest pendingPermission;
     private File captureFile;
     private String captureKind;
-    private int captureProjectId;
-    private int importProjectId;
+    private long captureProjectId;
+    private long importProjectId;
     private String importKind;
     private volatile String pendingFileSource = "folders";
 
@@ -126,12 +126,12 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public void capture(String kind, int projectId) {
+        public void capture(String kind, long projectId) {
             runOnUiThread(() -> launchCamera(kind, projectId));
         }
 
         @JavascriptInterface
-        public void pickMedia(String kind, int projectId) {
+        public void pickMedia(String kind, long projectId) {
             runOnUiThread(() -> launchMediaPicker(kind, projectId));
         }
 
@@ -548,9 +548,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            importProjectId = savedInstanceState.getInt("fieldworks.importProjectId", 0);
+            importProjectId = savedInstanceState.getLong("fieldworks.importProjectId", 0L);
             importKind = savedInstanceState.getString("fieldworks.importKind");
-            captureProjectId = savedInstanceState.getInt("fieldworks.captureProjectId", 0);
+            captureProjectId = savedInstanceState.getLong("fieldworks.captureProjectId", 0L);
             captureKind = savedInstanceState.getString("fieldworks.captureKind");
             String capturePath = savedInstanceState.getString("fieldworks.captureFile");
             if (capturePath != null) captureFile = new File(capturePath);
@@ -648,7 +648,7 @@ public class MainActivity extends Activity {
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
-    private void launchCamera(String kind, int projectId) {
+    private void launchCamera(String kind, long projectId) {
         boolean video = "video".equals(kind);
         captureKind = video ? "video" : "photo";
         captureProjectId = projectId;
@@ -698,7 +698,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void launchMediaPicker(String kind, int projectId) {
+    private void launchMediaPicker(String kind, long projectId) {
         boolean video = "video".equals(kind);
         importKind = video ? "video" : "photo";
         importProjectId = projectId;
@@ -825,9 +825,9 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt("fieldworks.importProjectId", importProjectId);
+        outState.putLong("fieldworks.importProjectId", importProjectId);
         outState.putString("fieldworks.importKind", importKind);
-        outState.putInt("fieldworks.captureProjectId", captureProjectId);
+        outState.putLong("fieldworks.captureProjectId", captureProjectId);
         outState.putString("fieldworks.captureKind", captureKind);
         if (captureFile != null) outState.putString("fieldworks.captureFile", captureFile.getAbsolutePath());
         super.onSaveInstanceState(outState);
