@@ -118,12 +118,17 @@ public class MainActivity extends Activity {
     }
 
     private void sendAuthResult(boolean success, String message, String email) {
+        sendAuthResult(success, message, email, "");
+    }
+
+    private void sendAuthResult(boolean success, String message, String email, String action) {
         if (webView == null) return;
         try {
             JSONObject result = new JSONObject();
             result.put("success", success);
             result.put("message", message == null ? "" : message);
             result.put("email", email == null ? "" : email);
+            result.put("action", action == null ? "" : action);
             runOnUiThread(() -> webView.evaluateJavascript(
                     "window.onFieldWorksAuthResult && window.onFieldWorksAuthResult("
                             + result + ")", null));
@@ -254,7 +259,12 @@ public class MainActivity extends Activity {
                     .addOnCompleteListener(task -> sendAuthResult(task.isSuccessful(),
                             task.isSuccessful()
                                     ? "Password reset email sent. Check your inbox."
-                                    : authErrorMessage(task.getException()), email));
+                                    : authErrorMessage(task.getException()), email, "reset"));
+        }
+
+        @JavascriptInterface
+        public void signOut() {
+            FirebaseAuth.getInstance().signOut();
         }
 
         @JavascriptInterface
