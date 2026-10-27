@@ -95,13 +95,18 @@ jobs:
           gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease :app:bundleRelease
           cp app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/$APK_FILENAME"
           cp app/build/outputs/bundle/release/app-release.aab "app/build/outputs/bundle/release/$AAB_FILENAME"
+          test -s app/build/outputs/mapping/release/mapping.txt
+          test -s app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
 
       - name: Prepare release bundle with assets and build memo
         shell: bash
         run: |
           BUNDLE_DIR="$RUNNER_TEMP/fieldworks-release"
           ASSET_DIR="$BUNDLE_DIR/assets"
-          mkdir -p "$ASSET_DIR"
+          DIAGNOSTICS_DIR="$BUNDLE_DIR/diagnostics"
+          mkdir -p "$ASSET_DIR" "$DIAGNOSTICS_DIR"
+          cp app/build/outputs/mapping/release/mapping.txt "$DIAGNOSTICS_DIR/mapping.txt"
+          cp app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "$DIAGNOSTICS_DIR/"
           cp "app/build/outputs/apk/release/$APK_FILENAME" "$BUNDLE_DIR/$APK_FILENAME"
           cp "app/build/outputs/bundle/release/$AAB_FILENAME" "$BUNDLE_DIR/$AAB_FILENAME"
           cp "app/src/main/res/drawable-nodpi/launcher_fieldworks.png" "$ASSET_DIR/"
@@ -121,7 +126,7 @@ jobs:
           Branch: $GITHUB_REF_NAME
           Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           Built at (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')
-          Bundle contents: signed APK, app and branding assets, and this memo.
+          Bundle contents: signed APK/AAB, app and branding assets, R8 mapping, native debug symbols, and this memo.
           EOF
 
       - name: Upload signed APK
