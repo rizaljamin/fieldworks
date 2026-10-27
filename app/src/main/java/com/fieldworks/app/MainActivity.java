@@ -113,7 +113,7 @@ public class MainActivity extends Activity {
     private BillingClient billingClient;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
     private static final String[] SUBSCRIPTION_PRODUCT_IDS = {
-            "fieldworks_student_annual", "fieldworks_personal_annual", "fieldworks_business_annual"
+            "fw2026", "fw2026_stu"
     };
     private ValueCallback<Uri[]> fileCallback;
     private PermissionRequest pendingPermission;
