@@ -126,6 +126,19 @@ public class MainActivity extends Activity {
     private String importKind;
     private volatile String pendingFileSource = "folders";
 
+    private final class AppInfoBridge {
+        @JavascriptInterface
+        public String getVersionName() {
+            try {
+                String versionName = getPackageManager()
+                        .getPackageInfo(getPackageName(), 0).versionName;
+                return versionName == null ? "" : versionName;
+            } catch (PackageManager.NameNotFoundException e) {
+                return "";
+            }
+        }
+    }
+
     private final class MediaBridge {
         @JavascriptInterface
         public void prepareSource(String source) {
@@ -608,6 +621,7 @@ public class MainActivity extends Activity {
                 .build();
         webView.setWebViewClient(new LocalContentWebViewClient(assetLoader));
         webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
+        webView.addJavascriptInterface(new AppInfoBridge(), "FieldWorksAppInfo");
         webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
         webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
         webView.setWebChromeClient(new WebChromeClient() {
