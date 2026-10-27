@@ -108,6 +108,8 @@ jobs:
           cp "app/src/main/assets/fieldworks-icon.png" "$ASSET_DIR/"
           cp "app/src/main/assets/fieldworks-logo.png" "$ASSET_DIR/"
           cp "app/src/main/assets/index.html" "$ASSET_DIR/"
+          cp "app/src/main/assets/mini-renovation-progress.jpg" "$ASSET_DIR/"
+          cp "app/src/main/assets/mini-renovation-finishing.jpg" "$ASSET_DIR/"
           cp "assets/fieldworks-logo.svg" "$ASSET_DIR/"
           cat > "$BUNDLE_DIR/build memo.txt" <<EOF
           FieldWorks Android build memo
