@@ -96,7 +96,6 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/$APK_FILENAME"
           cp app/build/outputs/bundle/release/app-release.aab "app/build/outputs/bundle/release/$AAB_FILENAME"
           test -s app/build/outputs/mapping/release/mapping.txt
-          test -s app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
 
       - name: Prepare release bundle with assets and build memo
         shell: bash
@@ -106,7 +105,12 @@ jobs:
           DIAGNOSTICS_DIR="$BUNDLE_DIR/diagnostics"
           mkdir -p "$ASSET_DIR" "$DIAGNOSTICS_DIR"
           cp app/build/outputs/mapping/release/mapping.txt "$DIAGNOSTICS_DIR/mapping.txt"
-          cp app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "$DIAGNOSTICS_DIR/"
+          if [ -s app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip ]; then
+            cp app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "$DIAGNOSTICS_DIR/"
+            NATIVE_SYMBOLS_STATUS="Native debug symbols included."
+          else
+            NATIVE_SYMBOLS_STATUS="No native debug symbols were generated; dependencies ship without symbol data."
+          fi
           cp "app/build/outputs/apk/release/$APK_FILENAME" "$BUNDLE_DIR/$APK_FILENAME"
           cp "app/build/outputs/bundle/release/$AAB_FILENAME" "$BUNDLE_DIR/$AAB_FILENAME"
           cp "app/src/main/res/drawable-nodpi/launcher_fieldworks.png" "$ASSET_DIR/"
@@ -126,7 +130,8 @@ jobs:
           Branch: $GITHUB_REF_NAME
           Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           Built at (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')
-          Bundle contents: signed APK/AAB, app and branding assets, R8 mapping, native debug symbols, and this memo.
+          Bundle contents: signed APK/AAB, app and branding assets, R8 mapping, optional native debug symbols, and this memo.
+          Native symbols: $NATIVE_SYMBOLS_STATUS
           EOF
 
       - name: Upload signed APK
