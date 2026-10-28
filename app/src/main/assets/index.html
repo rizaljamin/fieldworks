@@ -350,6 +350,27 @@
     .demo-project-copy{display:flex;flex-direction:column;padding:22px;min-width:0}.demo-project-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}.demo-project-tag{padding:6px 10px;border-radius:20px;background:#e7f3ed;color:#507569;font-size:9px}.demo-project-favorite{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff1cf;color:#a56e15;font-size:17px}.demo-project-copy h3{margin:12px 0 5px;color:var(--navy);font-family:Georgia,serif;font-size:23px;font-weight:600;line-height:1.2}.demo-project-description{margin:0;color:#748286;font-size:11px}.demo-project-stats{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-project-stats span{padding:4px 8px;border:1px solid #b7d1ca;border-radius:20px;color:#49656a;font-size:9px}.demo-project-stats b{color:var(--navy)}.demo-project-last{display:grid;gap:3px;margin:0 0 14px;color:#66797d;font-size:10px}.demo-project-last strong{color:#455e63}.demo-stage-head{display:flex;justify-content:space-between;gap:10px;color:#75858a;font-size:9px}.demo-stage-head b{color:#a17125}.demo-stage-track{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:9px 0 14px}.demo-stage-track span{height:6px;border-radius:10px;background:#e8e6dc}.demo-stage-track span.done,.demo-stage-track span.current{background:#f0a52a}.demo-journal{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;color:#60777a;font-size:10px}.demo-journal summary{cursor:pointer;color:#176d70;font-weight:750}.demo-journal ul{display:grid;gap:8px;margin:10px 0 0;padding-left:18px}.demo-journal li strong{display:block;color:var(--navy)}
     @media(max-width:850px){.demo-project-card{grid-template-columns:1fr}.demo-project-media{min-height:260px}.demo-project-copy{padding:17px}}
 
+  
+    .create-project-overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:18px;background:#082c5077;backdrop-filter:blur(3px)}
+    .create-project-card{width:min(100%,520px);max-height:min(92vh,760px);overflow:auto;padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:0 22px 70px #082c5040}
+    .create-project-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .create-project-head h2{margin:0;color:var(--navy);font:500 24px/1.2 Georgia,serif}
+    .create-project-head p{margin:6px 0 0;color:var(--muted);font-size:12px}
+    .create-project-close{width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#62777a;font-size:20px}
+    .create-project-form{display:grid;gap:13px}
+    .create-project-field{display:grid;gap:5px}
+    .create-project-field label{color:#526b70;font-size:11px;font-weight:700}
+    .create-project-field input,.create-project-field textarea,.create-project-field select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+    .create-project-field textarea{min-height:94px;resize:vertical}
+    .create-project-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:4px}
+    .create-project-cancel,.create-project-submit{padding:10px 15px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:12px;font-weight:750}
+    .create-project-submit{border:0;background:var(--teal);color:#fff}
+    .created-project-list{display:grid;gap:12px}
+    .created-project-card{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:center;gap:14px;margin:0 0 12px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}
+    .created-project-icon{display:grid;place-items:center;width:54px;height:54px;border-radius:14px;background:#e7f3ed;color:#138c92;font-size:22px}
+    .created-project-info{min-width:0}.created-project-info .demo-project-tag{display:inline-block}.created-project-info h3{margin:6px 0 3px;color:var(--navy);font-family:Georgia,serif;font-size:18px}.created-project-info p{margin:0;color:#75858a;font-size:11px;overflow-wrap:anywhere}.created-project-meta{color:#75858a;font-size:10px;white-space:nowrap}
+    @media(max-width:600px){.create-project-card{padding:18px}.created-project-card{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:13px}.created-project-icon{width:44px;height:44px}.created-project-meta{grid-column:2;white-space:normal}}
+
   </style>
 </head>
 <body>
@@ -425,21 +446,21 @@
 
       <main>
         <section id="page-home" class="page">
-          <div class="home-create" aria-label="Create project placeholder">
+          <button id="openCreateProject" class="home-create" type="button" aria-label="Create project">
             <span class="home-create-icon">＋</span>
             <span class="home-create-copy"><strong>Create project</strong><small>Start with a name. Add the moments as you go.</small></span>
             <span class="home-create-arrow" aria-hidden="true">→</span>
-          </div>
+          </button>
           <div class="sectionhead"><div><div class="eyebrow">Ready when you are</div><h2>Favourite Projects</h2><p>Your quick notes and photos will go here.</p></div></div>
           <div id="homeMiniRenovation"></div>
           <div class="sectionhead"><div><div class="eyebrow">Latest activity first</div><h2>My Projects</h2><p>Projects you create appear here.</p></div></div>
-          <div class="placeholder-card" aria-label="Projects placeholder"></div>
+          <div id="homeCreatedProjects" class="created-project-list"></div>
           <div class="sectionhead"><div><div class="eyebrow">Ready to start</div><h2>My Templates</h2><p>Choose a template to start a project.</p></div></div>
           <div class="placeholder-card" aria-label="Templates placeholder"></div>
           <div class="sectionhead"><div><div class="eyebrow">A little of everything</div><h2>Recent moments</h2><p>Your latest photos, thoughts and voice notes.</p></div></div>
           <div class="placeholder-card" aria-label="Recent moments placeholder"></div>
         </section>
-        <section id="page-projects" class="page" hidden><h2 class="page-title">My Projects</h2><div id="projectsMiniRenovation"></div></section>
+        <section id="page-projects" class="page" hidden><h2 class="page-title">My Projects</h2><div id="projectsMiniRenovation"></div><div id="projectsCreatedProjects" class="created-project-list"></div></section>
         <section id="page-templates" class="page" hidden><h2 class="page-title">My Templates</h2><div class="placeholder-card" aria-label="My Templates placeholder"></div></section>
         <section id="page-moments" class="page" hidden><h2 class="page-title">Recent moments</h2><div class="placeholder-card" aria-label="Recent moments placeholder"></div></section>
         <section id="page-followups" class="page" hidden><h2 class="page-title">Follow-ups</h2><div class="placeholder-card" aria-label="Follow-ups placeholder"></div></section>
@@ -475,6 +496,19 @@
       <button class="tab" type="button" data-page="archive" onclick="showFieldWorksPage('archive')">▤<small>Archive</small></button>
       <button class="tab" type="button" data-page="account" onclick="showFieldWorksPage('account')">♙<small>Account</small></button>
     </nav>
+
+    
+    <div id="createProjectOverlay" class="create-project-overlay" hidden>
+      <section class="create-project-card" role="dialog" aria-modal="true" aria-labelledby="createProjectTitle">
+        <div class="create-project-head"><div><h2 id="createProjectTitle">Create project</h2><p>Give your project a name and a little context.</p></div><button id="closeCreateProject" class="create-project-close" type="button" aria-label="Close create project card">×</button></div>
+        <form id="createProjectForm" class="create-project-form">
+          <div class="create-project-field"><label for="newProjectName">Project name</label><input id="newProjectName" name="name" maxlength="80" placeholder="e.g. Home renovation" autocomplete="off" required></div>
+          <div class="create-project-field"><label for="newProjectType">Type of project</label><select id="newProjectType" name="type"><option>Construction</option><option>Catering</option><option>Field Trips</option><option>Garden Works</option><option>Farms &amp; Agriculture</option><option>Birthday Party</option><option>Charity Function</option></select></div>
+          <div class="create-project-field"><label for="newProjectDescription">A little about it</label><textarea id="newProjectDescription" name="description" maxlength="500" placeholder="What are you working on?"></textarea></div>
+          <div class="create-project-actions"><button id="cancelCreateProject" class="create-project-cancel" type="button">Cancel</button><button class="create-project-submit" type="submit">Create project</button></div>
+        </form>
+      </section>
+    </div>
 
     <div id="loginOverlay" class="login-overlay" hidden>
       <section class="login-card" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
@@ -571,10 +605,92 @@
       if (projects) projects.innerHTML = card;
     }
 
+
+    let createdProjects = [];
+    let createdProjectsLoaded = false;
+    const CREATED_PROJECTS_KEY = "fieldworks.debug.created-projects.v1";
+    function loadCreatedProjects() {
+      if (createdProjectsLoaded) return;
+      createdProjectsLoaded = true;
+      try {
+        const saved = localStorage.getItem(CREATED_PROJECTS_KEY);
+        const parsed = saved ? JSON.parse(saved) : [];
+        createdProjects = Array.isArray(parsed) ? parsed.filter(function(project) {
+          return project && typeof project.name === "string" && typeof project.id === "string";
+        }) : [];
+      } catch (error) { createdProjects = []; }
+    }
+    function saveCreatedProjects() {
+      try { localStorage.setItem(CREATED_PROJECTS_KEY, JSON.stringify(createdProjects)); return true; }
+      catch (error) { return false; }
+    }
+    function escapeProjectText(value) {
+      return String(value || "").replace(/[&<>"']/g, function(character) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character];
+      });
+    }
+    function renderCreatedProjectCard(project) {
+      const name = escapeProjectText(project.name);
+      const type = escapeProjectText(project.type);
+      const description = escapeProjectText(project.description || "No description added yet.");
+      const createdAt = new Date(project.createdAt);
+      const created = Number.isNaN(createdAt.getTime()) ? "" : createdAt.toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" });
+      const icon = type === "Garden Works" || type === "Farms &amp; Agriculture" ? "🌱" : type === "Catering" || type === "Birthday Party" ? "✿" : type === "Field Trips" ? "⌁" : "⌂";
+      return '<article class="created-project-card"><div class="created-project-icon" aria-hidden="true">' + icon + '</div><div class="created-project-info"><span class="demo-project-tag">' + type + '</span><h3>' + name + '</h3><p>' + description + '</p></div><span class="created-project-meta">Created' + (created ? ' · ' + created : '') + '</span></article>';
+    }
+    function renderCreatedProjects() {
+      loadCreatedProjects();
+      const cards = createdProjects.map(renderCreatedProjectCard).join("");
+      const empty = '<div class="empty">Projects you create will appear here.</div>';
+      const home = document.getElementById("homeCreatedProjects");
+      const list = document.getElementById("projectsCreatedProjects");
+      if (home) home.innerHTML = cards || empty;
+      if (list) list.innerHTML = cards || empty;
+    }
+    function openCreateProjectCard() {
+      loadCreatedProjects();
+      document.getElementById("createProjectOverlay").hidden = false;
+      document.getElementById("newProjectName").focus();
+    }
+    function closeCreateProjectCard() {
+      document.getElementById("createProjectOverlay").hidden = true;
+    }
+    function createProjectFromCard(event) {
+      event.preventDefault();
+      const name = document.getElementById("newProjectName").value.trim();
+      if (!name) { document.getElementById("newProjectName").focus(); return; }
+      const project = {
+        id: "project-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7),
+        name: name,
+        type: document.getElementById("newProjectType").value,
+        description: document.getElementById("newProjectDescription").value.trim(),
+        createdAt: new Date().toISOString()
+      };
+      createdProjects.unshift(project);
+      saveCreatedProjects();
+      document.getElementById("createProjectForm").reset();
+      closeCreateProjectCard();
+      renderCreatedProjects();
+      showFieldWorksPage("projects");
+    }
+    function wireCreateProjectCard() {
+      document.getElementById("openCreateProject").addEventListener("click", openCreateProjectCard);
+      document.getElementById("closeCreateProject").addEventListener("click", closeCreateProjectCard);
+      document.getElementById("cancelCreateProject").addEventListener("click", closeCreateProjectCard);
+      document.getElementById("createProjectOverlay").addEventListener("click", function(event) {
+        if (event.target.id === "createProjectOverlay") closeCreateProjectCard();
+      });
+      document.getElementById("createProjectForm").addEventListener("submit", createProjectFromCard);
+      document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape" && !document.getElementById("createProjectOverlay").hidden) closeCreateProjectCard();
+      });
+    }
+
     function openFieldWorksMenu() {
       document.getElementById("welcome-screen").hidden = true;
       document.getElementById("dashboard").hidden = false;
       try { updateAuthUI(window.FieldWorksAuth ? window.FieldWorksAuth.currentEmail() : ""); } catch (error) { updateAuthUI(""); }
+      renderCreatedProjects();
       showFieldWorksPage("home");
     }
 
@@ -589,9 +705,10 @@
       });
       document.getElementById("topTitle").textContent = pageTitles[page] || "My FieldWorks";
       if (page === "account") { renderAccountPage(); loadSubscriptionPackage(); }
-      if (page === "home" || page === "projects") renderMiniRenovationDemo();
+      if (page === "home" || page === "projects") { renderMiniRenovationDemo(); renderCreatedProjects(); }
     }
 
+    wireCreateProjectCard();
     let authMode = "signin";
     let signedInEmail = "";
     let billingCatalog = {};
