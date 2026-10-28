@@ -1,6 +1,21 @@
 package com.fieldworks.app;
 
 import android.app.Activity;
+import android.Manifest;
+import android.content.ClipData;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.media.MediaRecorder;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+import android.webkit.MimeTypeMap;
+import androidx.core.content.FileProvider;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -50,7 +65,21 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import org.json.JSONObject;
 
 public class MainActivity extends Activity {
+    private static final int CAMERA_PHOTO_REQUEST = 2301;
+    private static final int CAMERA_VIDEO_REQUEST = 2302;
+    private static final int MEDIA_PICKER_REQUEST = 2303;
+    private static final int AUDIO_PERMISSION_REQUEST = 2304;
+    private static final int MAX_MEDIA_PER_PICK = 5;
     private WebView webView;
+    private File captureFile;
+    private String captureKind = "";
+    private String captureProjectId = "";
+    private String importKind = "";
+    private String importProjectId = "";
+    private MediaRecorder voiceRecorder;
+    private File voiceFile;
+    private String voiceProjectId = "";
+    private boolean voicePermissionPending;
     private BillingClient billingClient;
     private final ExecutorService subscriptionExecutor = Executors.newSingleThreadExecutor();
     private static final String SUBSCRIPTION_FUNCTION_URL = "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksSubscription";
@@ -153,6 +182,41 @@ public class MainActivity extends Activity {
                     }
                 });
     }
+    private final class MediaBridge {
+        @JavascriptInterface
+        public void capture(String kind, String projectId) {
+            runOnUiThread(() -> launchMediaCapture(kind, projectId));
+        }
+
+        @JavascriptInterface
+        public void pickMedia(String kind, String projectId) {
+            runOnUiThread(() -> launchMediaPicker(kind, projectId));
+        }
+
+        @JavascriptInterface
+        public void startVoice(String projectId) {
+            runOnUiThread(() -> requestVoicePermissionAndStart(projectId));
+        }
+
+        @JavascriptInterface
+        public void stopVoice() {
+            runOnUiThread(() -> finishVoiceRecording(true));
+        }
+
+        @JavascriptInterface
+        public void cancelVoice() {
+            runOnUiThread(() -> {
+                if (voicePermissionPending) {
+                    voicePermissionPending = false;
+                    voiceProjectId = "";
+                    notifyVoiceStatus("canceled", "Recording canceled.");
+                } else {
+                    finishVoiceRecording(false);
+                }
+            });
+        }
+    }
+
     private final class BillingBridge {
         @JavascriptInterface
         public void loadProducts() {
@@ -481,6 +545,292 @@ public class MainActivity extends Activity {
         sendBillingCallback("onFieldWorksBillingEntitlement", payload);
     }
 
+    private File mediaDirectory() {
+        File directory = new File(getFilesDir(), "fieldworks_media");
+        if (!directory.exists() && !directory.mkdirs()) return null;
+        return directory;
+    }
+
+    private void launchMediaCapture(String kind, String projectId) {
+        boolean video = "video".equals(kind);
+        captureKind = video ? "video" : "photo";
+        captureProjectId = projectId == null ? "" : projectId;
+        File directory = mediaDirectory();
+        if (directory == null) {
+            notifyMediaError(captureProjectId, "Could not prepare FieldWorks media storage.");
+            return;
+        }
+        try {
+            captureFile = File.createTempFile("fieldworks_capture_", video ? ".mp4" : ".jpg", directory);
+            Uri outputUri = FileProvider.getUriForFile(
+                    this, getPackageName() + ".fileprovider", captureFile);
+            Intent camera = new Intent(video ? MediaStore.ACTION_VIDEO_CAPTURE : MediaStore.ACTION_IMAGE_CAPTURE);
+            camera.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+            camera.setClipData(ClipData.newRawUri("FieldWorks capture", outputUri));
+            camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            startActivityForResult(camera, video ? CAMERA_VIDEO_REQUEST : CAMERA_PHOTO_REQUEST);
+        } catch (Exception error) {
+            if (captureFile != null) captureFile.delete();
+            captureFile = null;
+            notifyMediaError(captureProjectId, "No camera app is available to capture this moment.");
+        }
+    }
+
+    private void launchMediaPicker(String kind, String projectId) {
+        importKind = "video".equals(kind) ? "video" : "photo";
+        importProjectId = projectId == null ? "" : projectId;
+        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        picker.addCategory(Intent.CATEGORY_OPENABLE);
+        picker.setType("video".equals(importKind) ? "video/*" : "image/*");
+        picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        try {
+            startActivityForResult(picker, MEDIA_PICKER_REQUEST);
+        } catch (Exception error) {
+            notifyMediaError(importProjectId, "Could not open the device media picker.");
+        }
+    }
+
+    private String mediaDisplayName(Uri uri) {
+        String name = "";
+        try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int column = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (column >= 0) name = cursor.getString(column);
+            }
+        } catch (Exception ignored) { }
+        if (name == null || name.trim().isEmpty()) {
+            name = "FieldWorks " + System.currentTimeMillis()
+                    + ("video".equals(importKind) ? ".mp4" : ".jpg");
+        }
+        return name.replaceAll("[\\\\/\\r\\n]", "_");
+    }
+
+    private File copySelectedMedia(Uri uri, String kind) throws IOException {
+        File directory = mediaDirectory();
+        if (directory == null) throw new IOException("Could not prepare media storage.");
+        String displayName = mediaDisplayName(uri);
+        String extension = "";
+        int dot = displayName.lastIndexOf('.');
+        if (dot >= 0 && dot < displayName.length() - 1) {
+            String candidate = displayName.substring(dot).toLowerCase()
+                    .replaceAll("[^a-z0-9.]", "");
+            if (candidate.length() <= 10) extension = candidate;
+        }
+        if (extension.isEmpty()) {
+            String mime = getContentResolver().getType(uri);
+            String guessed = mime == null ? null : MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+            extension = "." + (guessed != null ? guessed : ("video".equals(kind) ? "mp4" : "jpg"));
+        }
+        File target = File.createTempFile("fieldworks_import_", extension, directory);
+        try (InputStream input = getContentResolver().openInputStream(uri);
+             FileOutputStream output = new FileOutputStream(target)) {
+            if (input == null) throw new IOException("Could not read the selected media.");
+            byte[] buffer = new byte[16384];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            output.flush();
+        } catch (IOException error) {
+            target.delete();
+            throw error;
+        }
+        if (!target.isFile() || target.length() == 0) {
+            target.delete();
+            throw new IOException("The selected media file was empty.");
+        }
+        return target;
+    }
+
+    private java.util.List<Uri> selectedMediaUris(Intent data) {
+        java.util.List<Uri> uris = new java.util.ArrayList<>();
+        if (data == null) return uris;
+        if (data.getClipData() != null) {
+            ClipData clip = data.getClipData();
+            for (int i = 0; i < clip.getItemCount() && uris.size() < MAX_MEDIA_PER_PICK; i++) {
+                Uri uri = clip.getItemAt(i).getUri();
+                if (uri != null) uris.add(uri);
+            }
+        } else if (data.getData() != null) {
+            uris.add(data.getData());
+        }
+        return uris;
+    }
+
+    private File cameraResultFallback(Intent data) {
+        try {
+            if (data != null && data.getData() != null) return copySelectedMedia(data.getData(), captureKind);
+            if (!"photo".equals(captureKind) || data == null || data.getExtras() == null) return null;
+            Object thumbnail = data.getExtras().get("data");
+            if (!(thumbnail instanceof Bitmap)) return null;
+            File directory = mediaDirectory();
+            if (directory == null) return null;
+            File fallback = File.createTempFile("fieldworks_camera_fallback_", ".jpg", directory);
+            try (FileOutputStream output = new FileOutputStream(fallback)) {
+                if (!((Bitmap) thumbnail).compress(Bitmap.CompressFormat.JPEG, 92, output)) {
+                    fallback.delete();
+                    return null;
+                }
+                output.flush();
+            }
+            return fallback.length() > 0 ? fallback : null;
+        } catch (Exception ignored) { return null; }
+    }
+
+    private String localMediaUrl(File file) {
+        return Uri.fromFile(file).toString();
+    }
+
+    private void notifyMediaReady(String projectId, String kind, File file) {
+        if (file == null || !file.isFile() || webView == null) return;
+        String script = "window.onFieldWorksMediaReady && window.onFieldWorksMediaReady("
+                + JSONObject.quote(projectId == null ? "" : projectId) + ","
+                + JSONObject.quote(kind == null ? "" : kind) + ","
+                + JSONObject.quote(localMediaUrl(file)) + ","
+                + JSONObject.quote(file.getName()) + ")";
+        webView.evaluateJavascript(script, null);
+    }
+
+    private void notifyMediaError(String projectId, String message) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksMediaError && window.onFieldWorksMediaError("
+                + JSONObject.quote(projectId == null ? "" : projectId) + ","
+                + JSONObject.quote(message == null ? "" : message) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+
+    private void requestVoicePermissionAndStart(String projectId) {
+        if (voiceRecorder != null || voicePermissionPending) return;
+        voiceProjectId = projectId == null ? "" : projectId;
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startVoiceRecording();
+        } else {
+            voicePermissionPending = true;
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, AUDIO_PERMISSION_REQUEST);
+        }
+    }
+
+    private void startVoiceRecording() {
+        File directory = mediaDirectory();
+        if (directory == null) {
+            voiceProjectId = "";
+            notifyVoiceStatus("error", "Could not prepare FieldWorks audio storage.");
+            return;
+        }
+        try {
+            voiceFile = File.createTempFile("fieldworks_voice_", ".m4a", directory);
+            MediaRecorder recorder = new MediaRecorder();
+            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            recorder.setAudioEncodingBitRate(96000);
+            recorder.setAudioSamplingRate(44100);
+            recorder.setOutputFile(voiceFile.getAbsolutePath());
+            recorder.prepare();
+            recorder.start();
+            voiceRecorder = recorder;
+            notifyVoiceStatus("recording", "Recording… Tap Stop & save when you are done.");
+        } catch (Exception error) {
+            releaseVoiceRecorder();
+            if (voiceFile != null) voiceFile.delete();
+            voiceFile = null;
+            voiceProjectId = "";
+            notifyVoiceStatus("error", "Could not start microphone recording. Check permission and try again.");
+        }
+    }
+
+    private void finishVoiceRecording(boolean save) {
+        if (voicePermissionPending) {
+            voicePermissionPending = false;
+            voiceProjectId = "";
+            notifyVoiceStatus("canceled", "Recording canceled.");
+            return;
+        }
+        if (voiceRecorder == null) return;
+        boolean valid = false;
+        if (save) {
+            try {
+                voiceRecorder.stop();
+                valid = voiceFile != null && voiceFile.isFile() && voiceFile.length() > 0;
+            } catch (RuntimeException error) {
+                notifyVoiceStatus("error", "Recording was too short. Record a little longer and try again.");
+            }
+        }
+        releaseVoiceRecorder();
+        if (save && valid) {
+            notifyMediaReady(voiceProjectId, "voice", voiceFile);
+        } else {
+            if (voiceFile != null) voiceFile.delete();
+            if (!save) notifyVoiceStatus("canceled", "Recording canceled.");
+            else notifyVoiceStatus("error", "The voice note could not be saved. Please try again.");
+        }
+        voiceFile = null;
+        voiceProjectId = "";
+    }
+
+    private void releaseVoiceRecorder() {
+        if (voiceRecorder != null) {
+            try { voiceRecorder.reset(); } catch (Exception ignored) { }
+            try { voiceRecorder.release(); } catch (Exception ignored) { }
+            voiceRecorder = null;
+        }
+    }
+
+    private void notifyVoiceStatus(String state, String message) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksVoiceStatus && window.onFieldWorksVoiceStatus("
+                + JSONObject.quote(state) + "," + JSONObject.quote(message == null ? "" : message) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == MEDIA_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                java.util.List<Uri> uris = selectedMediaUris(data);
+                if (uris.isEmpty()) {
+                    notifyMediaError(importProjectId, "No media file was selected.");
+                    return;
+                }
+                for (Uri uri : uris) {
+                    try { notifyMediaReady(importProjectId, importKind, copySelectedMedia(uri, importKind)); }
+                    catch (Exception error) { notifyMediaError(importProjectId, "Could not copy the selected media to FieldWorks."); }
+                }
+            }
+            return;
+        }
+        if (requestCode == CAMERA_PHOTO_REQUEST || requestCode == CAMERA_VIDEO_REQUEST) {
+            File result = captureFile;
+            if (resultCode == RESULT_OK && (result == null || !result.isFile() || result.length() == 0)) {
+                result = cameraResultFallback(data);
+                if (captureFile != null) captureFile.delete();
+            }
+            if (resultCode == RESULT_OK && result != null && result.isFile() && result.length() > 0) {
+                notifyMediaReady(captureProjectId, captureKind, result);
+            } else if (resultCode == RESULT_OK) {
+                notifyMediaError(captureProjectId, "The camera returned no saved media. Try again or choose an existing file.");
+                if (captureFile != null) captureFile.delete();
+            } else if (captureFile != null) {
+                captureFile.delete();
+            }
+            captureFile = null;
+            captureProjectId = "";
+            captureKind = "";
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != AUDIO_PERMISSION_REQUEST || !voicePermissionPending) return;
+        voicePermissionPending = false;
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startVoiceRecording();
+        } else {
+            voiceProjectId = "";
+            notifyVoiceStatus("error", "Microphone permission is required to record a voice note.");
+        }
+    }
+
     private final class AuthBridge {
         @JavascriptInterface
         public String currentUid() {
@@ -587,8 +937,10 @@ public class MainActivity extends Activity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
         settings.setAllowContentAccess(false);
         webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
+        webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
         webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
         setContentView(webView);
         webView.loadUrl("file:///android_asset/index.html");
@@ -629,8 +981,11 @@ public class MainActivity extends Activity {
     }
     @Override
     protected void onDestroy() {
+        if (voiceRecorder != null || voicePermissionPending) finishVoiceRecording(false);
+        if (captureFile != null) captureFile.delete();
         if (billingClient != null) billingClient.endConnection();
         subscriptionExecutor.shutdownNow();
+        if (webView != null) webView.destroy();
         webView = null;
         super.onDestroy();
     }

@@ -371,6 +371,9 @@
     .created-project-info{min-width:0}.created-project-info .demo-project-tag{display:inline-block}.created-project-info h3{margin:6px 0 3px;color:var(--navy);font-family:Georgia,serif;font-size:18px}.created-project-info p{margin:0;color:#75858a;font-size:11px;overflow-wrap:anywhere}.created-project-meta{color:#75858a;font-size:10px;white-space:nowrap}
     @media(max-width:600px){.create-project-card{padding:18px}.created-project-card{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:13px}.created-project-icon{width:44px;height:44px}.created-project-meta{grid-column:2;white-space:normal}}
 
+  
+    .project-artifacts{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.artifact-add-button{padding:9px 12px;border:1px solid #cfe1d9;border-radius:10px;background:#f4faf6;color:#176d70;font-size:10px;font-weight:750}.artifact-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:9px}.artifact-item{min-width:0;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#61777a;font-size:10px;overflow-wrap:anywhere}.artifact-item img,.artifact-item video{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:7px;background:#e8efea}.artifact-item audio{display:block;width:100%;height:34px}.artifact-item p{margin:5px 0 0;white-space:pre-wrap}.artifact-item small{display:block;margin-top:5px;color:#829094;font-size:8px}.artifact-overlay{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:18px;background:#082c5077;backdrop-filter:blur(3px)}.artifact-card{width:min(100%,460px);max-height:min(92vh,700px);overflow:auto;padding:21px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:0 22px 70px #082c5040}.artifact-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}.artifact-card-head h2{margin:0;color:var(--navy);font:500 22px/1.2 Georgia,serif}.artifact-card-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.artifact-close{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#62777a;font-size:20px}.artifact-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}.artifact-option{display:flex;align-items:center;gap:10px;min-height:64px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);text-align:left}.artifact-option-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:#e7f3ed;color:#138c92;font-size:18px}.artifact-option strong{display:block;font-size:11px}.artifact-option small{display:block;color:#829094;font-size:9px}.artifact-status{min-height:18px;margin:11px 0 0;color:#62777a;font-size:10px}.artifact-status.error{color:#a23d3d}.artifact-note-text{width:100%;min-height:130px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;resize:vertical}.artifact-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.artifact-action{padding:9px 13px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:11px;font-weight:750}.artifact-action.primary{border:0;background:var(--teal);color:#fff}@media(max-width:500px){.artifact-options{grid-template-columns:1fr}.artifact-card{padding:17px}}
+
   </style>
 </head>
 <body>
@@ -498,6 +501,45 @@
     </nav>
 
     
+    
+    <div id="artifactMenuOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card" role="dialog" aria-modal="true" aria-labelledby="artifactMenuTitle">
+        <div class="artifact-card-head"><div><h2 id="artifactMenuTitle">Add to project</h2><p>Choose what you want to add.</p></div><button class="artifact-close" type="button" data-close-artifact aria-label="Close add artifacts menu">×</button></div>
+        <div class="artifact-options">
+          <button class="artifact-option" type="button" data-artifact-type="photo"><span class="artifact-option-icon">▧</span><span><strong>Image / photo</strong><small>Take or choose a photo</small></span></button>
+          <button class="artifact-option" type="button" data-artifact-type="video"><span class="artifact-option-icon">▶</span><span><strong>Video</strong><small>Record or choose a video</small></span></button>
+          <button class="artifact-option" type="button" data-artifact-type="note"><span class="artifact-option-icon">▤</span><span><strong>Note</strong><small>Write a project update</small></span></button>
+          <button class="artifact-option" type="button" data-artifact-type="voice"><span class="artifact-option-icon">🎙</span><span><strong>Voice note</strong><small>Record a spoken update</small></span></button>
+        </div>
+        <p id="artifactMenuStatus" class="artifact-status" role="status"></p>
+      </section>
+    </div>
+    <div id="mediaSourceOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card" role="dialog" aria-modal="true" aria-labelledby="mediaSourceTitle">
+        <div class="artifact-card-head"><div><h2 id="mediaSourceTitle">Add media</h2><p>Capture a new moment or choose a file from this device.</p></div><button class="artifact-close" type="button" data-close-artifact aria-label="Close media menu">×</button></div>
+        <div class="artifact-options">
+          <button class="artifact-option" type="button" data-media-action="camera"><span class="artifact-option-icon">📷</span><span><strong id="mediaCaptureLabel">Take a photo</strong><small>Open the camera</small></span></button>
+          <button class="artifact-option" type="button" data-media-action="device"><span class="artifact-option-icon">⌁</span><span><strong id="mediaChooseLabel">Choose photos</strong><small>Browse device storage</small></span></button>
+        </div>
+        <p id="mediaSourceStatus" class="artifact-status" role="status"></p>
+      </section>
+    </div>
+    <div id="noteArtifactOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card" role="dialog" aria-modal="true" aria-labelledby="noteArtifactTitle">
+        <div class="artifact-card-head"><div><h2 id="noteArtifactTitle">Write a note</h2><p>Add a detail to this project journal.</p></div><button class="artifact-close" type="button" data-close-artifact aria-label="Close note card">×</button></div>
+        <textarea id="noteArtifactText" class="artifact-note-text" maxlength="3000" placeholder="What would you like to remember?"></textarea>
+        <p id="noteArtifactStatus" class="artifact-status" role="status"></p>
+        <div class="artifact-actions"><button class="artifact-action" type="button" data-close-artifact>Cancel</button><button id="saveNoteArtifact" class="artifact-action primary" type="button">Save note</button></div>
+      </section>
+    </div>
+    <div id="voiceArtifactOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card" role="dialog" aria-modal="true" aria-labelledby="voiceArtifactTitle">
+        <div class="artifact-card-head"><div><h2 id="voiceArtifactTitle">Voice note</h2><p>Record a spoken project update.</p></div><button id="cancelVoiceArtifact" class="artifact-close" type="button" aria-label="Close voice note">×</button></div>
+        <p id="voiceArtifactStatus" class="artifact-status" role="status">Tap Record and allow microphone access.</p>
+        <div class="artifact-actions"><button id="startVoiceArtifact" class="artifact-action primary" type="button">Record</button><button id="stopVoiceArtifact" class="artifact-action primary" type="button" hidden>Stop &amp; save</button><button id="cancelVoiceArtifactButton" class="artifact-action" type="button">Cancel</button></div>
+      </section>
+    </div>
+
     <div id="createProjectOverlay" class="create-project-overlay" hidden>
       <section class="create-project-card" role="dialog" aria-modal="true" aria-labelledby="createProjectTitle">
         <div class="create-project-head"><div><h2 id="createProjectTitle">Create project</h2><p>Give your project a name and a little context.</p></div><button id="closeCreateProject" class="create-project-close" type="button" aria-label="Close create project card">×</button></div>
@@ -595,7 +637,7 @@
       const demo = MINI_RENOVATION_DEMO;
       const filled = demo.stages.map((stage, index) => '<span class="' + (index < demo.stage ? 'done' : index === demo.stage ? 'current' : '') + '" aria-label="' + stage + '"></span>').join('');
       const notes = demo.journal.map(note => '<li><strong>' + note.date + '</strong>' + note.text + '</li>').join('');
-      return '<article class="demo-project-card"><div class="demo-project-media"><div class="demo-photo demo-photo-main"><img src="' + demo.photos[0].src + '" alt="' + demo.photos[0].alt + '"></div><div class="demo-photo demo-photo-secondary"><img src="' + demo.photos[1].src + '" alt="' + demo.photos[1].alt + '"></div><span class="demo-photo-label">Progress · 2 sample photos</span></div><div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + demo.type + '</span><span class="demo-project-favorite" aria-label="Favourite project">★</span></div><h3>' + demo.name + '</h3><p class="demo-project-description">' + demo.description + '</p><div class="demo-project-stats"><span>Issues <b>' + demo.issueCount + '</b></span><span>Reminders <b>' + demo.reminderCount + '</b></span><span>Spent <b>RM ' + demo.spent.toLocaleString("en-MY") + '</b></span></div><p class="demo-project-last"><strong>Latest moment</strong><span>Updated · ' + demo.latestMoment + '</span></p><div class="demo-stage-head"><span>Project journey</span><b>Stage ' + (demo.stage + 1) + ' of ' + demo.stages.length + '</b></div><div class="demo-stage-track" aria-label="Stage ' + (demo.stage + 1) + ' of ' + demo.stages.length + '">' + filled + '</div><details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + demo.budget.toLocaleString("en-MY") + '</p></details></div></article>';
+      return '<article class="demo-project-card"><div class="demo-project-media"><div class="demo-photo demo-photo-main"><img src="' + demo.photos[0].src + '" alt="' + demo.photos[0].alt + '"></div><div class="demo-photo demo-photo-secondary"><img src="' + demo.photos[1].src + '" alt="' + demo.photos[1].alt + '"></div><span class="demo-photo-label">Progress · 2 sample photos</span></div><div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + demo.type + '</span><span class="demo-project-favorite" aria-label="Favourite project">★</span></div><h3>' + demo.name + '</h3><p class="demo-project-description">' + demo.description + '</p><div class="demo-project-stats"><span>Issues <b>' + demo.issueCount + '</b></span><span>Reminders <b>' + demo.reminderCount + '</b></span><span>Spent <b>RM ' + demo.spent.toLocaleString("en-MY") + '</b></span></div><p class="demo-project-last"><strong>Latest moment</strong><span>Updated · ' + demo.latestMoment + '</span></p><div class="demo-stage-head"><span>Project journey</span><b>Stage ' + (demo.stage + 1) + ' of ' + demo.stages.length + '</b></div><div class="demo-stage-track" aria-label="Stage ' + (demo.stage + 1) + ' of ' + demo.stages.length + '">' + filled + '</div><details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + demo.budget.toLocaleString("en-MY") + '</p></details>' + renderArtifactControls("demo-mini-renovation") + '</div></article>';
     }
     function renderMiniRenovationDemo() {
       const card = miniRenovationCardMarkup();
@@ -609,6 +651,196 @@
     let createdProjects = [];
     let createdProjectsLoaded = false;
     const CREATED_PROJECTS_KEY = "fieldworks.debug.created-projects.v1";
+    const DEMO_ARTIFACTS_KEY = "fieldworks.debug.demo-artifacts.v1";
+    let demoArtifacts = [];
+    let demoArtifactsLoaded = false;
+    let activeArtifactProjectId = "";
+    let activeMediaType = "";
+    let voiceRecording = false;
+    function loadDemoArtifacts() {
+      if (demoArtifactsLoaded) return;
+      demoArtifactsLoaded = true;
+      try { const saved = localStorage.getItem(DEMO_ARTIFACTS_KEY); const parsed = saved ? JSON.parse(saved) : []; demoArtifacts = Array.isArray(parsed) ? parsed : []; }
+      catch (error) { demoArtifacts = []; }
+    }
+    function projectArtifactList(projectId) {
+      if (projectId === "demo-mini-renovation") { loadDemoArtifacts(); return demoArtifacts; }
+      loadCreatedProjects();
+      const project = createdProjects.find(function(item) { return item.id === projectId; });
+      if (!project) return [];
+      if (!Array.isArray(project.artifacts)) project.artifacts = [];
+      return project.artifacts;
+    }
+    function renderArtifactControls(projectId) {
+      const safeId = escapeProjectText(projectId);
+      const content = projectArtifactList(projectId).map(function(item) {
+        const title = escapeProjectText(item.name || (item.type === "voice" ? "Voice note" : item.type === "photo" ? "Photo" : item.type === "video" ? "Video" : "Note"));
+        const createdAt = new Date(item.createdAt || Date.now());
+        const created = Number.isNaN(createdAt.getTime()) ? "" : createdAt.toLocaleString("en-MY", { day:"numeric",month:"short",hour:"2-digit",minute:"2-digit" });
+        const url = escapeProjectText(item.url || "");
+        if (item.type === "photo") return '<article class="artifact-item"><img src="' + url + '" alt="' + title + '"><small>' + title + (created ? ' · ' + created : '') + '</small></article>';
+        if (item.type === "video") return '<article class="artifact-item"><video controls playsinline preload="metadata" src="' + url + '"></video><small>' + title + (created ? ' · ' + created : '') + '</small></article>';
+        if (item.type === "voice") return '<article class="artifact-item"><strong>Voice note</strong><audio controls preload="metadata" src="' + url + '"></audio><small>' + created + '</small></article>';
+        return '<article class="artifact-item"><strong>Note</strong><p>' + escapeProjectText(item.text) + '</p><small>' + created + '</small></article>';
+      }).join("");
+      return '<section class="project-artifacts"><button class="artifact-add-button" type="button" data-add-artifact="' + safeId + '">＋ Add artifacts</button><div class="artifact-list">' + content + '</div></section>';
+    }
+    function projectDisplayName(projectId) {
+      if (projectId === "demo-mini-renovation") return MINI_RENOVATION_DEMO.name;
+      const project = createdProjects.find(function(item) { return item.id === projectId; });
+      return project ? project.name : "project";
+    }
+    function persistProjectArtifact(projectId, artifact) {
+      artifact.id = "artifact-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
+      artifact.createdAt = new Date().toISOString();
+      if (projectId === "demo-mini-renovation") {
+        loadDemoArtifacts();
+        demoArtifacts.unshift(artifact);
+        try { localStorage.setItem(DEMO_ARTIFACTS_KEY, JSON.stringify(demoArtifacts)); } catch (error) {}
+      } else {
+        const project = createdProjects.find(function(item) { return item.id === projectId; });
+        if (!project) return false;
+        if (!Array.isArray(project.artifacts)) project.artifacts = [];
+        project.artifacts.unshift(artifact);
+        saveCreatedProjects();
+      }
+      renderMiniRenovationDemo();
+      renderCreatedProjects();
+      return true;
+    }
+    function openArtifactMenu(projectId) {
+      activeArtifactProjectId = projectId;
+      document.getElementById("artifactMenuTitle").textContent = "Add to " + projectDisplayName(projectId);
+      document.getElementById("artifactMenuStatus").textContent = "";
+      document.getElementById("artifactMenuOverlay").hidden = false;
+    }
+    function closeArtifactOverlays() {
+      ["artifactMenuOverlay","mediaSourceOverlay","noteArtifactOverlay"].forEach(function(id) { document.getElementById(id).hidden = true; });
+    }
+    function showArtifactSource(type) {
+      activeMediaType = type;
+      document.getElementById("mediaSourceTitle").textContent = type === "photo" ? "Add an image / photo" : "Add a video";
+      document.getElementById("mediaCaptureLabel").textContent = type === "photo" ? "Take a photo" : "Record a video";
+      document.getElementById("mediaChooseLabel").textContent = type === "photo" ? "Choose photos" : "Choose videos";
+      document.getElementById("mediaSourceStatus").textContent = "";
+      document.getElementById("mediaSourceStatus").classList.remove("error");
+      document.getElementById("artifactMenuOverlay").hidden = true;
+      document.getElementById("mediaSourceOverlay").hidden = false;
+    }
+    function openNoteArtifact() {
+      document.getElementById("artifactMenuOverlay").hidden = true;
+      document.getElementById("noteArtifactText").value = "";
+      document.getElementById("noteArtifactStatus").textContent = "";
+      document.getElementById("noteArtifactStatus").classList.remove("error");
+      document.getElementById("noteArtifactOverlay").hidden = false;
+      document.getElementById("noteArtifactText").focus();
+    }
+    function openVoiceArtifact() {
+      voiceRecording = false;
+      document.getElementById("artifactMenuOverlay").hidden = true;
+      document.getElementById("voiceArtifactStatus").textContent = "Tap Record and allow microphone access.";
+      document.getElementById("voiceArtifactStatus").classList.remove("error");
+      document.getElementById("startVoiceArtifact").hidden = false;
+      document.getElementById("stopVoiceArtifact").hidden = true;
+      document.getElementById("startVoiceArtifact").disabled = false;
+      document.getElementById("stopVoiceArtifact").disabled = false;
+      document.getElementById("voiceArtifactOverlay").hidden = false;
+    }
+    function handleMediaReady(projectId, type, url, name) {
+      if (projectId !== activeArtifactProjectId) return;
+      if (persistProjectArtifact(projectId, { type:type, url:url, name:name || type })) {
+        closeArtifactOverlays();
+        document.getElementById("voiceArtifactOverlay").hidden = true;
+      }
+    }
+    function wireArtifactMenu() {
+      document.addEventListener("click", function(event) {
+        const addButton = event.target.closest("[data-add-artifact]");
+        if (addButton) { openArtifactMenu(addButton.dataset.addArtifact); return; }
+        const closeButton = event.target.closest("[data-close-artifact]");
+        if (closeButton) { closeArtifactOverlays(); return; }
+        const artifactButton = event.target.closest("[data-artifact-type]");
+        if (artifactButton) {
+          const type = artifactButton.dataset.artifactType;
+          if (type === "photo" || type === "video") showArtifactSource(type);
+          else if (type === "note") openNoteArtifact();
+          else if (type === "voice") openVoiceArtifact();
+          return;
+        }
+        const mediaButton = event.target.closest("[data-media-action]");
+        if (mediaButton) {
+          if (!window.FieldWorksMedia) {
+            document.getElementById("mediaSourceStatus").textContent = "Media capture is unavailable in this build.";
+            document.getElementById("mediaSourceStatus").classList.add("error");
+            return;
+          }
+          document.getElementById("mediaSourceOverlay").hidden = true;
+          if (mediaButton.dataset.mediaAction === "camera") window.FieldWorksMedia.capture(activeMediaType, activeArtifactProjectId);
+          else window.FieldWorksMedia.pickMedia(activeMediaType, activeArtifactProjectId);
+          return;
+        }
+      });
+      document.getElementById("saveNoteArtifact").addEventListener("click", function() {
+        const note = document.getElementById("noteArtifactText").value.trim();
+        if (!note) { const status = document.getElementById("noteArtifactStatus"); status.textContent = "Write a note first."; status.classList.add("error"); return; }
+        persistProjectArtifact(activeArtifactProjectId, { type:"note", text:note, name:"Note" });
+        closeArtifactOverlays();
+      });
+      document.getElementById("startVoiceArtifact").addEventListener("click", function() {
+        if (!window.FieldWorksMedia) { document.getElementById("voiceArtifactStatus").textContent = "Voice recording is unavailable in this build."; return; }
+        this.disabled = true;
+        document.getElementById("voiceArtifactStatus").textContent = "Requesting microphone access…";
+        window.FieldWorksMedia.startVoice(activeArtifactProjectId);
+      });
+      document.getElementById("stopVoiceArtifact").addEventListener("click", function() {
+        if (!window.FieldWorksMedia || !voiceRecording) return;
+        this.disabled = true;
+        document.getElementById("voiceArtifactStatus").textContent = "Saving voice note…";
+        window.FieldWorksMedia.stopVoice();
+      });
+      function cancelVoice() {
+        if (window.FieldWorksMedia) window.FieldWorksMedia.cancelVoice();
+        voiceRecording = false;
+        document.getElementById("voiceArtifactOverlay").hidden = true;
+      }
+      document.getElementById("cancelVoiceArtifact").addEventListener("click", cancelVoice);
+      document.getElementById("cancelVoiceArtifactButton").addEventListener("click", cancelVoice);
+      document.addEventListener("click", function(event) {
+        if (event.target.id === "mediaSourceOverlay" || event.target.id === "noteArtifactOverlay" || event.target.id === "artifactMenuOverlay") closeArtifactOverlays();
+      });
+      document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") {
+          closeArtifactOverlays();
+          if (!document.getElementById("voiceArtifactOverlay").hidden) cancelVoice();
+        }
+      });
+    }
+    window.onFieldWorksMediaReady = function(projectId, type, url, name) {
+      if (type === "voice") { voiceRecording = false; document.getElementById("voiceArtifactOverlay").hidden = true; }
+      handleMediaReady(projectId, type, url, name);
+    };
+    window.onFieldWorksMediaError = function(projectId, message) {
+      if (projectId !== activeArtifactProjectId) return;
+      document.getElementById("mediaSourceOverlay").hidden = false;
+      document.getElementById("mediaSourceStatus").textContent = message || "Could not add that file.";
+      document.getElementById("mediaSourceStatus").classList.add("error");
+    };
+    window.onFieldWorksVoiceStatus = function(state, message) {
+      const status = document.getElementById("voiceArtifactStatus");
+      status.textContent = message || (state === "recording" ? "Recording…" : "");
+      status.classList.toggle("error", state === "error");
+      if (state === "recording") {
+        voiceRecording = true;
+        document.getElementById("startVoiceArtifact").hidden = true;
+        document.getElementById("stopVoiceArtifact").hidden = false;
+      } else if (state === "error") {
+        voiceRecording = false;
+        document.getElementById("startVoiceArtifact").disabled = false;
+      } else if (state === "canceled") {
+        voiceRecording = false;
+        document.getElementById("voiceArtifactOverlay").hidden = true;
+      }
+    };
     function loadCreatedProjects() {
       if (createdProjectsLoaded) return;
       createdProjectsLoaded = true;
@@ -636,7 +868,7 @@
       const createdAt = new Date(project.createdAt);
       const created = Number.isNaN(createdAt.getTime()) ? "" : createdAt.toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" });
       const icon = type === "Garden Works" || type === "Farms &amp; Agriculture" ? "🌱" : type === "Catering" || type === "Birthday Party" ? "✿" : type === "Field Trips" ? "⌁" : "⌂";
-      return '<article class="created-project-card"><div class="created-project-icon" aria-hidden="true">' + icon + '</div><div class="created-project-info"><span class="demo-project-tag">' + type + '</span><h3>' + name + '</h3><p>' + description + '</p></div><span class="created-project-meta">Created' + (created ? ' · ' + created : '') + '</span></article>';
+      return '<article class="created-project-card"><div class="created-project-icon" aria-hidden="true">' + icon + '</div><div class="created-project-info"><span class="demo-project-tag">' + type + '</span><h3>' + name + '</h3><p>' + description + '</p></div><span class="created-project-meta">Created' + (created ? ' · ' + created : '') + '</span>' + renderArtifactControls(project.id) + '</article>';
     }
     function renderCreatedProjects() {
       loadCreatedProjects();
@@ -664,7 +896,8 @@
         name: name,
         type: document.getElementById("newProjectType").value,
         description: document.getElementById("newProjectDescription").value.trim(),
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        artifacts: []
       };
       createdProjects.unshift(project);
       saveCreatedProjects();
@@ -709,6 +942,7 @@
     }
 
     wireCreateProjectCard();
+    wireArtifactMenu();
     let authMode = "signin";
     let signedInEmail = "";
     let billingCatalog = {};
