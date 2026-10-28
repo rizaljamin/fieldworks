@@ -1,5 +1,15 @@
-plugins { id 'com.android.application' }
+plugins { id 'com.android.application'; id 'com.google.gms.google-services' }
 
+dependencies {
+    implementation 'androidx.core:core:1.15.0'
+    implementation 'androidx.webkit:webkit:1.15.0'
+    implementation 'com.android.billingclient:billing:9.1.0'
+    implementation platform('com.google.firebase:firebase-bom:34.1.0')
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'androidx.credentials:credentials:1.3.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.3.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.1.1'
+}
 def appVersionCode = providers.gradleProperty('versionCode').orElse('1').get().toInteger()
 def appVersionName = providers.gradleProperty('versionName').orElse('0.1 build 01').get()
 android {
@@ -27,8 +37,9 @@ android {
         release {
             if (System.getenv('ANDROID_KEYSTORE_PATH') != null) signingConfig signingConfigs.release
             minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            ndk { debugSymbolLevel 'SYMBOL_TABLE' }
         }
     }
     compileOptions {

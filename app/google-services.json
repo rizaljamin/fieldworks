@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "727653441843",
+    "project_id": "fieldworks-512712",
+    "storage_bucket": "fieldworks-512712.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:727653441843:android:6df7b3fbddb519cb0bde46",
+        "android_client_info": {
+          "package_name": "com.fieldworks.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "727653441843-5u0u856de3u602tqqs3d0fa4i8ds11p0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fieldworks.app",
+            "certificate_hash": "ac7dbecff81ec929a690feb5581ee74ee3b6d557"
+          }
+        },
+        {
+          "client_id": "727653441843-uhsf9p4dnqc3eot2h767p05tukncsf21.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fieldworks.app",
+            "certificate_hash": "614fc14b30b79f09b06895642ce93bf67e6753bb"
+          }
+        },
+        {
+          "client_id": "727653441843-21o387nfo0ht5vla5b012cs0v34uua7n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpYTKFvfFFR4XTQEjHUy79RdzGbqO3jqg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "727653441843-21o387nfo0ht5vla5b012cs0v34uua7n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
