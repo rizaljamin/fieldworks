@@ -8,9 +8,9 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 **Latest successful build: V0.3.00 Build 10 (GitHub Actions run #182).** Run #182 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40681750401).
 
-The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so Build 10 has versionCode 182. The source now targets V0.3.00 Build 11 to restore a demo project for each local account.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so Build 10 has versionCode 182. Build 11 is pending in GitHub Actions. The updated startup logic restores a separate Mini Renovation demo, including its bundled sample photos, for each local account.
 
-**Google Play status:** Closed testing currently uses **V0.3.00 Build 8**. Build 10 is a GitHub Actions artifact and has not been uploaded to Google Play; Build 11 is pending its Actions run.
+**Google Play status:** Closed testing currently uses **V0.3.00 Build 8**. Build 10 is a GitHub Actions artifact and has not been uploaded to Google Play; Build 11 is building; Build 12 will include a follow-up fix to reattach sample photos when restoring the demo.
 
 The account-binding Cloud Function is deployed to `asia-southeast1` on Node.js 22. Verify the account-binding flow with a Play test purchase before production distribution; setup details are in [the account-binding guide](docs/subscription-account-binding.md).
 
