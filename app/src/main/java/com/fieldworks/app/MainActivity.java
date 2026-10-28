@@ -117,6 +117,7 @@ public class MainActivity extends Activity {
     private boolean googleSignInInProgress;
     private CancellationSignal pendingGoogleSignIn;
     private Runnable googleSignInTimeout;
+    private String googleSignInStage = "";
     private BillingClient billingClient;
     private final ExecutorService subscriptionExecutor = Executors.newSingleThreadExecutor();
     private static final String SUBSCRIPTION_FUNCTION_URL = "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksSubscription";
@@ -576,6 +577,13 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void sendAuthProgress(String message) {
+        if (webView == null) return;
+        runOnUiThread(() -> webView.evaluateJavascript(
+                "window.onFieldWorksAuthProgress && window.onFieldWorksAuthProgress("
+                        + JSONObject.quote(message == null ? "" : message) + ")", null));
+    }
+
     private String authErrorMessage(Exception error) {
         String code = error instanceof com.google.firebase.auth.FirebaseAuthException
                 ? ((com.google.firebase.auth.FirebaseAuthException) error).getErrorCode() : "";
@@ -611,6 +619,7 @@ public class MainActivity extends Activity {
         clearGoogleSignInTimeout(signal);
         googleSignInInProgress = false;
         pendingGoogleSignIn = null;
+        googleSignInStage = "";
         sendAuthResult(success, message, email);
     }
 
@@ -628,6 +637,8 @@ public class MainActivity extends Activity {
                     GoogleIdTokenCredential.createFrom(credential.getData());
             AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(
                     googleCredential.getIdToken(), null);
+            googleSignInStage = "firebase";
+            sendAuthProgress("Google account selected. Connecting to FieldWorks…");
             FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
                     .addOnCompleteListener(task -> {
                         if (!isActiveGoogleSignIn(signal)) return;
@@ -656,7 +667,6 @@ public class MainActivity extends Activity {
                     @Override
                     public void onResult(GetCredentialResponse response) {
                         if (!isActiveGoogleSignIn(signal)) return;
-                        clearGoogleSignInTimeout(signal);
                         handleGoogleCredential(response, signal);
                     }
 
@@ -682,14 +692,19 @@ public class MainActivity extends Activity {
         CancellationSignal signal = new CancellationSignal();
         googleSignInInProgress = true;
         pendingGoogleSignIn = signal;
+        googleSignInStage = "credential";
         googleSignInTimeout = () -> {
             if (!isActiveGoogleSignIn(signal)) return;
+            String failedStage = googleSignInStage;
             googleSignInInProgress = false;
             pendingGoogleSignIn = null;
             googleSignInTimeout = null;
+            googleSignInStage = "";
             signal.cancel();
-            sendAuthResult(false,
-                    "Google sign-in did not respond. Check Google Play services and try again.", "");
+            String message = "firebase".equals(failedStage)
+                    ? "Google account selected, but FieldWorks could not finish signing in. Check the connection and Firebase Google sign-in setup."
+                    : "Google account selection did not respond. Check Google Play services and try again.";
+            sendAuthResult(false, message, "");
         };
         if (webView != null) {
             webView.postDelayed(googleSignInTimeout, 30000);
