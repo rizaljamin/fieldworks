@@ -6,16 +6,16 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Version
 
-**Latest successful build: V0.3.00 Build 1 (GitHub Actions run #170).** Run #170 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40625181349).
+**Latest successful build: V0.3.00 Build 2 (GitHub Actions run #171).** Run #171 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40626599693).
 
-The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 170.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 171.
 
 ## Features
 
 - **Projects and templates:** Create blank projects or start from a template. Milestones follow the selected project type; Farms & Agriculture includes land assessment, preparation, planting, crop care, and harvest stages.
 - **Project journal:** Add notes, photos, videos, and voice notes. Each project card shows a preview of its latest saved note. Capture media with the camera or import it from device folders and Google Drive through Android’s file picker.
-- **Project progress:** Track stages, dates, follow-ups, budget notes, albums, and progress photos.
-- **Issue log:** Record project issues with Low, Medium, High, or Critical severity and track each as Open, In progress, or Resolved.
+- **Project progress:** Track template-specific stages, dates, follow-ups with target accomplishment dates, budget notes, albums, and progress photos.
+- **Issue log:** Number issues oldest first, show days open, and flag active issues yellow from 15 days and red after 30 days. Track Low, Medium, High, or Critical severity and Open, In progress, or Resolved status.
 - **Archive:** Open Archive from the sidebar directly above My Account. Archive and restore projects, or create downloadable project backups.
 - **Google Play subscriptions:** Student and Personal six-month plans use the configured Google Play product IDs and Android BillingClient purchase and restore flows. When testing outside Google Play, the app explains that purchases and restores may fail. Business is marked as coming soon.
 - **Accounts and local storage:** Use guest access or sign in with Firebase email/password or Google. Project records, reminders, issues, and media are stored on the device in IndexedDB. Data persists across launches and app updates, but does not sync across devices. Clearing app storage or uninstalling removes local data.
