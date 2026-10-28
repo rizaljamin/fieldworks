@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.webkit.JavascriptInterface;
@@ -64,6 +65,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -106,15 +108,20 @@ public class MainActivity extends Activity {
     private static final int CAMERA_VIDEO_REQUEST = 1204;
     private static final int MEDIA_PICKER_REQUEST = 1205;
     private static final int NATIVE_AUDIO_PERMISSION_REQUEST = 1206;
+    private static final int ARCHIVE_EXPORT_REQUEST = 1207;
     private WebView webView;
     private BillingClient billingClient;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
     private static final String[] SUBSCRIPTION_PRODUCT_IDS = {
-            "fieldworks_student_annual", "fieldworks_personal_annual", "fieldworks_business_annual"
+            "fw2026", "fw2026_stu"
     };
     private ValueCallback<Uri[]> fileCallback;
     private PermissionRequest pendingPermission;
     private File captureFile;
+    private File archiveTempFile;
+    private FileOutputStream archiveOutputStream;
+    private String archiveExportName = "";
+    private String archiveWriteError = "";
     private String captureKind;
     private MediaRecorder voiceRecorder;
     private File voiceFile;
@@ -125,6 +132,19 @@ public class MainActivity extends Activity {
     private long importProjectId;
     private String importKind;
     private volatile String pendingFileSource = "folders";
+
+    private final class AppInfoBridge {
+        @JavascriptInterface
+        public String getVersionName() {
+            try {
+                String versionName = getPackageManager()
+                        .getPackageInfo(getPackageName(), 0).versionName;
+                return versionName == null ? "" : versionName;
+            } catch (PackageManager.NameNotFoundException e) {
+                return "";
+            }
+        }
+    }
 
     private final class MediaBridge {
         @JavascriptInterface
@@ -155,6 +175,37 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void cancelVoice() {
             runOnUiThread(() -> finishVoiceRecording(false));
+        }
+
+        @JavascriptInterface
+        public void beginArchiveExport(String fileName) {
+            runOnUiThread(() -> beginProjectArchiveExport(fileName));
+        }
+
+        @JavascriptInterface
+        public synchronized boolean writeArchiveChunk(String base64Chunk) {
+            if (archiveOutputStream == null || !archiveWriteError.isEmpty()) return false;
+            try {
+                byte[] chunk = Base64.decode(base64Chunk, Base64.DEFAULT);
+                archiveOutputStream.write(chunk);
+                return true;
+            } catch (Exception error) {
+                archiveWriteError = "Could not write a backup chunk. Check device storage space.";
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public void finishArchiveExport() {
+            runOnUiThread(() -> showProjectArchiveSavePicker());
+        }
+
+        @JavascriptInterface
+        public void cancelArchiveExport() {
+            runOnUiThread(() -> {
+                closeArchiveOutput();
+                deleteArchiveTempFile();
+            });
         }
 
         @JavascriptInterface
@@ -608,6 +659,7 @@ public class MainActivity extends Activity {
                 .build();
         webView.setWebViewClient(new LocalContentWebViewClient(assetLoader));
         webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
+        webView.addJavascriptInterface(new AppInfoBridge(), "FieldWorksAppInfo");
         webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
         webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
         webView.setWebChromeClient(new WebChromeClient() {
@@ -620,12 +672,19 @@ public class MainActivity extends Activity {
                 pendingFileSource = "folders";
                 Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 picker.addCategory(Intent.CATEGORY_OPENABLE);
-                picker.setType("*/*");
-                picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
-                picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                String title = "drive".equals(source)
-                        ? "Choose from Google Drive or another location"
-                        : "Browse device folders or cloud locations";
+                String title;
+                if ("archive".equals(source)) {
+                    picker.setType("application/zip");
+                    picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+                    title = "Choose a FieldWorks project backup";
+                } else {
+                    picker.setType("*/*");
+                    picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
+                    picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    title = "drive".equals(source)
+                            ? "Choose from Google Drive or another location"
+                            : "Browse device folders or cloud locations";
+                }
                 try {
                     startActivityForResult(Intent.createChooser(picker, title),
                             FILE_CHOOSER_REQUEST);
@@ -668,6 +727,77 @@ public class MainActivity extends Activity {
         setContentView(appContainer);
         ViewCompat.requestApplyInsets(appContainer);
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+    }
+
+    private synchronized void beginProjectArchiveExport(String fileName) {
+        closeArchiveOutput();
+        deleteArchiveTempFile();
+        archiveWriteError = "";
+        archiveExportName = fileName == null ? "FieldWorks-projects.zip" : fileName
+                .replaceAll("[^A-Za-z0-9._-]", "_");
+        if (!archiveExportName.toLowerCase().endsWith(".zip")) archiveExportName += ".zip";
+        try {
+            archiveTempFile = new File(getCacheDir(), "fieldworks-project-archive.zip");
+            archiveOutputStream = new FileOutputStream(archiveTempFile, false);
+            notifyArchiveExportStarted(true, "");
+        } catch (Exception error) {
+            closeArchiveOutput();
+            deleteArchiveTempFile();
+            notifyArchiveExportStarted(false, "Could not prepare the backup file. Check device storage space.");
+        }
+    }
+
+    private void showProjectArchiveSavePicker() {
+        synchronized (this) {
+            closeArchiveOutput();
+            if (!archiveWriteError.isEmpty()) {
+                String message = archiveWriteError;
+                deleteArchiveTempFile();
+                notifyArchiveExportResult(false, message);
+                return;
+            }
+            if (archiveTempFile == null || !archiveTempFile.isFile()) {
+                notifyArchiveExportResult(false, "The backup file could not be created.");
+                return;
+            }
+        }
+        Intent create = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        create.addCategory(Intent.CATEGORY_OPENABLE);
+        create.setType("application/zip");
+        create.putExtra(Intent.EXTRA_TITLE, archiveExportName);
+        try {
+            startActivityForResult(create, ARCHIVE_EXPORT_REQUEST);
+        } catch (Exception error) {
+            closeArchiveOutput();
+            deleteArchiveTempFile();
+            notifyArchiveExportResult(false, "No file or cloud storage provider is available to save the backup.");
+        }
+    }
+
+    private void notifyArchiveExportStarted(boolean success, String message) {
+        if (webView == null) return;
+        webView.evaluateJavascript("window.onFieldWorksArchiveExportStarted && window.onFieldWorksArchiveExportStarted("
+                + success + "," + JSONObject.quote(message) + ")", null);
+    }
+
+    private void notifyArchiveExportResult(boolean success, String message) {
+        if (webView == null) return;
+        webView.evaluateJavascript("window.onFieldWorksArchiveExportResult && window.onFieldWorksArchiveExportResult("
+                + success + "," + JSONObject.quote(message) + ")", null);
+    }
+
+    private synchronized void closeArchiveOutput() {
+        if (archiveOutputStream != null) {
+            try { archiveOutputStream.close(); } catch (IOException ignored) {}
+            archiveOutputStream = null;
+        }
+    }
+
+    private synchronized void deleteArchiveTempFile() {
+        if (archiveTempFile != null) {
+            archiveTempFile.delete();
+            archiveTempFile = null;
+        }
     }
 
     private void requestVoicePermissionAndStart(long projectId, String albumId) {
@@ -981,6 +1111,38 @@ public class MainActivity extends Activity {
                 if (captureFile != null) captureFile.delete();
             }
             captureFile = null;
+            return;
+        }
+        if (requestCode == ARCHIVE_EXPORT_REQUEST) {
+            File source;
+            synchronized (this) { source = archiveTempFile; }
+            Uri destination = resultCode == RESULT_OK && data != null ? data.getData() : null;
+            if (destination == null || source == null || !source.isFile()) {
+                closeArchiveOutput();
+                deleteArchiveTempFile();
+                notifyArchiveExportResult(false, resultCode == RESULT_CANCELED
+                        ? "Backup save canceled." : "Could not open the selected backup destination.");
+                return;
+            }
+            new Thread(() -> {
+                try (InputStream input = new java.io.FileInputStream(source);
+                     OutputStream output = getContentResolver().openOutputStream(destination, "w")) {
+                    if (output == null) throw new IOException("The selected destination could not be opened.");
+                    byte[] buffer = new byte[32768];
+                    int length;
+                    while ((length = input.read(buffer)) != -1) output.write(buffer, 0, length);
+                    output.flush();
+                    runOnUiThread(() -> {
+                        deleteArchiveTempFile();
+                        notifyArchiveExportResult(true, "");
+                    });
+                } catch (Exception error) {
+                    runOnUiThread(() -> {
+                        deleteArchiveTempFile();
+                        notifyArchiveExportResult(false, "Could not save the backup to that location. Choose another folder or cloud drive.");
+                    });
+                }
+            }, "FieldWorks-archive-export").start();
             return;
         }
         if (requestCode == FILE_CHOOSER_REQUEST && fileCallback != null) {

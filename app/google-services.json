@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "727653441843-uhsf9p4dnqc3eot2h767p05tukncsf21.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fieldworks.app",
+            "certificate_hash": "614fc14b30b79f09b06895642ce93bf67e6753bb"
+          }
+        },
+        {
           "client_id": "727653441843-21o387nfo0ht5vla5b012cs0v34uua7n.apps.googleusercontent.com",
           "client_type": 3
         }

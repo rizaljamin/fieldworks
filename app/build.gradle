@@ -36,7 +36,10 @@ android {
     buildTypes {
         release {
             if (System.getenv('ANDROID_KEYSTORE_PATH') != null) signingConfig signingConfigs.release
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            ndk { debugSymbolLevel 'SYMBOL_TABLE' }
         }
     }
     compileOptions {
