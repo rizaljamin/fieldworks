@@ -343,6 +343,13 @@
     .plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.plan-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}.plan-card.plan-featured{border-color:#74b7af;box-shadow:inset 0 0 0 1px #b8ddd4}.plan-card h4{margin:0;color:var(--navy);font-size:17px}.plan-price{color:var(--teal);font-size:16px;font-weight:800}.plan-card p{margin:0;color:#61777a;font-size:11px}.plan-card small{color:#829094;font-size:9px}.plan-button{width:100%;margin-top:auto;background:var(--teal);color:#fff}.plan-button:disabled{opacity:.6}.billing-status{margin:12px 0 0;color:#75858a;font-size:10px}.billing-status.error{color:#a23d3d}
     @media(max-width:700px){.account-page-card{align-items:flex-start;flex-wrap:wrap;padding:15px}.account-page-actions{width:100%}.subscription-card{padding:15px}.plan-grid{grid-template-columns:1fr}.subscription-heading{align-items:flex-start;flex-direction:column}.restore-action{align-self:flex-start}}
 
+  
+    .demo-project-card{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(340px,.92fr);overflow:hidden;margin:14px 0 20px;border:1px solid var(--line);border-radius:20px;background:#fffefa;box-shadow:var(--shadow)}
+    .demo-project-media{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:3px;min-height:310px;background:#e7eeea}
+    .demo-photo{min-width:0;min-height:0;overflow:hidden}.demo-photo img{display:block;width:100%;height:100%;object-fit:cover}.demo-photo-main,.demo-photo-secondary{grid-row:span 2}.demo-photo-label{position:absolute;left:12px;bottom:12px;padding:6px 9px;border-radius:20px;background:#143f4be0;color:#fff;font-size:9px;font-weight:700}
+    .demo-project-copy{display:flex;flex-direction:column;padding:22px;min-width:0}.demo-project-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}.demo-project-tag{padding:6px 10px;border-radius:20px;background:#e7f3ed;color:#507569;font-size:9px}.demo-project-favorite{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff1cf;color:#a56e15;font-size:17px}.demo-project-copy h3{margin:12px 0 5px;color:var(--navy);font-family:Georgia,serif;font-size:23px;font-weight:600;line-height:1.2}.demo-project-description{margin:0;color:#748286;font-size:11px}.demo-project-stats{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-project-stats span{padding:4px 8px;border:1px solid #b7d1ca;border-radius:20px;color:#49656a;font-size:9px}.demo-project-stats b{color:var(--navy)}.demo-project-last{display:grid;gap:3px;margin:0 0 14px;color:#66797d;font-size:10px}.demo-project-last strong{color:#455e63}.demo-stage-head{display:flex;justify-content:space-between;gap:10px;color:#75858a;font-size:9px}.demo-stage-head b{color:#a17125}.demo-stage-track{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:9px 0 14px}.demo-stage-track span{height:6px;border-radius:10px;background:#e8e6dc}.demo-stage-track span.done,.demo-stage-track span.current{background:#f0a52a}.demo-journal{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;color:#60777a;font-size:10px}.demo-journal summary{cursor:pointer;color:#176d70;font-weight:750}.demo-journal ul{display:grid;gap:8px;margin:10px 0 0;padding-left:18px}.demo-journal li strong{display:block;color:var(--navy)}
+    @media(max-width:850px){.demo-project-card{grid-template-columns:1fr}.demo-project-media{min-height:260px}.demo-project-copy{padding:17px}}
+
   </style>
 </head>
 <body>
@@ -424,7 +431,7 @@
             <span class="home-create-arrow" aria-hidden="true">→</span>
           </div>
           <div class="sectionhead"><div><div class="eyebrow">Ready when you are</div><h2>Favourite Projects</h2><p>Your quick notes and photos will go here.</p></div></div>
-          <div class="placeholder-card" aria-label="Favourite projects placeholder"></div>
+          <div id="homeMiniRenovation"></div>
           <div class="sectionhead"><div><div class="eyebrow">Latest activity first</div><h2>My Projects</h2><p>Projects you create appear here.</p></div></div>
           <div class="placeholder-card" aria-label="Projects placeholder"></div>
           <div class="sectionhead"><div><div class="eyebrow">Ready to start</div><h2>My Templates</h2><p>Choose a template to start a project.</p></div></div>
@@ -432,7 +439,7 @@
           <div class="sectionhead"><div><div class="eyebrow">A little of everything</div><h2>Recent moments</h2><p>Your latest photos, thoughts and voice notes.</p></div></div>
           <div class="placeholder-card" aria-label="Recent moments placeholder"></div>
         </section>
-        <section id="page-projects" class="page" hidden><h2 class="page-title">My Projects</h2><div class="placeholder-card" aria-label="My Projects placeholder"></div></section>
+        <section id="page-projects" class="page" hidden><h2 class="page-title">My Projects</h2><div id="projectsMiniRenovation"></div></section>
         <section id="page-templates" class="page" hidden><h2 class="page-title">My Templates</h2><div class="placeholder-card" aria-label="My Templates placeholder"></div></section>
         <section id="page-moments" class="page" hidden><h2 class="page-title">Recent moments</h2><div class="placeholder-card" aria-label="Recent moments placeholder"></div></section>
         <section id="page-followups" class="page" hidden><h2 class="page-title">Follow-ups</h2><div class="placeholder-card" aria-label="Follow-ups placeholder"></div></section>
@@ -527,6 +534,43 @@
       account: "My Account"
     };
 
+
+    const MINI_RENOVATION_DEMO = {
+      name: "Mini Renovation",
+      type: "Construction",
+      description: "A small home renovation with sample progress photos and milestone updates.",
+      location: "Kuala Lumpur",
+      issueCount: 0,
+      reminderCount: 1,
+      spent: 8420,
+      budget: 11200,
+      stage: 2,
+      stages: ["Plan & prepare", "Cabinet installation", "Finishing touches", "Complete"],
+      latestMoment: "25 Oct 2026 · 05:30 pm",
+      photos: [
+        { src: "mini-renovation-progress.jpg", alt: "Cabinet installation underway with pale wood fronts and tile backsplash" },
+        { src: "mini-renovation-finishing.jpg", alt: "Renovation finishing touches with cabinets installed" }
+      ],
+      journal: [
+        { date: "18 Oct · Sample milestone", text: "Old cabinets cleared. Measurements checked, with plumbing and power points marked before installation." },
+        { date: "22 Oct · Sample progress photo", text: "Cabinet installation is underway. The pale-wood fronts and tile backsplash are in; checking the countertop joins." },
+        { date: "25 Oct · Sample progress photo", text: "Finishing touches: hardware fitted and sealant drying. Next up is the final clean and walkthrough." }
+      ]
+    };
+    function miniRenovationCardMarkup() {
+      const demo = MINI_RENOVATION_DEMO;
+      const filled = demo.stages.map((stage, index) => '<span class="' + (index < demo.stage ? 'done' : index === demo.stage ? 'current' : '') + '" aria-label="' + stage + '"></span>').join('');
+      const notes = demo.journal.map(note => '<li><strong>' + note.date + '</strong>' + note.text + '</li>').join('');
+      return '<article class="demo-project-card"><div class="demo-project-media"><div class="demo-photo demo-photo-main"><img src="' + demo.photos[0].src + '" alt="' + demo.photos[0].alt + '"></div><div class="demo-photo demo-photo-secondary"><img src="' + demo.photos[1].src + '" alt="' + demo.photos[1].alt + '"></div><span class="demo-photo-label">Progress · 2 sample photos</span></div><div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + demo.type + '</span><span class="demo-project-favorite" aria-label="Favourite project">★</span></div><h3>' + demo.name + '</h3><p class="demo-project-description">' + demo.description + '</p><div class="demo-project-stats"><span>Issues <b>' + demo.issueCount + '</b></span><span>Reminders <b>' + demo.reminderCount + '</b></span><span>Spent <b>RM ' + demo.spent.toLocaleString("en-MY") + '</b></span></div><p class="demo-project-last"><strong>Latest moment</strong><span>Updated · ' + demo.latestMoment + '</span></p><div class="demo-stage-head"><span>Project journey</span><b>Stage ' + (demo.stage + 1) + ' of ' + demo.stages.length + '</b></div><div class="demo-stage-track" aria-label="Stage ' + (demo.stage + 1) + ' of ' + demo.stages.length + '">' + filled + '</div><details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + demo.budget.toLocaleString("en-MY") + '</p></details></div></article>';
+    }
+    function renderMiniRenovationDemo() {
+      const card = miniRenovationCardMarkup();
+      const home = document.getElementById("homeMiniRenovation");
+      const projects = document.getElementById("projectsMiniRenovation");
+      if (home) home.innerHTML = card;
+      if (projects) projects.innerHTML = card;
+    }
+
     function openFieldWorksMenu() {
       document.getElementById("welcome-screen").hidden = true;
       document.getElementById("dashboard").hidden = false;
@@ -545,6 +589,7 @@
       });
       document.getElementById("topTitle").textContent = pageTitles[page] || "My FieldWorks";
       if (page === "account") { renderAccountPage(); loadSubscriptionPackage(); }
+      if (page === "home" || page === "projects") renderMiniRenovationDemo();
     }
 
     let authMode = "signin";
