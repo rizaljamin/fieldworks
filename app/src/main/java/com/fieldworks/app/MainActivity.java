@@ -898,7 +898,22 @@ public class MainActivity extends Activity {
         });
         setContentView(appContainer);
         ViewCompat.requestApplyInsets(appContainer);
-        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+        loadMainPage();
+    }
+
+    private void loadMainPage() {
+        try (InputStream input = getAssets().open("index.html");
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = input.read(buffer)) != -1) output.write(buffer, 0, read);
+            String html = new String(output.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+            webView.loadDataWithBaseURL("https://appassets.androidplatform.net/assets/", html,
+                    "text/html", "UTF-8", null);
+        } catch (Exception error) {
+            android.util.Log.e("FieldWorks", "Could not load the local app page", error);
+            webView.loadData("FieldWorks could not load its app page.", "text/plain", "UTF-8");
+        }
     }
 
     private synchronized void beginProjectArchiveExport(String fileName) {
