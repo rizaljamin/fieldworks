@@ -241,6 +241,10 @@ public class MainActivity extends Activity {
         return "Could not sign in. " + (detail == null || detail.isEmpty() ? "Please try again." : detail);
     }
 
+    private void sendAuthResult(boolean success, String message, String email) {
+        sendAuthResult(success, message, email, "");
+    }
+
     private void sendAuthResult(boolean success, String message, String email, String action) {
         if (webView == null) return;
         try {
