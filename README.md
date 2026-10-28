@@ -10,7 +10,9 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 182.
 
-**Do not distribute Build 9 yet.** Its subscription checks require the Firebase function and Google Play Developer API permissions described in [the account-binding setup guide](docs/subscription-account-binding.md). Until those are deployed, the app will fail closed and treat subscriptions as unverified.
+**Google Play status:** Closed testing currently uses **V0.3.00 Build 8**. Build 10 is a GitHub Actions artifact and has not been uploaded to Google Play.
+
+The account-binding Cloud Function is deployed to `asia-southeast1` on Node.js 22. Verify the account-binding flow with a Play test purchase before production distribution; setup details are in [the account-binding guide](docs/subscription-account-binding.md).
 
 ## Features
 
