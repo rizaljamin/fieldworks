@@ -6,9 +6,9 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Version
 
-**Latest successful build: V0.3.00 Build 9 (GitHub Actions run #181).** Run #181 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40674919628). The source now targets **V0.3.00 Build 10**; its build number and artifact links will be updated here after the new Actions run succeeds.
+**Latest successful build: V0.3.00 Build 10 (GitHub Actions run #182).** Run #182 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40681750401).
 
-The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 181.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 182.
 
 **Do not distribute Build 9 yet.** Its subscription checks require the Firebase function and Google Play Developer API permissions described in [the account-binding setup guide](docs/subscription-account-binding.md). Until those are deployed, the app will fail closed and treat subscriptions as unverified.
 
