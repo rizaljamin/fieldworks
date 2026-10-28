@@ -57,7 +57,8 @@ jobs:
           APK_FILENAME="FieldWorks $VERSION_NAME.apk"
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
           echo "APK_FILENAME=$APK_FILENAME" >> "$GITHUB_ENV"
-          echo "VERSION_CODE=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          VERSION_CODE=$((192 + GITHUB_RUN_NUMBER))
+          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
           echo "Building $APK_FILENAME (versionCode $GITHUB_RUN_NUMBER)"
 
       - name: Restore the existing release keystore
