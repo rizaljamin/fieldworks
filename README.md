@@ -6,9 +6,11 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Version
 
-**Latest successful build: V0.3.00 Build 8 (GitHub Actions run #180).** Run #180 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40635836684).
+**Latest successful build: V0.3.00 Build 9 (GitHub Actions run #181).** Run #181 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40674919628).
 
-The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 180.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 181.
+
+**Do not distribute Build 9 yet.** Its subscription checks require the Firebase function and Google Play Developer API permissions described in [the account-binding setup guide](docs/subscription-account-binding.md). Until those are deployed, the app will fail closed and treat subscriptions as unverified.
 
 ## Features
 
@@ -17,7 +19,7 @@ The release/build label comes from `fieldworks-version.properties`. Android `ver
 - **Project progress:** Track template-specific stages, dates, follow-ups with target accomplishment dates, budget notes, albums, and progress photos. Issue tracking and reminders appear at the top of project details for quick access.
 - **Issue log:** Number issues oldest first, show days open, and flag active issues yellow from 15 days and red after 30 days. Track Low, Medium, High, or Critical severity and Open, In progress, or Resolved status.
 - **Archive:** Open Archive from the sidebar directly above My Account, or from the mobile bottom navigation. Archive and restore projects, or create downloadable project backups.
-- **Google Play subscriptions:** Student and Personal six-month plans use the configured Google Play product IDs and Android BillingClient purchase and restore flows. When testing outside Google Play, the app explains that purchases and restores may fail. Business is marked as coming soon.
+- **Google Play subscriptions:** Student and Personal six-month plans use Google Play Billing. The backend verifies purchase tokens and binds each token to one Firebase account, preventing another FieldWorks account from claiming the same subscription. The server setup must be completed before distributing Build 9. Business is marked as coming soon.
 - **Accounts and local storage:** Use guest access or sign in with Firebase email/password or Google. Project records, reminders, issues, and media are stored on the device in IndexedDB and restored when the app starts. Data persists across launches and app updates, but does not sync across devices. Clearing app storage or uninstalling removes local data.
 
 ## Build with GitHub Actions
