@@ -6,13 +6,13 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Version
 
-**Latest successful build: V0.3.00 Build 5 (GitHub Actions run #177).** Run #177 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40631585023).
+**Latest successful build: V0.3.00 Build 6 (GitHub Actions run #178).** Run #178 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40633633552).
 
-The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 177.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 178.
 
 ## Features
 
-- **Projects and templates:** Create blank projects or start from a template. Milestones follow the selected project type; Farms & Agriculture includes land assessment, preparation, planting, crop care, and harvest stages.
+- **Projects and templates:** Create blank projects or start from a template. Project cards summarize issue and reminder counts and spending, with shortcuts to each detail section. Milestones follow the selected project type; Farms & Agriculture includes land assessment, preparation, planting, crop care, and harvest stages.
 - **Project journal:** Add notes, photos, videos, and voice notes. Each project card shows a preview of its latest saved note. Capture media with the camera or import it from device folders and Google Drive through Android’s file picker.
 - **Project progress:** Track template-specific stages, dates, follow-ups with target accomplishment dates, budget notes, albums, and progress photos. Issue tracking and reminders appear at the top of project details for quick access.
 - **Issue log:** Number issues oldest first, show days open, and flag active issues yellow from 15 days and red after 30 days. Track Low, Medium, High, or Critical severity and Open, In progress, or Resolved status.
