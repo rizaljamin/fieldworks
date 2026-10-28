@@ -7,6 +7,7 @@
   <title>FieldWorks — Under Construction</title>
   <style>
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     html, body { min-height: 100%; margin: 0; }
     body {
       min-height: 100vh;
@@ -41,7 +42,8 @@
       letter-spacing: .06em;
       text-transform: uppercase;
     }
-    button {
+    button { font: inherit; cursor: pointer; }
+    .enter-button {
       min-width: 160px;
       padding: 13px 24px;
       border: 0;
@@ -52,13 +54,66 @@
       font-weight: 700;
     }
     button:focus-visible { outline: 3px solid #f5a11a; outline-offset: 3px; }
-    .menu-title { margin: 0; font-size: 26px; }
-    .empty-placeholder {
-      width: 100%;
-      min-height: 180px;
-      border: 1px dashed #cbd6cb;
+    .workspace {
+      width: min(100%, 760px);
+      align-self: stretch;
+      padding: 30px;
+      background: #fff;
+      border: 1px solid #e3e9df;
+      border-radius: 24px;
+      box-shadow: 0 12px 36px rgba(8, 44, 80, .08);
+    }
+    .workspace-header {
+      padding-bottom: 18px;
+      border-bottom: 1px solid #e5e0d4;
+    }
+    .workspace-header small {
+      display: block;
+      margin-bottom: 6px;
+      color: #138c92;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .14em;
+    }
+    .workspace-header h1 {
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: -.03em;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      padding: 18px 0 14px;
+      border-bottom: 1px solid #e5e0d4;
+    }
+    .tab {
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      min-height: 64px;
+      padding: 8px;
+      border: 0;
       border-radius: 14px;
+      background: transparent;
+      color: #7a888b;
+    }
+    .tab.active { background: #dff1ef; color: #087d84; font-weight: 700; }
+    .tab-icon { font-size: 20px; line-height: 1; }
+    .tab-label { font-size: 12px; }
+    .menu-page { padding-top: 22px; }
+    .menu-page h2 { margin: 0 0 14px; font-size: 21px; }
+    .empty-placeholder {
+      min-height: 220px;
+      border: 1px dashed #cbd6cb;
+      border-radius: 16px;
       background: #fbfcfa;
+    }
+    @media (max-width: 480px) {
+      body { padding: 14px; }
+      .workspace { padding: 20px 16px; border-radius: 18px; }
+      .tab-label { font-size: 11px; }
+      .empty-placeholder { min-height: 180px; }
     }
   </style>
 </head>
@@ -83,18 +138,55 @@
       <text x="430" y="257" font-family="Arial, Helvetica, sans-serif" font-size="148" font-weight="700" letter-spacing="-5"><tspan fill="#082c50">Field</tspan><tspan fill="#138c92">Works</tspan></text>
     </svg>
     <p class="tagline">Under Construction</p>
-    <button id="enter-button" type="button" onclick="openFieldWorksMenu()">Enter</button>
+    <button class="enter-button" id="enter-button" type="button" onclick="openFieldWorksMenu()">Enter</button>
   </main>
 
-  <main id="fieldworks-menu" class="card" aria-label="FieldWorks menu placeholder" hidden>
-    <h1 class="menu-title">FieldWorks Menu</h1>
-    <div class="empty-placeholder" aria-label="Empty menu placeholder"></div>
+  <main id="fieldworks-menu" class="workspace" aria-label="FieldWorks menu" hidden>
+    <header class="workspace-header">
+      <small>FIELDWORKS · MY WORKSPACE</small>
+      <h1>My FieldWorks</h1>
+    </header>
+    <nav class="tabs" aria-label="FieldWorks menu">
+      <button class="tab active" type="button" data-page="home" aria-pressed="true" onclick="showFieldWorksPage('home')">
+        <span class="tab-icon">⌂</span><span class="tab-label">Home</span>
+      </button>
+      <button class="tab" type="button" data-page="projects" aria-pressed="false" onclick="showFieldWorksPage('projects')">
+        <span class="tab-icon">▤</span><span class="tab-label">My Projects</span>
+      </button>
+      <button class="tab" type="button" data-page="templates" aria-pressed="false" onclick="showFieldWorksPage('templates')">
+        <span class="tab-icon">▱</span><span class="tab-label">My Templates</span>
+      </button>
+    </nav>
+    <section id="menu-home" class="menu-page">
+      <h2>Home</h2>
+      <div class="empty-placeholder" aria-label="Empty Home placeholder"></div>
+    </section>
+    <section id="menu-projects" class="menu-page" hidden>
+      <h2>My Projects</h2>
+      <div class="empty-placeholder" aria-label="Empty Projects placeholder"></div>
+    </section>
+    <section id="menu-templates" class="menu-page" hidden>
+      <h2>My Templates</h2>
+      <div class="empty-placeholder" aria-label="Empty Templates placeholder"></div>
+    </section>
   </main>
 
   <script>
     function openFieldWorksMenu() {
       document.getElementById("welcome-screen").hidden = true;
       document.getElementById("fieldworks-menu").hidden = false;
+      showFieldWorksPage("home");
+    }
+
+    function showFieldWorksPage(page) {
+      document.querySelectorAll(".menu-page").forEach(function (section) {
+        section.hidden = section.id !== "menu-" + page;
+      });
+      document.querySelectorAll(".tab").forEach(function (button) {
+        const active = button.dataset.page === page;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
     }
   </script>
 </body>
