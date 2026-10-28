@@ -6,12 +6,6 @@
   <meta name="theme-color" content="#f6f8f2">
   <title>FieldWorks — Under Construction</title>
   <style>
-    :root {
-      color-scheme: light;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f6f8f2;
-      color: #23352a;
-    }
     * { box-sizing: border-box; }
     html, body { min-height: 100%; margin: 0; }
     body {
@@ -19,39 +13,57 @@
       display: grid;
       place-items: center;
       padding: 24px;
+      background: #f6f8f2;
+      color: #082c50;
+      font-family: Arial, Helvetica, sans-serif;
     }
     main {
-      width: min(100%, 420px);
+      width: min(100%, 440px);
       display: grid;
       justify-items: center;
-      gap: 20px;
+      gap: 26px;
       padding: 40px 28px;
       text-align: center;
       background: #fff;
       border: 1px solid #e3e9df;
       border-radius: 24px;
-      box-shadow: 0 12px 36px rgba(35, 53, 42, .08);
+      box-shadow: 0 12px 36px rgba(8, 44, 80, .08);
     }
-    img { display: block; width: 112px; height: 112px; object-fit: contain; }
-    h1 { margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -.03em; }
-    .status {
+    svg { display: block; width: min(100%, 340px); height: auto; }
+    p {
       margin: 0;
-      padding: 9px 16px;
+      padding: 10px 18px;
       border-radius: 999px;
       background: #edf4e8;
       color: #385a35;
       font-size: 14px;
       font-weight: 700;
-      letter-spacing: .04em;
+      letter-spacing: .06em;
       text-transform: uppercase;
     }
   </style>
 </head>
 <body>
   <main aria-label="FieldWorks under construction">
-    <img src="fieldworks-icon.png" alt="FieldWorks icon">
-    <h1>FieldWorks</h1>
-    <p class="status">Under Construction</p>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-labelledby="logo-title logo-desc">
+      <title id="logo-title">FieldWorks</title>
+      <desc id="logo-desc">A globe crossed by a route with three project milestones.</desc>
+      <rect x="18" y="18" width="364" height="364" rx="52" fill="#fff" stroke="#082c50" stroke-width="24"/>
+      <g fill="none" stroke="#48c2c5" stroke-width="11" stroke-linecap="round">
+        <circle cx="200" cy="200" r="130"/>
+        <path d="M200 70 C125 116 125 284 200 330"/>
+        <path d="M200 70 C275 116 275 284 200 330"/>
+        <path d="M77 178 C135 220 265 220 323 178"/>
+      </g>
+      <path d="M82 280 C135 236 205 210 304 105" fill="none" stroke="#082c50" stroke-width="28" stroke-linecap="round"/>
+      <g stroke="#fff" stroke-width="8">
+        <circle cx="84" cy="280" r="28" fill="#138c92"/>
+        <circle cx="197" cy="221" r="31" fill="#f5a11a"/>
+        <circle cx="304" cy="105" r="28" fill="#138c92"/>
+      </g>
+      <text x="430" y="257" font-family="Arial, Helvetica, sans-serif" font-size="148" font-weight="700" letter-spacing="-5"><tspan fill="#082c50">Field</tspan><tspan fill="#138c92">Works</tspan></text>
+    </svg>
+    <p>Under Construction</p>
   </main>
 </body>
 </html>
