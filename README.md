@@ -6,7 +6,7 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Version
 
-**Latest successful build: V0.3.00 Build 9 (GitHub Actions run #181).** Run #181 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40674919628).
+**Latest successful build: V0.3.00 Build 9 (GitHub Actions run #181).** Run #181 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40674919628). The source now targets **V0.3.00 Build 10**; its build number and artifact links will be updated here after the new Actions run succeeds.
 
 The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 181.
 
@@ -16,10 +16,10 @@ The release/build label comes from `fieldworks-version.properties`. Android `ver
 
 - **Projects and templates:** Create blank projects or start from a template. Project cards summarize issue and reminder counts and spending, with shortcuts to each detail section. Milestones follow the selected project type; Farms & Agriculture includes land assessment, preparation, planting, crop care, and harvest stages.
 - **Project journal:** Add notes, photos, videos, and voice notes. Each project card shows a preview of its latest saved note. Capture media with the camera or import it from device folders and Google Drive through Android’s file picker.
-- **Project progress:** Track template-specific stages, dates, follow-ups with target accomplishment dates, budget notes, albums, and progress photos. Issue tracking and reminders appear at the top of project details for quick access.
+- **Project progress:** Track template-specific stages and dates, move entire photo/video albums between stages, and manage follow-ups with target accomplishment dates. Record expenses by stage, category (Manpower, Materials, Logistics, Equipment, Utilities, Permits & fees, or Other), description, amount, and date; the project budget shows itemized costs alongside any older unitemized spending. Issue tracking and reminders appear at the top of project details for quick access.
 - **Issue log:** Number issues oldest first, show days open, and flag active issues yellow from 15 days and red after 30 days. Track Low, Medium, High, or Critical severity and Open, In progress, or Resolved status.
 - **Archive:** Open Archive from the sidebar directly above My Account, or from the mobile bottom navigation. Archive and restore projects, or create downloadable project backups.
-- **Google Play subscriptions:** Student and Personal six-month plans use Google Play Billing. The backend verifies purchase tokens and binds each token to one Firebase account, preventing another FieldWorks account from claiming the same subscription. The server setup must be completed before distributing Build 9. Business is marked as coming soon.
+- **Google Play subscriptions:** Student and Personal six-month plans use Google Play Billing. The backend verifies purchase tokens and binds each token to one Firebase account, preventing another FieldWorks account from claiming the same subscription. The Cloud Function has been deployed to asia-southeast1. Confirm the Play Developer API service-account permissions and subscription verification with a Play test purchase before distributing a build that includes account binding. Business is marked as coming soon.
 - **Accounts and local storage:** Use guest access or sign in with Firebase email/password or Google. Project records, reminders, issues, and media are stored on the device in IndexedDB and restored when the app starts. Data persists across launches and app updates, but does not sync across devices. Clearing app storage or uninstalling removes local data.
 
 ## Build with GitHub Actions
