@@ -1,5 +1,9 @@
-plugins { id 'com.android.application' }
+plugins { id 'com.android.application'; id 'com.google.gms.google-services' }
 
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:34.1.0')
+    implementation 'com.google.firebase:firebase-auth'
+}
 def appVersionCode = providers.gradleProperty('versionCode').orElse('1').get().toInteger()
 def appVersionName = providers.gradleProperty('versionName').orElse('0.1 build 01').get()
 android {
