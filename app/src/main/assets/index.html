@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f8f2">
+  <meta name="theme-color" content="#174b56">
   <title>FieldWorks — Under Construction</title>
   <style>
     * { box-sizing: border-box; }
@@ -11,14 +11,19 @@
     html, body { min-height: 100%; margin: 0; }
     body {
       min-height: 100vh;
+      background: #f2f7f3;
+      color: #194b56;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    button { font: inherit; cursor: pointer; }
+    .welcome-screen {
+      min-height: 100vh;
       display: grid;
       place-items: center;
       padding: 24px;
       background: #f6f8f2;
-      color: #082c50;
-      font-family: Arial, Helvetica, sans-serif;
     }
-    .card {
+    .welcome-card {
       width: min(100%, 440px);
       display: grid;
       justify-items: center;
@@ -30,7 +35,7 @@
       border-radius: 24px;
       box-shadow: 0 12px 36px rgba(8, 44, 80, .08);
     }
-    svg { display: block; width: min(100%, 340px); height: auto; }
+    .welcome-logo { display: block; width: min(100%, 340px); height: auto; }
     .tagline {
       margin: 0;
       padding: 10px 18px;
@@ -42,7 +47,6 @@
       letter-spacing: .06em;
       text-transform: uppercase;
     }
-    button { font: inherit; cursor: pointer; }
     .enter-button {
       min-width: 160px;
       padding: 13px 24px;
@@ -54,139 +58,326 @@
       font-weight: 700;
     }
     button:focus-visible { outline: 3px solid #f5a11a; outline-offset: 3px; }
-    .workspace {
-      width: min(100%, 760px);
-      align-self: stretch;
-      padding: 30px;
+
+    .dashboard {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      min-height: 100vh;
+      padding: 24px 18px;
+      background: #174b56;
+      color: #f2f8f5;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 58px;
+      padding: 2px 8px;
+    }
+    .brand-mark {
+      flex: 0 0 48px;
+      width: 48px;
+      height: 48px;
+      padding: 4px;
+      border: 2px solid #d9efea;
+      border-radius: 13px;
       background: #fff;
-      border: 1px solid #e3e9df;
-      border-radius: 24px;
-      box-shadow: 0 12px 36px rgba(8, 44, 80, .08);
     }
-    .workspace-header {
-      padding-bottom: 18px;
-      border-bottom: 1px solid #e5e0d4;
+    .brand-copy { display: grid; gap: 2px; }
+    .brand-copy strong { font-size: 16px; line-height: 1.1; }
+    .brand-copy small { color: #c4d9d8; font-size: 10px; }
+    .side-caption {
+      margin: 0 0 -14px 12px;
+      color: #b9d2d1;
+      font-size: 9px;
+      letter-spacing: .16em;
     }
-    .workspace-header small {
+    .side-nav { display: grid; gap: 5px; }
+    .side-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 46px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: #e0edeb;
+      text-align: left;
+      font-size: 12px;
+    }
+    .side-link:hover { background: rgba(255,255,255,.08); }
+    .side-link.active { background: #24636d; color: #fff; }
+    .side-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      color: #d8ebe5;
+      font-size: 17px;
+      line-height: 1;
+    }
+    .account-placeholder {
+      margin-top: auto;
+      padding: 14px;
+      border: 1px solid rgba(211,238,231,.25);
+      border-radius: 14px;
+      color: #d8e9e6;
+    }
+    .account-placeholder small {
       display: block;
-      margin-bottom: 6px;
-      color: #138c92;
-      font-size: 10px;
-      font-weight: 700;
+      margin-bottom: 8px;
+      color: #b9d2d1;
+      font-size: 9px;
       letter-spacing: .14em;
     }
-    .workspace-header h1 {
-      margin: 0;
-      font-size: 26px;
-      letter-spacing: -.03em;
+    .account-placeholder strong { font-size: 12px; }
+
+    .content {
+      min-width: 0;
+      padding: 26px 30px 48px;
     }
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-      padding: 18px 0 14px;
-      border-bottom: 1px solid #e5e0d4;
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 62px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #dfe8e1;
     }
-    .tab {
+    .topbar small {
+      display: block;
+      margin-bottom: 6px;
+      color: #788f8e;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .16em;
+    }
+    .topbar h1 { margin: 0; color: #194b56; font-size: 22px; letter-spacing: -.04em; }
+    .preview-pill {
+      padding: 9px 14px;
+      border: 1px solid #dce7e0;
+      border-radius: 99px;
+      background: #fff;
+      color: #637b79;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .create-project {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 72px;
+      margin: 18px 0 26px;
+      padding: 12px 18px;
+      border-radius: 18px;
+      background: linear-gradient(105deg, #158a82, #176a79);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(21, 110, 117, .14);
+    }
+    .create-plus {
       display: grid;
-      justify-items: center;
-      gap: 4px;
-      min-height: 64px;
-      padding: 8px;
-      border: 0;
+      place-items: center;
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
       border-radius: 14px;
-      background: transparent;
-      color: #7a888b;
+      background: rgba(255,255,255,.16);
+      color: #f5c96e;
+      font-size: 30px;
+      font-weight: 300;
     }
-    .tab.active { background: #dff1ef; color: #087d84; font-weight: 700; }
-    .tab-icon { font-size: 20px; line-height: 1; }
-    .tab-label { font-size: 12px; }
-    .menu-page { padding-top: 22px; }
-    .menu-page h2 { margin: 0 0 14px; font-size: 21px; }
-    .empty-placeholder {
-      min-height: 220px;
-      border: 1px dashed #cbd6cb;
-      border-radius: 16px;
-      background: #fbfcfa;
+    .create-copy { display: grid; gap: 4px; }
+    .create-copy strong { font-size: 14px; }
+    .create-copy small { color: #d7eeea; font-size: 11px; }
+    .create-arrow { margin-left: auto; font-size: 20px; color: #d5ebe8; }
+    .section-head { margin: 0 0 12px; }
+    .section-head small {
+      color: #14847f;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .16em;
     }
-    @media (max-width: 480px) {
-      body { padding: 14px; }
-      .workspace { padding: 20px 16px; border-radius: 18px; }
-      .tab-label { font-size: 11px; }
-      .empty-placeholder { min-height: 180px; }
+    .section-head h2 { margin: 7px 0 5px; color: #194b56; font-size: 22px; letter-spacing: -.04em; }
+    .section-head p { margin: 0; color: #829390; font-size: 11px; }
+    .placeholder-card {
+      min-height: 210px;
+      margin-bottom: 22px;
+      border: 1px dashed #bfd0c8;
+      border-radius: 20px;
+      background: rgba(255,255,255,.78);
+    }
+    .page-title { margin: 26px 0 12px; color: #194b56; font-size: 22px; }
+    @media (max-width: 760px) {
+      .dashboard { grid-template-columns: 1fr; }
+      .sidebar { min-height: auto; padding: 12px 14px 10px; gap: 10px; }
+      .brand { min-height: 48px; }
+      .brand-mark { width: 40px; height: 40px; flex-basis: 40px; }
+      .side-caption, .account-placeholder { display: none; }
+      .side-nav {
+        display: flex;
+        gap: 4px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      .side-link { flex: 0 0 auto; width: auto; min-height: 40px; padding: 0 10px; }
+      .content { padding: 16px 16px 32px; }
+      .placeholder-card { min-height: 170px; }
+    }
+    @media (max-width: 420px) {
+      .side-nav { margin-right: -14px; }
+      .side-link { gap: 7px; font-size: 11px; }
+      .side-icon { width: 17px; }
+      .topbar h1 { font-size: 19px; }
+      .create-project { min-height: 64px; padding: 10px 12px; }
+      .create-copy small { font-size: 10px; }
     }
   </style>
 </head>
 <body>
-  <main id="welcome-screen" class="card" aria-label="FieldWorks under construction">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-labelledby="logo-title logo-desc">
-      <title id="logo-title">FieldWorks</title>
-      <desc id="logo-desc">A globe crossed by a route with three project milestones.</desc>
-      <rect x="18" y="18" width="364" height="364" rx="52" fill="#fff" stroke="#082c50" stroke-width="24"/>
-      <g fill="none" stroke="#48c2c5" stroke-width="11" stroke-linecap="round">
-        <circle cx="200" cy="200" r="130"/>
-        <path d="M200 70 C125 116 125 284 200 330"/>
-        <path d="M200 70 C275 116 275 284 200 330"/>
-        <path d="M77 178 C135 220 265 220 323 178"/>
-      </g>
-      <path d="M82 280 C135 236 205 210 304 105" fill="none" stroke="#082c50" stroke-width="28" stroke-linecap="round"/>
-      <g stroke="#fff" stroke-width="8">
-        <circle cx="84" cy="280" r="28" fill="#138c92"/>
-        <circle cx="197" cy="221" r="31" fill="#f5a11a"/>
-        <circle cx="304" cy="105" r="28" fill="#138c92"/>
-      </g>
-      <text x="430" y="257" font-family="Arial, Helvetica, sans-serif" font-size="148" font-weight="700" letter-spacing="-5"><tspan fill="#082c50">Field</tspan><tspan fill="#138c92">Works</tspan></text>
-    </svg>
-    <p class="tagline">Under Construction</p>
-    <button class="enter-button" id="enter-button" type="button" onclick="openFieldWorksMenu()">Enter</button>
+  <main id="welcome-screen" class="welcome-screen">
+    <section class="welcome-card" aria-label="FieldWorks under construction">
+      <svg class="welcome-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-labelledby="logo-title logo-desc">
+        <title id="logo-title">FieldWorks</title>
+        <desc id="logo-desc">A globe crossed by a route with three project milestones.</desc>
+        <rect x="18" y="18" width="364" height="364" rx="52" fill="#fff" stroke="#082c50" stroke-width="24"/>
+        <g fill="none" stroke="#48c2c5" stroke-width="11" stroke-linecap="round">
+          <circle cx="200" cy="200" r="130"/>
+          <path d="M200 70 C125 116 125 284 200 330"/>
+          <path d="M200 70 C275 116 275 284 200 330"/>
+          <path d="M77 178 C135 220 265 220 323 178"/>
+        </g>
+        <path d="M82 280 C135 236 205 210 304 105" fill="none" stroke="#082c50" stroke-width="28" stroke-linecap="round"/>
+        <g stroke="#fff" stroke-width="8">
+          <circle cx="84" cy="280" r="28" fill="#138c92"/>
+          <circle cx="197" cy="221" r="31" fill="#f5a11a"/>
+          <circle cx="304" cy="105" r="28" fill="#138c92"/>
+        </g>
+        <text x="430" y="257" font-family="Arial, Helvetica, sans-serif" font-size="148" font-weight="700" letter-spacing="-5"><tspan fill="#082c50">Field</tspan><tspan fill="#138c92">Works</tspan></text>
+      </svg>
+      <p class="tagline">Under Construction</p>
+      <button class="enter-button" type="button" onclick="openFieldWorksMenu()">Enter</button>
+    </section>
   </main>
 
-  <main id="fieldworks-menu" class="workspace" aria-label="FieldWorks menu" hidden>
-    <header class="workspace-header">
-      <small>FIELDWORKS · MY WORKSPACE</small>
-      <h1>My FieldWorks</h1>
-    </header>
-    <nav class="tabs" aria-label="FieldWorks menu">
-      <button class="tab active" type="button" data-page="home" aria-pressed="true" onclick="showFieldWorksPage('home')">
-        <span class="tab-icon">⌂</span><span class="tab-label">Home</span>
-      </button>
-      <button class="tab" type="button" data-page="projects" aria-pressed="false" onclick="showFieldWorksPage('projects')">
-        <span class="tab-icon">▤</span><span class="tab-label">My Projects</span>
-      </button>
-      <button class="tab" type="button" data-page="templates" aria-pressed="false" onclick="showFieldWorksPage('templates')">
-        <span class="tab-icon">▱</span><span class="tab-label">My Templates</span>
-      </button>
-    </nav>
-    <section id="menu-home" class="menu-page">
-      <h2>Home</h2>
-      <div class="empty-placeholder" aria-label="Empty Home placeholder"></div>
+  <div id="dashboard" class="dashboard" hidden>
+    <aside class="sidebar">
+      <div class="brand">
+        <svg class="brand-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-hidden="true">
+          <rect x="8" y="8" width="184" height="184" rx="34" fill="#fff" stroke="#082c50" stroke-width="10"/>
+          <circle cx="100" cy="100" r="65" fill="none" stroke="#48c2c5" stroke-width="7"/>
+          <path d="M100 35 C62 57 62 143 100 165 M100 35 C138 57 138 143 100 165 M39 90 C68 111 132 111 161 90 M42 140 C73 111 109 98 153 51" fill="none" stroke="#138c92" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="43" cy="140" r="12" fill="#138c92"/><circle cx="98" cy="104" r="13" fill="#f5a11a"/><circle cx="153" cy="51" r="12" fill="#138c92"/>
+        </svg>
+        <div class="brand-copy">
+          <strong>FieldWorks</strong>
+          <small>Project journal</small>
+          <small>V0.3.00 Build 17 Debug</small>
+        </div>
+      </div>
+      <p class="side-caption">YOUR WORKSPACE</p>
+      <nav class="side-nav" aria-label="FieldWorks workspace">
+        <button class="side-link active" type="button" data-page="home" onclick="showFieldWorksPage('home')"><span class="side-icon">⌂</span>My FieldWorks</button>
+        <button class="side-link" type="button" data-page="projects" onclick="showFieldWorksPage('projects')"><span class="side-icon">▤</span>My Projects</button>
+        <button class="side-link" type="button" data-page="templates" onclick="showFieldWorksPage('templates')"><span class="side-icon">▱</span>My Templates</button>
+        <button class="side-link" type="button" data-page="moments" onclick="showFieldWorksPage('moments')"><span class="side-icon">✣</span>Recent moments</button>
+        <button class="side-link" type="button" data-page="followups" onclick="showFieldWorksPage('followups')"><span class="side-icon">✦</span>Follow-ups</button>
+        <button class="side-link" type="button" data-page="archive" onclick="showFieldWorksPage('archive')"><span class="side-icon">▤</span>Archive</button>
+        <button class="side-link" type="button" data-page="account" onclick="showFieldWorksPage('account')"><span class="side-icon">♙</span>My Account</button>
+      </nav>
+      <div class="account-placeholder">
+        <small>DEBUG PREVIEW</small>
+        <strong>Workspace placeholder</strong>
+      </div>
+    </aside>
+
+    <section class="content">
+      <header class="topbar">
+        <div><small>FIELDWORKS · MY WORKSPACE</small><h1 id="top-title">My FieldWorks</h1></div>
+        <span class="preview-pill">Preview</span>
+      </header>
+
+      <section id="page-home" class="page">
+        <div class="create-project">
+          <span class="create-plus">＋</span>
+          <span class="create-copy"><strong>Create project</strong><small>Start with a name. Add the moments as you go.</small></span>
+          <span class="create-arrow" aria-hidden="true">→</span>
+        </div>
+        <div class="section-head">
+          <small>READY WHEN YOU ARE</small>
+          <h2>Favourite Projects</h2>
+          <p>Your quick notes and photos will go here.</p>
+        </div>
+        <div class="placeholder-card" aria-label="Favourite projects placeholder"></div>
+        <div class="section-head">
+          <small>LATEST ACTIVITY FIRST</small>
+          <h2>My Projects</h2>
+          <p>Projects will appear here.</p>
+        </div>
+        <div class="placeholder-card" aria-label="Projects placeholder"></div>
+      </section>
+
+      <section id="page-projects" class="page" hidden>
+        <h2 class="page-title">My Projects</h2>
+        <div class="placeholder-card" aria-label="My Projects placeholder"></div>
+      </section>
+      <section id="page-templates" class="page" hidden>
+        <h2 class="page-title">My Templates</h2>
+        <div class="placeholder-card" aria-label="My Templates placeholder"></div>
+      </section>
+      <section id="page-moments" class="page" hidden>
+        <h2 class="page-title">Recent moments</h2>
+        <div class="placeholder-card" aria-label="Recent moments placeholder"></div>
+      </section>
+      <section id="page-followups" class="page" hidden>
+        <h2 class="page-title">Follow-ups</h2>
+        <div class="placeholder-card" aria-label="Follow-ups placeholder"></div>
+      </section>
+      <section id="page-archive" class="page" hidden>
+        <h2 class="page-title">Archive</h2>
+        <div class="placeholder-card" aria-label="Archive placeholder"></div>
+      </section>
+      <section id="page-account" class="page" hidden>
+        <h2 class="page-title">My Account</h2>
+        <div class="placeholder-card" aria-label="My Account placeholder"></div>
+      </section>
     </section>
-    <section id="menu-projects" class="menu-page" hidden>
-      <h2>My Projects</h2>
-      <div class="empty-placeholder" aria-label="Empty Projects placeholder"></div>
-    </section>
-    <section id="menu-templates" class="menu-page" hidden>
-      <h2>My Templates</h2>
-      <div class="empty-placeholder" aria-label="Empty Templates placeholder"></div>
-    </section>
-  </main>
+  </div>
 
   <script>
+    const pageTitles = {
+      home: "My FieldWorks",
+      projects: "My Projects",
+      templates: "My Templates",
+      moments: "Recent moments",
+      followups: "Follow-ups",
+      archive: "Archive",
+      account: "My Account"
+    };
+
     function openFieldWorksMenu() {
       document.getElementById("welcome-screen").hidden = true;
-      document.getElementById("fieldworks-menu").hidden = false;
+      document.getElementById("dashboard").hidden = false;
       showFieldWorksPage("home");
     }
 
     function showFieldWorksPage(page) {
-      document.querySelectorAll(".menu-page").forEach(function (section) {
-        section.hidden = section.id !== "menu-" + page;
+      document.querySelectorAll(".page").forEach(function (section) {
+        section.hidden = section.id !== "page-" + page;
       });
-      document.querySelectorAll(".tab").forEach(function (button) {
+      document.querySelectorAll(".side-link").forEach(function (button) {
         const active = button.dataset.page === page;
         button.classList.toggle("active", active);
-        button.setAttribute("aria-pressed", active ? "true" : "false");
+        button.setAttribute("aria-current", active ? "page" : "false");
       });
+      document.getElementById("top-title").textContent = pageTitles[page] || "My FieldWorks";
     }
   </script>
 </body>
