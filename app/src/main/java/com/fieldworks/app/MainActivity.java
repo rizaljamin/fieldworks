@@ -68,6 +68,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,6 +117,8 @@ public class MainActivity extends Activity {
     private static final int ARCHIVE_EXPORT_REQUEST = 1207;
     private WebView webView;
     private BillingClient billingClient;
+    private final ExecutorService subscriptionExecutor = Executors.newSingleThreadExecutor();
+    private static final String SUBSCRIPTION_FUNCTION_URL = "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksSubscription";
     private volatile boolean restoreRequested;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
     private static final String PLAY_TESTING_NOTICE = "Google Play subscription testing requires installing FieldWorks from a Google Play testing track. Purchases or restore may fail when the app is sideloaded.";
@@ -236,6 +244,11 @@ public class MainActivity extends Activity {
                 restoreRequested = true;
                 connectBilling();
             });
+        }
+
+        @JavascriptInterface
+        public void syncEntitlement() {
+            runOnUiThread(() -> syncSubscriptionEntitlement());
         }
     }
 
@@ -370,11 +383,14 @@ public class MainActivity extends Activity {
                     }
                 }
                 if (!found) {
-                    sendBillingEntitlement(false, "");
-                    if (reportRestore) sendBillingMessage(false, "No active FieldWorks subscription was found for this Google Play account.");
+                    syncSubscriptionEntitlement();
+                    if (reportRestore) {
+                        sendBillingMessage(false, "Checking subscriptions linked to this FieldWorks account.");
+                    }
                 }
-            } else if (reportRestore) {
-                sendBillingMessage(false, PLAY_TESTING_NOTICE);
+            } else {
+                syncSubscriptionEntitlement();
+                if (reportRestore) sendBillingMessage(false, PLAY_TESTING_NOTICE);
             }
         });
     }
@@ -388,22 +404,129 @@ public class MainActivity extends Activity {
         return false;
     }
 
+    private interface SubscriptionServerCallback {
+        void onResponse(JSONObject response);
+    }
+
+    private void syncSubscriptionEntitlement() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            sendBillingEntitlement(false, "", "");
+            return;
+        }
+        final String uid = user.getUid();
+        JSONObject request = new JSONObject();
+        try { request.put("action", "status"); } catch (Exception ignored) {}
+        callSubscriptionServer(request, uid, response -> {
+            boolean active = response.optBoolean("active", false);
+            sendBillingEntitlement(active, active ? response.optString("productId", "") : "", uid);
+        });
+    }
+
     private void processSubscriptionPurchase(Purchase purchase) {
         if (purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED
                 || !hasFieldWorksProduct(purchase)) return;
-        String productId = purchase.getProducts().isEmpty() ? "" : purchase.getProducts().get(0);
-        if (purchase.isAcknowledged()) {
-            sendBillingEntitlement(true, productId);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            sendBillingMessage(false, "Sign in to a FieldWorks account before restoring a subscription.");
             return;
         }
-        AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
-                .setPurchaseToken(purchase.getPurchaseToken()).build();
-        billingClient.acknowledgePurchase(params, result -> {
-            if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                sendBillingEntitlement(true, productId);
-            } else {
-                sendBillingMessage(false, "Payment completed, but Google Play acknowledgement failed. Tap Restore purchase.");
+        final String uid = user.getUid();
+        String productId = purchase.getProducts().isEmpty() ? "" : purchase.getProducts().get(0);
+        JSONObject request = new JSONObject();
+        try {
+            request.put("action", "verify");
+            request.put("purchaseToken", purchase.getPurchaseToken());
+            request.put("productId", productId);
+        } catch (Exception ignored) {}
+        callSubscriptionServer(request, uid, response -> {
+            if (!response.optBoolean("active", false)) {
+                syncSubscriptionEntitlement();
+                sendBillingMessage(false, "Google Play did not confirm an active subscription for this account.");
+                return;
             }
+            if (purchase.isAcknowledged()) {
+                sendBillingEntitlement(true, productId, uid);
+                return;
+            }
+            AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
+                    .setPurchaseToken(purchase.getPurchaseToken()).build();
+            billingClient.acknowledgePurchase(params, result -> {
+                if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    sendBillingEntitlement(true, productId, uid);
+                } else {
+                    sendBillingMessage(false, "Payment was verified, but Google Play acknowledgement failed. Tap Restore purchase.");
+                }
+            });
+        });
+    }
+
+    private void callSubscriptionServer(JSONObject request, String expectedUid,
+            SubscriptionServerCallback callback) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || !expectedUid.equals(user.getUid())) {
+            sendBillingEntitlement(false, "", expectedUid);
+            return;
+        }
+        user.getIdToken(false).addOnSuccessListener(tokenResult -> {
+            String idToken = tokenResult.getToken();
+            if (idToken == null || idToken.isEmpty()) {
+                sendBillingEntitlement(false, "", expectedUid);
+                sendBillingMessage(false, "Could not authenticate subscription verification. Please sign in again.");
+                return;
+            }
+            subscriptionExecutor.execute(() -> {
+                HttpURLConnection connection = null;
+                try {
+                    connection = (HttpURLConnection) new URL(SUBSCRIPTION_FUNCTION_URL).openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setConnectTimeout(15000);
+                    connection.setReadTimeout(20000);
+                    connection.setDoOutput(true);
+                    connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                    connection.setRequestProperty("Authorization", "Bearer " + idToken);
+                    byte[] body = request.toString().getBytes("UTF-8");
+                    connection.setFixedLengthStreamingMode(body.length);
+                    try (OutputStream output = connection.getOutputStream()) {
+                        output.write(body);
+                    }
+                    int status = connection.getResponseCode();
+                    InputStream stream = status >= 200 && status < 400
+                            ? connection.getInputStream() : connection.getErrorStream();
+                    StringBuilder responseText = new StringBuilder();
+                    if (stream != null) {
+                        try (BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(stream, "UTF-8"))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) responseText.append(line);
+                        }
+                    }
+                    JSONObject response = responseText.length() > 0
+                            ? new JSONObject(responseText.toString()) : new JSONObject();
+                    String responseUid = response.optString("uid", "");
+                    if (status < 200 || status >= 300 || !expectedUid.equals(responseUid)) {
+                        String message = response.optString("message",
+                                "Subscription verification is temporarily unavailable.");
+                        runOnUiThread(() -> {
+                            sendBillingEntitlement(false, "", expectedUid);
+                            sendBillingMessage(false, message);
+                        });
+                    } else {
+                        runOnUiThread(() -> callback.onResponse(response));
+                    }
+                } catch (Exception error) {
+                    runOnUiThread(() -> {
+                        sendBillingEntitlement(false, "", expectedUid);
+                        sendBillingMessage(false,
+                                "Could not verify the subscription with Google Play. Check your connection and try again.");
+                    });
+                } finally {
+                    if (connection != null) connection.disconnect();
+                }
+            });
+        }).addOnFailureListener(error -> {
+            sendBillingEntitlement(false, "", expectedUid);
+            sendBillingMessage(false, "Could not authenticate subscription verification. Please sign in again.");
         });
     }
 
@@ -422,11 +545,12 @@ public class MainActivity extends Activity {
         sendBillingCallback("onFieldWorksBillingMessage", payload);
     }
 
-    private void sendBillingEntitlement(boolean active, String productId) {
+    private void sendBillingEntitlement(boolean active, String productId, String uid) {
         JSONObject payload = new JSONObject();
         try {
             payload.put("active", active);
             payload.put("productId", productId == null ? "" : productId);
+            payload.put("uid", uid == null ? "" : uid);
         } catch (Exception ignored) {}
         sendBillingCallback("onFieldWorksBillingEntitlement", payload);
     }
