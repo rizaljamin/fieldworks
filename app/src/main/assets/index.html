@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#082c50">
-  <title>FieldWorks — Under Construction</title>
+  <title>FieldWorks</title>
   <style>
     :root {
       --navy: #082c50;
@@ -28,48 +28,6 @@
     body { min-height: 100vh; background: var(--canvas); color: var(--ink); font: 15px/1.5 ui-rounded, "SF Pro Rounded", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
     button { font: inherit; cursor: pointer; }
     button:focus-visible { outline: 3px solid #8bd5d2; outline-offset: 2px; }
-
-    .welcome-screen {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      background: #f6f8f2;
-    }
-    .welcome-card {
-      width: min(100%, 440px);
-      display: grid;
-      justify-items: center;
-      gap: 26px;
-      padding: 40px 28px;
-      text-align: center;
-      background: #fff;
-      border: 1px solid #e3e9df;
-      border-radius: 24px;
-      box-shadow: 0 12px 36px rgba(8, 44, 80, .08);
-    }
-    .welcome-logo { display: block; width: min(100%, 340px); height: auto; }
-    .tagline {
-      margin: 0;
-      padding: 10px 18px;
-      border-radius: 999px;
-      background: #edf4e8;
-      color: #385a35;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    .enter-button {
-      min-width: 160px;
-      padding: 13px 24px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--teal);
-      color: #fff;
-      font-size: 16px;
-      font-weight: 700;
-    }
 
     .sidebar {
       position: fixed;
@@ -372,37 +330,14 @@
     @media(max-width:600px){.create-project-card{padding:18px}.created-project-card{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:13px}.created-project-icon{width:44px;height:44px}.created-project-meta{grid-column:2;white-space:normal}}
 
   
-    .project-artifacts{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.artifact-add-button{padding:9px 12px;border:1px solid #cfe1d9;border-radius:10px;background:#f4faf6;color:#176d70;font-size:10px;font-weight:750}.artifact-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:9px}.artifact-item{min-width:0;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#61777a;font-size:10px;overflow-wrap:anywhere}.artifact-item img,.artifact-item video{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:7px;background:#e8efea}.artifact-item audio{display:block;width:100%;height:34px}.artifact-item p{margin:5px 0 0;white-space:pre-wrap}.artifact-item small{display:block;margin-top:5px;color:#829094;font-size:8px}.artifact-overlay{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:18px;background:#082c5077;backdrop-filter:blur(3px)}.artifact-card{width:min(100%,460px);max-height:min(92vh,700px);overflow:auto;padding:21px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:0 22px 70px #082c5040}.artifact-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}.artifact-card-head h2{margin:0;color:var(--navy);font:500 22px/1.2 Georgia,serif}.artifact-card-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.artifact-close{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#62777a;font-size:20px}.artifact-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}.artifact-option{display:flex;align-items:center;gap:10px;min-height:64px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);text-align:left}.artifact-option-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:#e7f3ed;color:#138c92;font-size:18px}.artifact-option strong{display:block;font-size:11px}.artifact-option small{display:block;color:#829094;font-size:9px}.artifact-status{min-height:18px;margin:11px 0 0;color:#62777a;font-size:10px}.artifact-status.error{color:#a23d3d}.artifact-note-text{width:100%;min-height:130px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;resize:vertical}.artifact-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.artifact-action{padding:9px 13px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:11px;font-weight:750}.artifact-action.primary{border:0;background:var(--teal);color:#fff}@media(max-width:500px){.artifact-options{grid-template-columns:1fr}.artifact-card{padding:17px}}
+    .project-artifacts{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.artifact-add-button{padding:9px 12px;border:1px solid #cfe1d9;border-radius:10px;background:#f4faf6;color:#176d70;font-size:10px;font-weight:750}.artifact-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:9px}.artifact-item{min-width:0;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#61777a;font-size:10px;overflow-wrap:anywhere}.artifact-item img,.artifact-item video{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:7px;background:#e8efea}.artifact-item audio{display:block;width:100%;height:34px}.artifact-item p{margin:5px 0 0;white-space:pre-wrap}.artifact-item small{display:block;margin-top:5px;color:#829094;font-size:8px}.artifact-overlay[hidden]{display:none!important}.artifact-overlay{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:18px;background:#082c5077;backdrop-filter:blur(3px)}.artifact-card{width:min(100%,460px);max-height:min(92vh,700px);overflow:auto;padding:21px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:0 22px 70px #082c5040}.artifact-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}.artifact-card-head h2{margin:0;color:var(--navy);font:500 22px/1.2 Georgia,serif}.artifact-card-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.artifact-close{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#62777a;font-size:20px}.artifact-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}.artifact-option{display:flex;align-items:center;gap:10px;min-height:64px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);text-align:left}.artifact-option-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:#e7f3ed;color:#138c92;font-size:18px}.artifact-option strong{display:block;font-size:11px}.artifact-option small{display:block;color:#829094;font-size:9px}.artifact-status{min-height:18px;margin:11px 0 0;color:#62777a;font-size:10px}.artifact-status.error{color:#a23d3d}.artifact-note-text{width:100%;min-height:130px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;resize:vertical}.artifact-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.artifact-action{padding:9px 13px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:11px;font-weight:750}.artifact-action.primary{border:0;background:var(--teal);color:#fff}@media(max-width:500px){.artifact-options{grid-template-columns:1fr}.artifact-card{padding:17px}}
 
   </style>
 </head>
 <body>
-  <main id="welcome-screen" class="welcome-screen">
-    <section class="welcome-card" aria-label="FieldWorks under construction">
-      <svg class="welcome-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-labelledby="logo-title logo-desc">
-        <title id="logo-title">FieldWorks</title>
-        <desc id="logo-desc">A globe crossed by a route with three project milestones.</desc>
-        <rect x="18" y="18" width="364" height="364" rx="52" fill="#fff" stroke="#082c50" stroke-width="24"/>
-        <g fill="none" stroke="#48c2c5" stroke-width="11" stroke-linecap="round">
-          <circle cx="200" cy="200" r="130"/>
-          <path d="M200 70 C125 116 125 284 200 330"/>
-          <path d="M200 70 C275 116 275 284 200 330"/>
-          <path d="M77 178 C135 220 265 220 323 178"/>
-        </g>
-        <path d="M82 280 C135 236 205 210 304 105" fill="none" stroke="#082c50" stroke-width="28" stroke-linecap="round"/>
-        <g stroke="#fff" stroke-width="8">
-          <circle cx="84" cy="280" r="28" fill="#138c92"/>
-          <circle cx="197" cy="221" r="31" fill="#f5a11a"/>
-          <circle cx="304" cy="105" r="28" fill="#138c92"/>
-        </g>
-        <text x="430" y="257" font-family="Arial, Helvetica, sans-serif" font-size="148" font-weight="700" letter-spacing="-5"><tspan fill="#082c50">Field</tspan><tspan fill="#138c92">Works</tspan></text>
-      </svg>
-      <p class="tagline">Under Construction</p>
-      <button class="enter-button" type="button" onclick="openFieldWorksMenu()">Enter</button>
-    </section>
-  </main>
+  
 
-  <div id="dashboard" hidden>
+  <div id="dashboard">
     <aside class="sidebar">
       <div class="side-brand">
         <div class="mark" aria-hidden="true">
@@ -920,7 +855,6 @@
     }
 
     function openFieldWorksMenu() {
-      document.getElementById("welcome-screen").hidden = true;
       document.getElementById("dashboard").hidden = false;
       try { updateAuthUI(window.FieldWorksAuth ? window.FieldWorksAuth.currentEmail() : ""); } catch (error) { updateAuthUI(""); }
       renderCreatedProjects();
@@ -1147,6 +1081,7 @@
     document.addEventListener("keydown", function(event) {
       if (event.key === "Escape") closeLoginCard();
     });
-  </script>
+      openFieldWorksMenu();
+</script>
 </body>
 </html>
