@@ -322,6 +322,16 @@
     .login-account p { margin: 0; color: #61777a; font-size: 12px; overflow-wrap: anywhere; }
     .login-guest { display: block; margin: 15px auto 0; padding: 6px; border: 0; background: transparent; color: #718286; font-size: 11px; }
     .guestpill { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+    .login-socials[hidden], .login-divider[hidden] { display: none !important; }
+
+  
+    .login-socials { display: grid; gap: 8px; margin-top: 18px; }
+    .login-social { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 22px; background: #fff; color: #435f68; font-size: 11px; font-weight: 700; }
+    .login-social:hover { background: #f4f9f7; }
+    .login-social:disabled { opacity: .6; cursor: wait; }
+    .login-social svg { width: 20px; height: 20px; flex: 0 0 20px; }
+    .login-divider { display: flex; align-items: center; gap: 10px; margin: 15px 0 3px; color: #9ba5a4; font-size: 9px; }
+    .login-divider:before, .login-divider:after { content: ""; height: 1px; flex: 1; background: #ece9df; }
 
   </style>
 </head>
@@ -437,6 +447,17 @@
           <div><h2 id="loginTitle">Sign in to FieldWorks</h2><p>Use your FieldWorks account to sign in.</p></div>
           <button class="login-close" type="button" aria-label="Close sign-in card" onclick="closeLoginCard()">×</button>
         </div>
+        <div id="loginSocials" class="login-socials" aria-label="Sign in with a social account">
+          <button class="login-social" type="button" data-social="Google">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11c-.5 2.5-1.9 4.6-4 6v5h6.5c3.8-3.5 6.1-8.6 6.1-14.7z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.5-5c-1.8 1.2-4.1 2-7 2-5.3 0-9.8-3.6-11.4-8.4H5.9v5.2C9.3 39.6 16.1 44 24 44z"/><path fill="#FBBC05" d="M12.6 27.8a12 12 0 0 1 0-7.6V15H5.9a20 20 0 0 0 0 17.9l6.7-5.1z"/><path fill="#EA4335" d="M24 12c3 0 5.7 1 7.8 3.1l5.8-5.8C34.1 6 29.5 4 24 4 16.1 4 9.3 8.4 5.9 15l6.7 5.2C14.2 15.6 18.7 12 24 12z"/></svg>
+            <span>Continue with Google</span>
+          </button>
+          <button class="login-social" type="button" data-social="Facebook">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="8" fill="#1877F2"/><path fill="#fff" d="M27.7 41V26.2h5l.8-5.8h-5.8v-3.7c0-1.7.5-2.9 2.9-2.9h3.1V8.6c-.5-.1-2.5-.2-4.8-.2-4.7 0-7.9 2.9-7.9 8.1v4h-5.3v5.8H21V41h6.7z"/></svg>
+            <span>Continue with Facebook</span>
+          </button>
+        </div>
+        <div id="loginDivider" class="login-divider">or sign in with email</div>
         <form id="loginForm" class="login-form">
           <div id="signupNameField" class="login-field" hidden>
             <label for="loginName">Your name</label>
@@ -529,6 +550,8 @@
       profile.setAttribute("aria-label", signedIn ? "Account: " + email : "Sign in to FieldWorks");
       document.getElementById("signedInEmail").textContent = email || "";
       document.getElementById("loginForm").hidden = signedIn;
+      document.getElementById("loginSocials").hidden = signedIn;
+      document.getElementById("loginDivider").hidden = signedIn;
       document.getElementById("signedInPanel").hidden = !signedIn;
     }
     function openLoginCard() {
@@ -544,7 +567,8 @@
         updateAuthUI("");
         setAuthStatus("Could not connect to FieldWorks sign-in. Please retry.", true);
       }
-      document.getElementById("loginEmail").focus();
+      if (document.getElementById("signedInPanel").hidden) document.getElementById("loginEmail").focus();
+      else document.getElementById("signOutButton").focus();
     }
     document.getElementById("loginForm").addEventListener("submit", function(event) {
       event.preventDefault();
@@ -562,6 +586,24 @@
       } else {
         window.FieldWorksAuth.signIn(email, password);
       }
+    });
+    document.querySelectorAll("[data-social]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        const provider = button.dataset.social.toLowerCase();
+        if (!window.FieldWorksAuth) {
+          setAuthStatus("Account sign-in is unavailable in this build.", true);
+          return;
+        }
+        button.disabled = true;
+        setAuthStatus("Opening " + (provider === "google" ? "Google" : "Facebook") + " sign-in…", false);
+        try {
+          if (provider === "google") window.FieldWorksAuth.startGoogle();
+          else if (provider === "facebook") window.FieldWorksAuth.startFacebook();
+        } catch (error) {
+          button.disabled = false;
+          setAuthStatus("Could not start " + provider + " sign-in. Please retry.", true);
+        }
+      });
     });
     document.getElementById("toggleAuthMode").addEventListener("click", function() {
       setAuthMode(authMode === "signup" ? "signin" : "signup");
@@ -588,6 +630,7 @@
     window.onFieldWorksAuthResult = function(result) {
       const button = document.getElementById("loginSubmit");
       button.disabled = false;
+      document.querySelectorAll("[data-social]").forEach(function(item) { item.disabled = false; });
       if (result.action === "reset") {
         setAuthStatus(result.message, !result.success);
         return;
