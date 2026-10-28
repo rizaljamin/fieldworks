@@ -8,15 +8,15 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 **Latest successful build: V0.3.00 Build 10 (GitHub Actions run #182).** Run #182 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40681750401).
 
-The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 182.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so Build 10 has versionCode 182. The source now targets V0.3.00 Build 11 to restore a demo project for each local account.
 
-**Google Play status:** Closed testing currently uses **V0.3.00 Build 8**. Build 10 is a GitHub Actions artifact and has not been uploaded to Google Play.
+**Google Play status:** Closed testing currently uses **V0.3.00 Build 8**. Build 10 is a GitHub Actions artifact and has not been uploaded to Google Play; Build 11 is pending its Actions run.
 
 The account-binding Cloud Function is deployed to `asia-southeast1` on Node.js 22. Verify the account-binding flow with a Play test purchase before production distribution; setup details are in [the account-binding guide](docs/subscription-account-binding.md).
 
 ## Features
 
-- **Projects and templates:** Create blank projects or start from a template. Project cards summarize issue and reminder counts and spending, with shortcuts to each detail section. Milestones follow the selected project type; Farms & Agriculture includes land assessment, preparation, planting, crop care, and harvest stages.
+- **Projects and templates:** Create blank projects or start from a template. Keep a Mini Renovation sample project available separately for each local account. Project cards summarize issue and reminder counts and spending, with shortcuts to each detail section. Milestones follow the selected project type; Farms & Agriculture includes land assessment, preparation, planting, crop care, and harvest stages.
 - **Project journal:** Add notes, photos, videos, and voice notes. Each project card shows a preview of its latest saved note. Capture media with the camera or import it from device folders and Google Drive through Android’s file picker.
 - **Project progress:** Track template-specific stages and dates, move entire photo/video albums between stages, and manage follow-ups with target accomplishment dates. Record expenses by stage, category (Manpower, Materials, Logistics, Equipment, Utilities, Permits & fees, or Other), description, amount, and date; the project budget shows itemized costs alongside any older unitemized spending. Issue tracking and reminders appear at the top of project details for quick access.
 - **Issue log:** Number issues oldest first, show days open, and flag active issues yellow from 15 days and red after 30 days. Track Low, Medium, High, or Critical severity and Open, In progress, or Resolved status.
