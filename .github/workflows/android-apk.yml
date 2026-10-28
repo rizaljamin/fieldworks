@@ -1,8 +1,8 @@
-name: Build FieldWorks APK
+name: Build FieldWorks APK and AAB
 
 on:
   push:
-    branches: [main, billing-test-v0.2]
+    branches: [main]
     paths:
       - 'app/**'
       - 'settings.gradle'
@@ -47,7 +47,7 @@ jobs:
         run: |
           RELEASE_VERSION=$(sed -n 's/^releaseVersion=//p' fieldworks-version.properties)
           BUILD_NUMBER=$(sed -n 's/^buildNumber=//p' fieldworks-version.properties)
-          if [[ ! "$RELEASE_VERSION" =~ ^V0\.2\.[0-9]{2}$ ]] || [[ ! "$BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
+          if [[ ! "$RELEASE_VERSION" =~ ^V[0-9]+\.[0-9]+\.[0-9]{2}$ ]] || [[ ! "$BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
             echo "Invalid FieldWorks release/build in fieldworks-version.properties"
             exit 1
           fi
@@ -59,7 +59,7 @@ jobs:
           echo "APK_FILENAME=$APK_FILENAME" >> "$GITHUB_ENV"
           echo "AAB_FILENAME=$AAB_FILENAME" >> "$GITHUB_ENV"
           echo "VERSION_CODE=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
-          echo "Building $APK_FILENAME (versionCode $GITHUB_RUN_NUMBER)"
+          echo "Building $APK_FILENAME and $AAB_FILENAME (versionCode $GITHUB_RUN_NUMBER)"
 
       - name: Restore the existing release keystore
         shell: bash
@@ -89,36 +89,25 @@ jobs:
           echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
           echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
 
-      - name: Build and name signed release APK
+      - name: Build and name signed release APK and AAB
         shell: bash
         run: |
           gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease :app:bundleRelease
           cp app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/$APK_FILENAME"
           cp app/build/outputs/bundle/release/app-release.aab "app/build/outputs/bundle/release/$AAB_FILENAME"
-          test -s app/build/outputs/mapping/release/mapping.txt
 
       - name: Prepare release bundle with assets and build memo
         shell: bash
         run: |
           BUNDLE_DIR="$RUNNER_TEMP/fieldworks-release"
           ASSET_DIR="$BUNDLE_DIR/assets"
-          DIAGNOSTICS_DIR="$BUNDLE_DIR/diagnostics"
-          mkdir -p "$ASSET_DIR" "$DIAGNOSTICS_DIR"
-          cp app/build/outputs/mapping/release/mapping.txt "$DIAGNOSTICS_DIR/mapping.txt"
-          if [ -s app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip ]; then
-            cp app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "$DIAGNOSTICS_DIR/"
-            NATIVE_SYMBOLS_STATUS="Native debug symbols included."
-          else
-            NATIVE_SYMBOLS_STATUS="No native debug symbols were generated; dependencies ship without symbol data."
-          fi
+          mkdir -p "$ASSET_DIR"
           cp "app/build/outputs/apk/release/$APK_FILENAME" "$BUNDLE_DIR/$APK_FILENAME"
           cp "app/build/outputs/bundle/release/$AAB_FILENAME" "$BUNDLE_DIR/$AAB_FILENAME"
           cp "app/src/main/res/drawable-nodpi/launcher_fieldworks.png" "$ASSET_DIR/"
           cp "app/src/main/assets/fieldworks-icon.png" "$ASSET_DIR/"
           cp "app/src/main/assets/fieldworks-logo.png" "$ASSET_DIR/"
           cp "app/src/main/assets/index.html" "$ASSET_DIR/"
-          cp "app/src/main/assets/mini-renovation-progress.jpg" "$ASSET_DIR/"
-          cp "app/src/main/assets/mini-renovation-finishing.jpg" "$ASSET_DIR/"
           cp "assets/fieldworks-logo.svg" "$ASSET_DIR/"
           cat > "$BUNDLE_DIR/build memo.txt" <<EOF
           FieldWorks Android build memo
@@ -130,8 +119,7 @@ jobs:
           Branch: $GITHUB_REF_NAME
           Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           Built at (UTC): $(date -u '+%Y-%m-%d %H:%M:%S')
-          Bundle contents: signed APK/AAB, app and branding assets, R8 mapping, optional native debug symbols, and this memo.
-          Native symbols: $NATIVE_SYMBOLS_STATUS
+          Bundle contents: signed APK and AAB, app and branding assets, and this memo.
           EOF
 
       - name: Upload signed APK

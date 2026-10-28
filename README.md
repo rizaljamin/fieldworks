@@ -2,20 +2,26 @@
 
 # FieldWorks Android
 
-FieldWorks is an Android fieldbook app for documenting hands-on projects with photos, videos, text, and voice notes. The current development build includes guest entry, Firebase email account creation, sign-in and password reset, project creation, project stages, a pinned project, project albums, and photo/video capture from the camera, device folders, or Google Drive through Android’s file picker.
+FieldWorks is an Android field journal for managing projects and recording progress with notes, photos, videos, and voice notes.
 
-## Build an APK with GitHub Actions
+## Version
 
-Push changes under app/, update the root Gradle files, or start **Build FieldWorks APK** from the repository's Actions tab. The workflow builds a signed release APK and saves it as a 30-day artifact on the workflow run.
+**Latest successful build: V0.3.00 Build 1 (GitHub Actions run #170).** Run #170 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40625181349).
 
-The workflow uses the existing repository secrets: KEYSTORE_BASE64, STORE_PASSWORD, and KEY_PASSWORD. It reads the signing alias from the keystore itself, restores the existing keystore into the temporary runner directory, and never writes it to the repository. The KEY_ALIAS secret can remain set but is not used. Do not replace or regenerate the keystore if you need updates to install over earlier signed builds.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 170.
 
-## Version numbering
+## Features
 
-Every generated APK uses the filename format `FieldWorks VX.X.YY Build ZZ.apk` (for example, `FieldWorks V0.1.00 Build 19.apk`). The build number increments on each workflow run. After Build 30, the version advances to V0.2.00 Build 01. Android versionCode uses the workflow run number.
+- **Projects and templates:** Create blank projects or start from a template. Milestones follow the selected project type; Farms & Agriculture includes land assessment, preparation, planting, crop care, and harvest stages.
+- **Project journal:** Add notes, photos, videos, and voice notes. Each project card shows a preview of its latest saved note. Capture media with the camera or import it from device folders and Google Drive through Android’s file picker.
+- **Project progress:** Track stages, dates, follow-ups, budget notes, albums, and progress photos.
+- **Issue log:** Record project issues with Low, Medium, High, or Critical severity and track each as Open, In progress, or Resolved.
+- **Archive:** Open Archive from the sidebar directly above My Account. Archive and restore projects, or create downloadable project backups.
+- **Google Play subscriptions:** Student and Personal six-month plans use the configured Google Play product IDs and Android BillingClient purchase and restore flows. When testing outside Google Play, the app explains that purchases and restores may fail. Business is marked as coming soon.
+- **Accounts and local storage:** Use guest access or sign in with Firebase email/password or Google. Project records, reminders, issues, and media are stored on the device in IndexedDB. Data persists across launches and app updates, but does not sync across devices. Clearing app storage or uninstalling removes local data.
 
-## Current development storage
+## Build with GitHub Actions
 
-Project records, reminders, and captured media are saved in IndexedDB on the device and persist across app launches and app updates. Data is currently device-local and does not sync to a cloud account. Clearing app storage or uninstalling the app removes the saved fieldbook.
+Push changes under `app/`, update the root Gradle files or `fieldworks-version.properties`, or start **Build FieldWorks APK and AAB** from the repository’s Actions tab. Each successful run uploads the signed APK, signed AAB, and a supporting bundle with app assets and the build memo. Artifacts are retained for 30 days.
 
-Email/password authentication uses Firebase Authentication. Enable Email/Password in the Firebase console. Google sign-in is connected through Android Credential Manager and Firebase Authentication. Signed-in state is shown in the workspace and restored on later launches; users can sign out from the sidebar. Facebook sign-in still requires Meta app configuration and a Facebook SDK flow. Authentication identifies the user; project records and media remain stored locally on each device and do not sync between devices.
+The workflow uses the repository signing secrets to restore the existing release keystore in the temporary runner directory. Keep that keystore for updates that must install over previously signed builds; do not commit it to the repository.
