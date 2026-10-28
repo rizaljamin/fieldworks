@@ -111,7 +111,9 @@ public class MainActivity extends Activity {
     private static final int ARCHIVE_EXPORT_REQUEST = 1207;
     private WebView webView;
     private BillingClient billingClient;
+    private volatile boolean restoreRequested;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
+    private static final String PLAY_TESTING_NOTICE = "Google Play subscription testing requires installing FieldWorks from a Google Play testing track. Purchases or restore may fail when the app is sideloaded.";
     private static final String[] SUBSCRIPTION_PRODUCT_IDS = {
             "fw2026", "fw2026_stu"
     };
@@ -230,7 +232,10 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void restorePurchases() {
-            runOnUiThread(() -> queryOwnedSubscriptions());
+            runOnUiThread(() -> {
+                restoreRequested = true;
+                connectBilling();
+            });
         }
     }
 
@@ -242,7 +247,7 @@ public class MainActivity extends Activity {
                                 && purchases != null) {
                             for (Purchase purchase : purchases) processSubscriptionPurchase(purchase);
                         } else if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.USER_CANCELED) {
-                            sendBillingMessage(false, "Google Play could not complete the purchase. Please try again.");
+                            sendBillingMessage(false, PLAY_TESTING_NOTICE);
                         }
                     })
                     .enablePendingPurchases(PendingPurchasesParams.newBuilder()
@@ -262,7 +267,7 @@ public class MainActivity extends Activity {
                     querySubscriptionProducts();
                     queryOwnedSubscriptions();
                 } else {
-                    sendBillingMessage(false, "Google Play billing is unavailable on this device.");
+                    sendBillingMessage(false, PLAY_TESTING_NOTICE);
                 }
             }
 
@@ -285,7 +290,7 @@ public class MainActivity extends Activity {
                 .setProductList(products).build();
         billingClient.queryProductDetailsAsync(params, (result, response) -> {
             if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-                sendBillingMessage(false, "Subscription plans are not available yet.");
+                sendBillingCallback("onFieldWorksBillingProducts", new JSONObject());
                 return;
             }
             subscriptionProducts.clear();
@@ -314,12 +319,12 @@ public class MainActivity extends Activity {
         ProductDetails details = subscriptionProducts.get(productId);
         if (details == null) {
             connectBilling();
-            sendBillingMessage(false, "This plan is not configured in Google Play yet.");
+            sendBillingMessage(false, PLAY_TESTING_NOTICE);
             return;
         }
         List<ProductDetails.SubscriptionOfferDetails> offers = details.getSubscriptionOfferDetails();
         if (offers == null || offers.isEmpty()) {
-            sendBillingMessage(false, "This subscription has no active annual offer in Google Play.");
+            sendBillingMessage(false, PLAY_TESTING_NOTICE);
             return;
         }
         BillingFlowParams.ProductDetailsParams productParams =
@@ -333,7 +338,7 @@ public class MainActivity extends Activity {
                 .build();
         BillingResult result = billingClient.launchBillingFlow(this, params);
         if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-            sendBillingMessage(false, result.getDebugMessage());
+            sendBillingMessage(false, PLAY_TESTING_NOTICE);
         }
     }
 
@@ -353,6 +358,8 @@ public class MainActivity extends Activity {
         QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.SUBS).build();
         billingClient.queryPurchasesAsync(params, (result, purchases) -> {
+            boolean reportRestore = restoreRequested;
+            restoreRequested = false;
             if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                 boolean found = false;
                 for (Purchase purchase : purchases) {
@@ -362,7 +369,12 @@ public class MainActivity extends Activity {
                         processSubscriptionPurchase(purchase);
                     }
                 }
-                if (!found) sendBillingEntitlement(false, "");
+                if (!found) {
+                    sendBillingEntitlement(false, "");
+                    if (reportRestore) sendBillingMessage(false, "No active FieldWorks subscription was found for this Google Play account.");
+                }
+            } else if (reportRestore) {
+                sendBillingMessage(false, PLAY_TESTING_NOTICE);
             }
         });
     }
