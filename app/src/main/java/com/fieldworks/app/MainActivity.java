@@ -16,7 +16,7 @@ public class MainActivity extends Activity {
         webView.setVerticalScrollBarEnabled(false);
 
         WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(false);
+        settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(false);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(false);
