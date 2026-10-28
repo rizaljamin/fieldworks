@@ -17,7 +17,7 @@
       color: #082c50;
       font-family: Arial, Helvetica, sans-serif;
     }
-    main {
+    .card {
       width: min(100%, 440px);
       display: grid;
       justify-items: center;
@@ -30,7 +30,7 @@
       box-shadow: 0 12px 36px rgba(8, 44, 80, .08);
     }
     svg { display: block; width: min(100%, 340px); height: auto; }
-    p {
+    .tagline {
       margin: 0;
       padding: 10px 18px;
       border-radius: 999px;
@@ -41,10 +41,29 @@
       letter-spacing: .06em;
       text-transform: uppercase;
     }
+    button {
+      min-width: 160px;
+      padding: 13px 24px;
+      border: 0;
+      border-radius: 12px;
+      background: #138c92;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    button:focus-visible { outline: 3px solid #f5a11a; outline-offset: 3px; }
+    .menu-title { margin: 0; font-size: 26px; }
+    .empty-placeholder {
+      width: 100%;
+      min-height: 180px;
+      border: 1px dashed #cbd6cb;
+      border-radius: 14px;
+      background: #fbfcfa;
+    }
   </style>
 </head>
 <body>
-  <main aria-label="FieldWorks under construction">
+  <main id="welcome-screen" class="card" aria-label="FieldWorks under construction">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-labelledby="logo-title logo-desc">
       <title id="logo-title">FieldWorks</title>
       <desc id="logo-desc">A globe crossed by a route with three project milestones.</desc>
@@ -63,7 +82,20 @@
       </g>
       <text x="430" y="257" font-family="Arial, Helvetica, sans-serif" font-size="148" font-weight="700" letter-spacing="-5"><tspan fill="#082c50">Field</tspan><tspan fill="#138c92">Works</tspan></text>
     </svg>
-    <p>Under Construction</p>
+    <p class="tagline">Under Construction</p>
+    <button id="enter-button" type="button" onclick="openFieldWorksMenu()">Enter</button>
   </main>
+
+  <main id="fieldworks-menu" class="card" aria-label="FieldWorks menu placeholder" hidden>
+    <h1 class="menu-title">FieldWorks Menu</h1>
+    <div class="empty-placeholder" aria-label="Empty menu placeholder"></div>
+  </main>
+
+  <script>
+    function openFieldWorksMenu() {
+      document.getElementById("welcome-screen").hidden = true;
+      document.getElementById("fieldworks-menu").hidden = false;
+    }
+  </script>
 </body>
 </html>
