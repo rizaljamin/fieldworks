@@ -6,9 +6,9 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Version
 
-**Configured release: V0.3.00 Build 01.** This becomes the current build after the GitHub Actions workflow completes successfully. Use the latest successful Actions run and its artifacts to identify the build that was actually produced.
+**Latest successful build: V0.3.00 Build 01 (GitHub Actions run #164).** The run completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40620456760).
 
-The release and build label come from `fieldworks-version.properties`. The workflow uses the GitHub Actions run number for Android `versionCode`.
+The release and build label come from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number; Build 01 has versionCode 164.
 
 ## Features
 
