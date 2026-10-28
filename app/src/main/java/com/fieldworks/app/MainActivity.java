@@ -53,9 +53,7 @@ import androidx.credentials.CustomCredential;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
-import androidx.credentials.exceptions.NoCredentialException;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import android.os.CancellationSignal;
 import java.util.concurrent.Executor;
@@ -116,6 +114,9 @@ public class MainActivity extends Activity {
     private static final int NATIVE_AUDIO_PERMISSION_REQUEST = 1206;
     private static final int ARCHIVE_EXPORT_REQUEST = 1207;
     private WebView webView;
+    private boolean googleSignInInProgress;
+    private CancellationSignal pendingGoogleSignIn;
+    private Runnable googleSignInTimeout;
     private BillingClient billingClient;
     private final ExecutorService subscriptionExecutor = Executors.newSingleThreadExecutor();
     private static final String SUBSCRIPTION_FUNCTION_URL = "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksSubscription";
@@ -593,12 +594,33 @@ public class MainActivity extends Activity {
         return id == 0 ? "" : getString(id);
     }
 
-    private void handleGoogleCredential(GetCredentialResponse response) {
+    private boolean isActiveGoogleSignIn(CancellationSignal signal) {
+        return googleSignInInProgress && pendingGoogleSignIn == signal;
+    }
+
+    private void clearGoogleSignInTimeout(CancellationSignal signal) {
+        if (pendingGoogleSignIn != signal) return;
+        if (webView != null && googleSignInTimeout != null) {
+            webView.removeCallbacks(googleSignInTimeout);
+        }
+        googleSignInTimeout = null;
+    }
+
+    private void finishGoogleSignIn(CancellationSignal signal, boolean success, String message, String email) {
+        if (!isActiveGoogleSignIn(signal)) return;
+        clearGoogleSignInTimeout(signal);
+        googleSignInInProgress = false;
+        pendingGoogleSignIn = null;
+        sendAuthResult(success, message, email);
+    }
+
+    private void handleGoogleCredential(GetCredentialResponse response, CancellationSignal signal) {
+        if (!isActiveGoogleSignIn(signal)) return;
         Credential credential = response.getCredential();
         if (!(credential instanceof CustomCredential)
                 || !GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
                     .equals(credential.getType())) {
-            sendAuthResult(false, "Google returned an unsupported sign-in credential.", "");
+            finishGoogleSignIn(signal, false, "Google returned an unsupported sign-in credential.", "");
             return;
         }
         try {
@@ -608,31 +630,34 @@ public class MainActivity extends Activity {
                     googleCredential.getIdToken(), null);
             FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
                     .addOnCompleteListener(task -> {
+                        if (!isActiveGoogleSignIn(signal)) return;
                         if (task.isSuccessful()) {
                             FirebaseUser user = task.getResult().getUser();
-                            sendAuthResult(true, "Signed in with Google.",
+                            finishGoogleSignIn(signal, true, "Signed in with Google.",
                                     user == null ? googleCredential.getId() : user.getEmail());
                         } else {
-                            sendAuthResult(false, authErrorMessage(task.getException()), "");
+                            finishGoogleSignIn(signal, false, authErrorMessage(task.getException()), "");
                         }
                     });
         } catch (Exception error) {
-            sendAuthResult(false, "Google returned an invalid sign-in response: "
+            finishGoogleSignIn(signal, false, "Google returned an invalid sign-in response: "
                     + (error.getLocalizedMessage() == null ? "Please try again." : error.getLocalizedMessage()), "");
         }
     }
 
-    private void launchGoogleButtonFlow(CredentialManager manager, String clientId) {
+    private void launchGoogleButtonFlow(CredentialManager manager, String clientId, CancellationSignal signal) {
         GetSignInWithGoogleOption googleOption =
                 new GetSignInWithGoogleOption.Builder(clientId).build();
         GetCredentialRequest request = new GetCredentialRequest.Builder()
                 .addCredentialOption(googleOption)
                 .build();
-        manager.getCredentialAsync(this, request, new CancellationSignal(), getMainExecutor(),
+        manager.getCredentialAsync(this, request, signal, getMainExecutor(),
                 new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
                     @Override
                     public void onResult(GetCredentialResponse response) {
-                        handleGoogleCredential(response);
+                        if (!isActiveGoogleSignIn(signal)) return;
+                        clearGoogleSignInTimeout(signal);
+                        handleGoogleCredential(response, signal);
                     }
 
                     @Override
@@ -641,46 +666,42 @@ public class MainActivity extends Activity {
                         if (message == null || message.trim().isEmpty()) {
                             message = "Google account selection was cancelled or could not start.";
                         }
-                        sendAuthResult(false, message, "");
+                        finishGoogleSignIn(signal, false, message, "");
                     }
                 });
     }
 
     private void launchGoogleSignIn() {
+        if (googleSignInInProgress) return;
         String clientId = resourceString("default_web_client_id");
         if (clientId.isEmpty()) {
             sendAuthResult(false, "Google setup is incomplete. Download the refreshed Firebase config and rebuild.", "");
             return;
         }
-        GetGoogleIdOption googleOption = new GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(clientId)
-                .setAutoSelectEnabled(false)
-                .build();
-        GetCredentialRequest request = new GetCredentialRequest.Builder()
-                .addCredentialOption(googleOption)
-                .build();
-        CredentialManager manager = CredentialManager.create(this);
-        manager.getCredentialAsync(this, request, new CancellationSignal(), getMainExecutor(),
-                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
-                    @Override
-                    public void onResult(GetCredentialResponse response) {
-                        handleGoogleCredential(response);
-                    }
 
-                    @Override
-                    public void onError(GetCredentialException error) {
-                        if (error instanceof NoCredentialException) {
-                            launchGoogleButtonFlow(manager, clientId);
-                            return;
-                        }
-                        String message = error.getLocalizedMessage();
-                        if (message == null || message.trim().isEmpty()) {
-                            message = "Google sign-in was cancelled or could not start.";
-                        }
-                        sendAuthResult(false, message, "");
-                    }
-                });
+        CancellationSignal signal = new CancellationSignal();
+        googleSignInInProgress = true;
+        pendingGoogleSignIn = signal;
+        googleSignInTimeout = () -> {
+            if (!isActiveGoogleSignIn(signal)) return;
+            googleSignInInProgress = false;
+            pendingGoogleSignIn = null;
+            googleSignInTimeout = null;
+            signal.cancel();
+            sendAuthResult(false,
+                    "Google sign-in did not respond. Check Google Play services and try again.", "");
+        };
+        if (webView != null) {
+            webView.postDelayed(googleSignInTimeout, 30000);
+        }
+
+        try {
+            CredentialManager manager = CredentialManager.create(this);
+            launchGoogleButtonFlow(manager, clientId, signal);
+        } catch (Exception error) {
+            finishGoogleSignIn(signal, false, "Google sign-in could not start: "
+                    + (error.getLocalizedMessage() == null ? "Please try again." : error.getLocalizedMessage()), "");
+        }
     }
     private final class AuthBridge {
         @JavascriptInterface
