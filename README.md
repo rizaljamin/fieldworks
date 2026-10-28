@@ -24,6 +24,6 @@ The release and build label come from `fieldworks-version.properties`. The workf
 
 ## Build with GitHub Actions
 
-Push changes under `app/`, update the root Gradle files or `fieldworks-version.properties`, or start **Build FieldWorks APK** from the repository’s Actions tab. Check the run’s artifacts for the signed APK and supporting files. Artifacts are retained for 30 days.
+Push changes under `app/`, update the root Gradle files or `fieldworks-version.properties`, or start **Build FieldWorks APK and AAB** from the repository’s Actions tab. Each successful run uploads the signed APK, signed AAB, and a supporting bundle with app assets and the build memo. Artifacts are retained for 30 days.
 
 The workflow uses the repository signing secrets to restore the existing release keystore in the temporary runner directory. Keep that keystore for updates that must install over previously signed builds; do not commit it to the repository.
