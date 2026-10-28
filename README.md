@@ -6,21 +6,19 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Version
 
-**Latest successful build: V0.3.00 Build 01 (GitHub Actions run #164).** The run completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40620456760).
+**Latest successful build: V0.2.02 Build 33 (GitHub Actions run #167).** Run #167 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40622330047).
 
-The release and build label come from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number; Build 01 has versionCode 164.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so this build has versionCode 167.
 
 ## Features
 
-- **Projects and templates:** Create a blank project or start from a template, define custom project types, and keep project navigation separate from the template library. Signed-in project lists are scoped to the current account.
-- **Favourites:** Pin favourite projects for quick access from the workspace.
-- **Project progress:** Track stages, select the current stage, set stage start and end dates, and add stage notes and follow-ups.
-- **Archive and restore:** Archive a project from its detail view. Archived projects leave the active lists and can be restored from the Archived projects section.
+- **Projects and templates:** Create a blank project or start from a template. Define project types and stages, pin a project, and keep project lists scoped to the signed-in account.
+- **Project journal:** Add notes, photos, videos, and voice notes. Capture media with the camera or import it from device folders and Google Drive through Android’s file picker.
+- **Project progress:** Track stages, dates, follow-ups, budget notes, albums, and progress photos.
 - **Issue log:** Record project issues with Low, Medium, High, or Critical severity and track each as Open, In progress, or Resolved.
-- **Project journal:** Add text notes, photos, videos, and voice notes. Capture photos or video with the camera, or import media from device folders and Google Drive through Android’s file picker.
-- **Albums and progress views:** Group media by stage and upload batch, add comments, view upload timestamps, choose album covers, and browse photo collages or flip-through albums.
-- **Accounts and access:** Use guest mode or sign in with Firebase email/password or Google. The account flow includes password reset. The subscription screen shows trial and plan status; Business is marked as coming soon.
-- **Local storage:** Project records, reminders, issues, and captured media are stored in IndexedDB on the device. They persist across app launches and updates, but do not sync between devices. Clearing app storage or uninstalling removes the local data.
+- **Archive:** Open Archive from the sidebar directly above My Account. Archive projects, restore them to the active list, and create downloadable project backups.
+- **Google Play subscriptions:** Student and Personal annual plans use the configured Google Play product IDs and Android BillingClient purchase and restore flows. Business is marked as coming soon.
+- **Accounts and local storage:** Use guest access or sign in with Firebase email/password or Google. Project records, reminders, issues, and media are stored on the device in IndexedDB. Data persists across launches and app updates, but does not sync across devices. Clearing app storage or uninstalling removes local data.
 
 ## Build with GitHub Actions
 
