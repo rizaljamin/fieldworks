@@ -333,6 +333,16 @@
     .login-divider { display: flex; align-items: center; gap: 10px; margin: 15px 0 3px; color: #9ba5a4; font-size: 9px; }
     .login-divider:before, .login-divider:after { content: ""; height: 1px; flex: 1; background: #ece9df; }
 
+  
+    .account-page-card,.subscription-card{margin-bottom:18px;padding:20px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}
+    .account-page-card{display:flex;align-items:center;gap:15px}
+    .account-page-avatar{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:50%;background:#e5f3eb;color:#316749;font-size:20px;font-weight:750}
+    .account-page-info{display:grid;gap:3px;min-width:0;flex:1}.account-page-info span,.plan-kicker{color:#768a8d;font-size:9px;font-weight:750;letter-spacing:1.1px;text-transform:uppercase}.account-page-info strong{overflow-wrap:anywhere;color:var(--navy);font-size:15px}.account-page-info p,.subscription-heading p{margin:0;color:#77878b;font-size:11px}
+    .account-page-actions{display:flex;gap:8px}.account-action,.plan-button{padding:9px 13px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:11px;font-weight:750}.restore-action{white-space:nowrap}
+    .subscription-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.subscription-heading h3{margin:3px 0;color:var(--navy);font-family:Georgia,serif;font-size:20px;font-weight:500}
+    .plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.plan-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}.plan-card.plan-featured{border-color:#74b7af;box-shadow:inset 0 0 0 1px #b8ddd4}.plan-card h4{margin:0;color:var(--navy);font-size:17px}.plan-price{color:var(--teal);font-size:16px;font-weight:800}.plan-card p{margin:0;color:#61777a;font-size:11px}.plan-card small{color:#829094;font-size:9px}.plan-button{width:100%;margin-top:auto;background:var(--teal);color:#fff}.plan-button:disabled{opacity:.6}.billing-status{margin:12px 0 0;color:#75858a;font-size:10px}.billing-status.error{color:#a23d3d}
+    @media(max-width:700px){.account-page-card{align-items:flex-start;flex-wrap:wrap;padding:15px}.account-page-actions{width:100%}.subscription-card{padding:15px}.plan-grid{grid-template-columns:1fr}.subscription-heading{align-items:flex-start;flex-direction:column}.restore-action{align-self:flex-start}}
+
   </style>
 </head>
 <body>
@@ -427,7 +437,25 @@
         <section id="page-moments" class="page" hidden><h2 class="page-title">Recent moments</h2><div class="placeholder-card" aria-label="Recent moments placeholder"></div></section>
         <section id="page-followups" class="page" hidden><h2 class="page-title">Follow-ups</h2><div class="placeholder-card" aria-label="Follow-ups placeholder"></div></section>
         <section id="page-archive" class="page" hidden><h2 class="page-title">Archive</h2><div class="placeholder-card" aria-label="Archive placeholder"></div></section>
-        <section id="page-account" class="page" hidden><h2 class="page-title">My Account</h2><div class="placeholder-card" aria-label="My Account placeholder"></div></section>
+        <section id="page-account" class="page" hidden>
+          <div class="sectionhead"><div><div class="eyebrow">Your FieldWorks profile</div><h2>My Account</h2><p>Manage your sign-in and subscription.</p></div></div>
+          <article class="account-page-card">
+            <div class="account-page-avatar" id="accountPageAvatar">G</div>
+            <div class="account-page-info"><span id="accountPageLabel">WORKING AS</span><strong id="accountPageEmail">Guest</strong><p id="accountPageMessage">Sign in to connect your account and manage a subscription.</p></div>
+            <div class="account-page-actions">
+              <button class="account-action" id="accountPageSignIn" type="button" onclick="openLoginCard()">Sign in</button>
+              <button class="account-action" id="accountPageSignOut" type="button" hidden>Sign out</button>
+            </div>
+          </article>
+          <section class="subscription-card" aria-labelledby="subscriptionTitle">
+            <div class="subscription-heading"><div><div class="eyebrow">Google Play</div><h3 id="subscriptionTitle">My subscription</h3><p id="subscriptionStatus">Sign in to check or manage a subscription.</p></div><button class="account-action restore-action" id="restoreSubscription" type="button">Restore purchase</button></div>
+            <div class="plan-grid">
+              <article class="plan-card"><span class="plan-kicker">For students</span><h4>Student</h4><div class="plan-price" id="studentPrice">Price shown in Google Play</div><p>Full FieldWorks access for one named student account.</p><button class="plan-button" type="button" data-plan-product="fw2026_stu">Subscribe</button><small>Six-month renewal. Cancel any time in Google Play. For currently enrolled students.</small></article>
+              <article class="plan-card plan-featured"><span class="plan-kicker">For personal projects</span><h4>Personal</h4><div class="plan-price" id="personalPrice">Price shown in Google Play</div><p>Full FieldWorks access for one named user account.</p><button class="plan-button" type="button" data-plan-product="fw2026">Subscribe</button><small>Six-month renewal. Cancel any time in Google Play.</small></article>
+            </div>
+            <p id="billingStatus" class="billing-status">Connect to Google Play to load the available subscription plans.</p>
+          </section>
+        </section>
       </main>
     </div>
 
@@ -502,6 +530,7 @@
     function openFieldWorksMenu() {
       document.getElementById("welcome-screen").hidden = true;
       document.getElementById("dashboard").hidden = false;
+      try { updateAuthUI(window.FieldWorksAuth ? window.FieldWorksAuth.currentEmail() : ""); } catch (error) { updateAuthUI(""); }
       showFieldWorksPage("home");
     }
 
@@ -515,9 +544,52 @@
         button.setAttribute("aria-current", active ? "page" : "false");
       });
       document.getElementById("topTitle").textContent = pageTitles[page] || "My FieldWorks";
+      if (page === "account") { renderAccountPage(); loadSubscriptionPackage(); }
     }
 
     let authMode = "signin";
+    let signedInEmail = "";
+    let billingCatalog = {};
+    let billingEntitlement = { active: false, productId: "", uid: "" };
+    function currentFieldWorksUid() { try { return window.FieldWorksAuth ? window.FieldWorksAuth.currentUid() : ""; } catch (error) { return ""; } }
+    function renderAccountPage() {
+      const uid = currentFieldWorksUid();
+      const active = !!uid && billingEntitlement.active && billingEntitlement.uid === uid;
+      document.getElementById("accountPageEmail").textContent = signedInEmail || "Guest";
+      document.getElementById("accountPageLabel").textContent = signedInEmail ? "SIGNED IN AS" : "WORKING AS";
+      document.getElementById("accountPageAvatar").textContent = signedInEmail ? signedInEmail.trim().charAt(0).toUpperCase() : "G";
+      document.getElementById("accountPageMessage").textContent = signedInEmail ? "Your FieldWorks account is connected." : "Sign in to connect your account and manage a subscription.";
+      document.getElementById("accountPageSignIn").hidden = !!uid;
+      document.getElementById("accountPageSignOut").hidden = !uid;
+      const status = document.getElementById("subscriptionStatus");
+      if (active) status.textContent = "Active · " + (billingEntitlement.productId === "fw2026_stu" ? "Student" : "Personal") + " plan is linked to this account.";
+      else if (uid) status.textContent = "No active FieldWorks subscription found for this account.";
+      else status.textContent = "Sign in to check or manage a subscription.";
+      document.querySelectorAll("[data-plan-product]").forEach(function(button) {
+        const id = button.dataset.planProduct;
+        button.textContent = active && billingEntitlement.productId === id ? "Current plan" : "Subscribe";
+        button.disabled = active && billingEntitlement.productId === id;
+      });
+      document.getElementById("studentPrice").textContent = billingCatalog.fw2026_stu || "Price shown in Google Play";
+      document.getElementById("personalPrice").textContent = billingCatalog.fw2026 || "Price shown in Google Play";
+    }
+    function loadSubscriptionPackage() {
+      if (!window.FieldWorksBilling) return;
+      window.FieldWorksBilling.loadProducts();
+      if (currentFieldWorksUid()) window.FieldWorksBilling.syncEntitlement();
+    }
+    function signOutOfFieldWorks() {
+      if (window.FieldWorksAuth) window.FieldWorksAuth.signOut();
+      billingEntitlement = { active: false, productId: "", uid: "" };
+      updateAuthUI("");
+      setAccountStatus("Signed out. Guest mode is active.", false);
+      setSubscriptionMessage("Sign in to check or manage a subscription.", false);
+    }
+    function setSubscriptionMessage(message, error) {
+      const status = document.getElementById("billingStatus");
+      status.textContent = message || "";
+      status.classList.toggle("error", !!error);
+    }
     function closeLoginCard() {
       document.getElementById("loginOverlay").hidden = true;
     }
@@ -543,7 +615,8 @@
       setAuthStatus("", false);
     }
     function updateAuthUI(email) {
-      const signedIn = !!email;
+      signedInEmail = email || "";
+      const signedIn = !!signedInEmail;
       document.getElementById("guestPillLabel").textContent = signedIn ? email : "Guest mode";
       const profile = document.getElementById("profileButton");
       profile.textContent = signedIn ? email.trim().charAt(0).toUpperCase() : "G";
@@ -553,6 +626,9 @@
       document.getElementById("loginSocials").hidden = signedIn;
       document.getElementById("loginDivider").hidden = signedIn;
       document.getElementById("signedInPanel").hidden = !signedIn;
+      renderAccountPage();
+      if (signedIn) loadSubscriptionPackage();
+      else billingEntitlement = { active: false, productId: "", uid: "" };
     }
     function openLoginCard() {
       const overlay = document.getElementById("loginOverlay");
@@ -622,11 +698,40 @@
       setAuthStatus("Sending reset email…", false);
       window.FieldWorksAuth.sendPasswordReset(email);
     });
-    document.getElementById("signOutButton").addEventListener("click", function() {
-      if (window.FieldWorksAuth) window.FieldWorksAuth.signOut();
-      updateAuthUI("");
-      setAccountStatus("Signed out. Guest mode is active.", false);
+    document.getElementById("signOutButton").addEventListener("click", signOutOfFieldWorks);
+    document.getElementById("accountPageSignOut").addEventListener("click", signOutOfFieldWorks);
+    document.getElementById("restoreSubscription").addEventListener("click", function() {
+      if (!currentFieldWorksUid()) { setSubscriptionMessage("Sign in before restoring a subscription.", true); openLoginCard(); return; }
+      if (!window.FieldWorksBilling) { setSubscriptionMessage("Subscription billing is unavailable in this build.", true); return; }
+      setSubscriptionMessage("Checking subscriptions linked to this FieldWorks account…", false);
+      window.FieldWorksBilling.restorePurchases();
     });
+    document.querySelectorAll("[data-plan-product]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        const uid = currentFieldWorksUid();
+        if (!uid) { setSubscriptionMessage("Sign in before subscribing.", true); openLoginCard(); return; }
+        if (!window.FieldWorksBilling) { setSubscriptionMessage("Subscription billing is unavailable in this build.", true); return; }
+        setSubscriptionMessage("Opening Google Play subscription options…", false);
+        window.FieldWorksBilling.purchase(button.dataset.planProduct);
+      });
+    });
+    window.onFieldWorksBillingProducts = function(products) {
+      billingCatalog = products || {};
+      renderAccountPage();
+      if (!Object.keys(billingCatalog).length) setSubscriptionMessage("Could not load plans from Google Play. Install through a FieldWorks Google Play testing track and try again.", true);
+      else setSubscriptionMessage("Prices are provided by Google Play. Subscriptions are linked to your signed-in FieldWorks account.", false);
+    };
+    window.onFieldWorksBillingEntitlement = function(result) {
+      result = result || {};
+      const uid = currentFieldWorksUid();
+      if (result.uid && result.uid !== uid) return;
+      billingEntitlement = { active: !!result.active, productId: result.productId || "", uid: result.uid || "" };
+      renderAccountPage();
+    };
+    window.onFieldWorksBillingMessage = function(result) {
+      result = result || {};
+      setSubscriptionMessage(result.message || "", !result.success);
+    };
     window.onFieldWorksAuthResult = function(result) {
       const button = document.getElementById("loginSubmit");
       button.disabled = false;
@@ -641,6 +746,7 @@
       }
       updateAuthUI(result.email || "");
       setAuthStatus(result.message, false);
+      closeLoginCard();
     };
     document.addEventListener("keydown", function(event) {
       if (event.key === "Escape") closeLoginCard();
