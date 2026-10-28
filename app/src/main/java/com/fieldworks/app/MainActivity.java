@@ -791,10 +791,26 @@ public class MainActivity extends Activity {
                     notifyMediaError(importProjectId, "No media file was selected.");
                     return;
                 }
-                for (Uri uri : uris) {
-                    try { notifyMediaReady(importProjectId, importKind, copySelectedMedia(uri, importKind)); }
-                    catch (Exception error) { notifyMediaError(importProjectId, "Could not copy the selected media to FieldWorks."); }
+                java.util.List<File> copiedFiles = new java.util.ArrayList<>();
+                org.json.JSONArray imports = new org.json.JSONArray();
+                try {
+                    for (Uri uri : uris) {
+                        File file = copySelectedMedia(uri, importKind);
+                        copiedFiles.add(file);
+                        org.json.JSONObject item = new org.json.JSONObject();
+                        item.put("url", localMediaUrl(file));
+                        item.put("name", mediaDisplayName(uri));
+                        item.put("kind", importKind);
+                        imports.put(item);
+                    }
+                } catch (Exception error) {
+                    for (File file : copiedFiles) file.delete();
+                    notifyMediaError(importProjectId, "Could not copy the selected media to FieldWorks.");
+                    return;
                 }
+                String script = "window.onFieldWorksImportBatch && window.onFieldWorksImportBatch("
+                        + imports + "," + JSONObject.quote(importProjectId) + ")";
+                webView.evaluateJavascript(script, null);
             }
             return;
         }
