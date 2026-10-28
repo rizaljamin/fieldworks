@@ -17,7 +17,7 @@ The release/build label comes from `fieldworks-version.properties`. Android `ver
 - **Project progress:** Track stages, dates, follow-ups, budget notes, albums, and progress photos.
 - **Issue log:** Record project issues with Low, Medium, High, or Critical severity and track each as Open, In progress, or Resolved.
 - **Archive:** Open Archive from the sidebar directly above My Account. Archive and restore projects, or create downloadable project backups.
-- **Google Play subscriptions:** Student and Personal annual plans use the configured Google Play product IDs and Android BillingClient purchase and restore flows. When testing outside Google Play, the app explains that purchases and restores may fail. Business is marked as coming soon.
+- **Google Play subscriptions:** Student and Personal six-month plans use the configured Google Play product IDs and Android BillingClient purchase and restore flows. When testing outside Google Play, the app explains that purchases and restores may fail. Business is marked as coming soon.
 - **Accounts and local storage:** Use guest access or sign in with Firebase email/password or Google. Project records, reminders, issues, and media are stored on the device in IndexedDB. Data persists across launches and app updates, but does not sync across devices. Clearing app storage or uninstalling removes local data.
 
 ## Build with GitHub Actions
