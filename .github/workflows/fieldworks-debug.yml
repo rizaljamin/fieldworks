@@ -3,7 +3,7 @@ name: Build FieldWorks Debug APK
 on:
   push:
     branches:
-      - debug/minimal-under-construction
+      - debug/enter-menu
     paths:
       - 'app/**'
       - 'settings.gradle'
@@ -59,7 +59,7 @@ jobs:
           echo "APK_FILENAME=$APK_FILENAME" >> "$GITHUB_ENV"
           VERSION_CODE=$((192 + GITHUB_RUN_NUMBER))
           echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
-          echo "Building $APK_FILENAME (versionCode $GITHUB_RUN_NUMBER)"
+          echo "Building $APK_FILENAME (versionCode $VERSION_CODE)"
 
       - name: Restore the existing release keystore
         shell: bash
