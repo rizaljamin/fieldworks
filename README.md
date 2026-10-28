@@ -6,11 +6,11 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Version
 
-**Latest successful build: V0.3.00 Build 13 (GitHub Actions run #185).** Run #185 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40685279815).
+**Latest successful build: V0.3.00 Build 14 (GitHub Actions run #186).** Run #186 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40707503354).
 
-The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so Build 13 has versionCode 185. The project journey now has a direct current-stage picker.
+The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so Build 14 has versionCode 186. Google sign-in now opens the explicit Android Credential Manager flow directly, with a single-request guard and a timeout error if the account picker does not respond.
 
-**Google Play status:** Closed testing currently uses **V0.3.00 Build 8**. Build 13 is a GitHub Actions artifact and has not been uploaded to Google Play.
+**Google Play status:** Closed testing currently uses **V0.3.00 Build 8**. Build 14 is a GitHub Actions artifact and has not been uploaded to Google Play.
 
 The account-binding Cloud Function is deployed to `asia-southeast1` on Node.js 22. Verify the account-binding flow with a Play test purchase before production distribution; setup details are in [the account-binding guide](docs/subscription-account-binding.md).
 
