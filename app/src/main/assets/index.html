@@ -798,7 +798,7 @@
       if (changed) saveProjectArtifactData(projectId);
       return albums;
     }
-    function albumMediaItems(projectId, album) {    function albumMediaItems(projectId, album) {
+    function albumMediaItems(projectId, album) {
       const artifacts = projectArtifactList(projectId);
       const ids = Array.isArray(album.items) ? album.items : [];
       return ids.map(function(id) { return artifacts.find(function(item) { return String(item.id) === String(id); }); })
@@ -854,7 +854,7 @@
         '<button class="artifact-option" type="button" data-artifact-type="voice" data-project-id="' + safeId + '"><span class="artifact-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M9 22h6"></path></svg></span><strong>Voice note</strong></button>' +
         '</div>' + albumMarkup + (loose ? '<div class="artifact-list">' + loose + '</div>' : '') + '</section>';
     }
-    function projectDisplayName(projectId) {    function projectDisplayName(projectId) {
+    function projectDisplayName(projectId) {
       if (projectId === "demo-mini-renovation") return MINI_RENOVATION_DEMO.name;
       const project = createdProjects.find(function(item) { return item.id === projectId; });
       return project ? project.name : "project";
