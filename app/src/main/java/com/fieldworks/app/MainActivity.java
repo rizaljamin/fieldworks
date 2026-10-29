@@ -11,7 +11,6 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.provider.DocumentsContract;
-import android.content.SharedPreferences;
 import android.provider.OpenableColumns;
 import android.webkit.MimeTypeMap;
 import androidx.core.content.FileProvider;
@@ -906,7 +905,8 @@ public class MainActivity extends Activity {
                     portable.put("ownerUsername", username);
                     byte[] archiveBytes = encryptArchive(portable.toString().getBytes(StandardCharsets.UTF_8), username);
                     String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss_SSS", java.util.Locale.US).format(new java.util.Date());
-                    Uri destination = DocumentsContract.createDocument(getContentResolver(), tree, "application/octet-stream", "fw_" + timestamp + ".arc");
+                    Uri parentDocument = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree));
+                    Uri destination = DocumentsContract.createDocument(getContentResolver(), parentDocument, "application/octet-stream", "fw_" + timestamp + ".arc");
                     if (destination == null) throw new IOException("Could not create the archive file in the selected folder.");
                     try (OutputStream output = getContentResolver().openOutputStream(destination, "w")) {
                         if (output == null) throw new IOException("Could not open the selected folder for writing.");
