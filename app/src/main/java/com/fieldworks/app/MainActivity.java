@@ -38,6 +38,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +76,13 @@ public class MainActivity extends Activity {
     private static final int CAMERA_VIDEO_REQUEST = 2302;
     private static final int MEDIA_PICKER_REQUEST = 2303;
     private static final int AUDIO_PERMISSION_REQUEST = 2304;
+    private static final int ARCHIVE_CREATE_REQUEST = 2305;
+    private static final int ARCHIVE_OPEN_REQUEST = 2306;
+    private static final byte[] ARCHIVE_MAGIC = new byte[]{'F','W','A','R',1};
+    private byte[] pendingArchiveBytes;
+    private String pendingArchiveProjectId = "";
+    private String pendingArchivePassword = "";
+    private final ExecutorService archiveExecutor = Executors.newSingleThreadExecutor();
     private static final int MAX_MEDIA_PER_PICK = 5;
     private WebView webView;
     private File captureFile;
@@ -784,6 +798,47 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ARCHIVE_CREATE_REQUEST) {
+            String archivedProject = pendingArchiveProjectId;
+            byte[] archiveBytes = pendingArchiveBytes;
+            pendingArchiveBytes=null; pendingArchiveProjectId="";
+            if (resultCode == RESULT_OK && data != null && data.getData() != null && archiveBytes != null) {
+                Uri destination=data.getData();
+                archiveExecutor.execute(() -> {
+                    try (OutputStream output=getContentResolver().openOutputStream(destination, "w")) {
+                        if(output==null)throw new IOException("Could not open the selected folder for writing.");
+                        output.write(archiveBytes); output.flush();
+                        notifyArchiveSaved(archivedProject);
+                    } catch(Exception error) { notifyArchiveError(archivedProject,"Could not save the encrypted archive. Check the selected location has space and write access."); }
+                });
+            } else if (!archivedProject.isEmpty()) {
+                notifyArchiveError(archivedProject,"Archive save was cancelled. The project remains in FieldWorks.");
+            }
+            return;
+        }
+        if (requestCode == ARCHIVE_OPEN_REQUEST) {
+            String password=pendingArchivePassword; pendingArchivePassword="";
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                Uri source=data.getData();
+                archiveExecutor.execute(() -> {
+                    try (InputStream input=getContentResolver().openInputStream(source)) {
+                        if(input==null)throw new IOException("Could not read the selected archive.");
+                        java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();
+                        byte[] buffer=new byte[8192]; int count; while((count=input.read(buffer))!=-1)bytes.write(buffer,0,count);
+                        String json=new String(decryptArchive(bytes.toByteArray(),password),StandardCharsets.UTF_8);
+                        JSONObject portable=new JSONObject(json);
+                        if (!"fieldworks-project-archive".equals(portable.optString("format")) || portable.optInt("schemaVersion") != 1 || !(portable.opt("project") instanceof JSONObject))
+                            throw new IOException("This archive does not contain a supported FieldWorks project.");
+                        JSONObject restored=restoreArchiveMedia(portable);
+                        notifyArchiveLoaded(restored.toString());
+                    } catch(javax.crypto.AEADBadTagException error) { notifyArchiveError("","Incorrect archive password or damaged archive."); }
+                    catch(Exception error) { notifyArchiveError("",error.getMessage()!=null && error.getMessage().contains("FieldWorks") ? error.getMessage() : "Could not read this archive. Check the password and choose a valid .arc file."); }
+                });
+            } else {
+                notifyArchiveError("","Archive restore was cancelled.");
+            }
+            return;
+        }
         if (requestCode == MEDIA_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
                 java.util.List<Uri> uris = selectedMediaUris(data);
@@ -845,6 +900,136 @@ public class MainActivity extends Activity {
             voiceProjectId = "";
             notifyVoiceStatus("error", "Microphone permission is required to record a voice note.");
         }
+    }
+
+    private final class ArchiveBridge {
+        @JavascriptInterface
+        public void archiveProject(String projectId, String json, String password) {
+            try {
+                if (projectId == null || projectId.trim().isEmpty() || json == null || json.isEmpty())
+                    throw new IllegalArgumentException("Project archive data is missing.");
+                if (password == null || password.length() < 8)
+                    throw new IllegalArgumentException("Use an archive password with at least 8 characters.");
+                JSONObject portable = makeArchiveMediaPortable(new JSONObject(json));
+                pendingArchiveBytes = encryptArchive(portable.toString().getBytes(StandardCharsets.UTF_8), password);
+                pendingArchiveProjectId = projectId;
+                String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US).format(new java.util.Date());
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/octet-stream");
+                intent.putExtra(Intent.EXTRA_TITLE, "fw_" + timestamp + ".arc");
+                runOnUiThread(() -> startActivityForResult(intent, ARCHIVE_CREATE_REQUEST));
+            } catch (Exception error) {
+                notifyArchiveError(projectId, error.getMessage() == null ? "Could not prepare the encrypted archive." : error.getMessage());
+            }
+        }
+
+        @JavascriptInterface
+        public void restoreArchive(String password) {
+            if (password == null || password.isEmpty()) { notifyArchiveError("", "Enter the archive password."); return; }
+            pendingArchivePassword = password;
+            runOnUiThread(() -> {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/octet-stream", "application/x-fieldworks-archive"});
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+                startActivityForResult(intent, ARCHIVE_OPEN_REQUEST);
+            });
+        }
+    }
+
+    private void notifyArchiveError(String projectId, String message) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksArchiveError && window.onFieldWorksArchiveError(" + JSONObject.quote(projectId == null ? "" : projectId) + "," + JSONObject.quote(message == null ? "Archive failed." : message) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+
+    private void notifyArchiveSaved(String projectId) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksArchiveSaved && window.onFieldWorksArchiveSaved(" + JSONObject.quote(projectId == null ? "" : projectId) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+
+    private void notifyArchiveLoaded(String json) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksArchiveLoaded && window.onFieldWorksArchiveLoaded(" + JSONObject.quote(json) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+
+    private byte[] encryptArchive(byte[] plain, String password) throws Exception {
+        byte[] salt = new byte[16], iv = new byte[12];
+        SecureRandom random = new SecureRandom(); random.nextBytes(salt); random.nextBytes(iv);
+        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 210000, 256);
+        byte[] key = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new GCMParameterSpec(128, iv));
+        cipher.updateAAD(ARCHIVE_MAGIC);
+        byte[] encrypted = cipher.doFinal(plain);
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        out.write(ARCHIVE_MAGIC); out.write(salt); out.write(iv); out.write(encrypted);
+        java.util.Arrays.fill(key, (byte)0); spec.clearPassword();
+        return out.toByteArray();
+    }
+
+    private byte[] decryptArchive(byte[] data, String password) throws Exception {
+        if (data == null || data.length < ARCHIVE_MAGIC.length + 16 + 12 + 16) throw new IOException("This is not a valid FieldWorks archive.");
+        for (int i=0;i<ARCHIVE_MAGIC.length;i++) if (data[i] != ARCHIVE_MAGIC[i]) throw new IOException("This is not a FieldWorks .arc file.");
+        byte[] salt = java.util.Arrays.copyOfRange(data, ARCHIVE_MAGIC.length, ARCHIVE_MAGIC.length+16);
+        byte[] iv = java.util.Arrays.copyOfRange(data, ARCHIVE_MAGIC.length+16, ARCHIVE_MAGIC.length+28);
+        byte[] cipherText = java.util.Arrays.copyOfRange(data, ARCHIVE_MAGIC.length+28, data.length);
+        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 210000, 256);
+        byte[] key = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new GCMParameterSpec(128, iv));
+        cipher.updateAAD(ARCHIVE_MAGIC);
+        try { return cipher.doFinal(cipherText); }
+        finally { java.util.Arrays.fill(key, (byte)0); spec.clearPassword(); }
+    }
+
+    private Object transformArchiveMedia(Object value, boolean exporting) throws Exception {
+        if (value instanceof JSONObject) {
+            JSONObject source=(JSONObject)value, target=new JSONObject();
+            java.util.Iterator<String> keys=source.keys();
+            while(keys.hasNext()){String key=keys.next();target.put(key,transformArchiveMedia(source.get(key),exporting));}
+            return target;
+        }
+        if (value instanceof org.json.JSONArray) {
+            org.json.JSONArray source=(org.json.JSONArray)value,target=new org.json.JSONArray();
+            for(int i=0;i<source.length();i++)target.put(transformArchiveMedia(source.get(i),exporting));
+            return target;
+        }
+        if (!(value instanceof String)) return value;
+        String text=(String)value;
+        if (exporting && text.startsWith("file:")) {
+            Uri uri=Uri.parse(text); String filePath=uri.getPath();
+            if(filePath==null)return text;
+            File mediaRoot=mediaDirectory().getCanonicalFile(), file=new File(filePath).getCanonicalFile();
+            if(!file.getPath().startsWith(mediaRoot.getPath()+File.separator) || !file.isFile()) return text;
+            String mime=MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(file.getName()));
+            if(mime==null)mime="application/octet-stream";
+            byte[] bytes; try(InputStream in=new java.io.FileInputStream(file); java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream()){byte[] buffer=new byte[8192]; int count; while((count=in.read(buffer))!=-1)out.write(buffer,0,count); bytes=out.toByteArray();}
+            return "fwasset:"+mime+":"+android.util.Base64.encodeToString(bytes,android.util.Base64.NO_WRAP);
+        }
+        if (!exporting && text.startsWith("fwasset:")) {
+            int split=text.indexOf(':',8); if(split<0)return text;
+            String mime=text.substring(8,split), encoded=text.substring(split+1);
+            byte[] bytes=android.util.Base64.decode(encoded,android.util.Base64.DEFAULT);
+            String extension=MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+            if(extension==null)extension="bin";
+            File dir=mediaDirectory(); if(dir==null)throw new IOException("Could not prepare media storage.");
+            File file=File.createTempFile("fieldworks_restore_", "."+extension,dir);
+            try(FileOutputStream out=new FileOutputStream(file)){out.write(bytes);out.flush();}
+            return Uri.fromFile(file).toString();
+        }
+        return text;
+    }
+
+    private JSONObject makeArchiveMediaPortable(JSONObject source) throws Exception {
+        return (JSONObject)transformArchiveMedia(source,true);
+    }
+    private JSONObject restoreArchiveMedia(JSONObject source) throws Exception {
+        return (JSONObject)transformArchiveMedia(source,false);
     }
 
     private final class AuthBridge {
@@ -978,6 +1163,7 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
         webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
         webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
+        webView.addJavascriptInterface(new ArchiveBridge(), "FieldWorksArchive");
         setContentView(appFrame);
         androidx.core.view.ViewCompat.requestApplyInsets(appFrame);
         webView.loadUrl("file:///android_asset/index.html");
@@ -1027,3 +1213,4 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 }
+

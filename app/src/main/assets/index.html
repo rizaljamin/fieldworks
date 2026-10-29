@@ -480,7 +480,9 @@
 .demo-project-stats button{appearance:none;display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border:1px solid #b7d1ca;border-radius:999px;background:#fffef9;color:#49656a;font-size:9px;line-height:1.25;cursor:pointer}.demo-project-stats button:hover,.demo-project-stats button:focus-visible{border-color:#16877f;background:#edf8f3;color:#115e61;outline:2px solid #16877f33;outline-offset:1px}
 .project-tracking-inline{display:grid;gap:12px;margin:14px 0}.issue-log,.for-later,.budget-tracking-card{border:1px solid #e2e5d7;border-radius:22px;background:#fffef9;padding:17px 19px;box-shadow:0 5px 18px #23493908}.issue-log-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:13px}.issue-log-head .eyebrow{color:#16877f;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.issue-log-head h2{margin:5px 0 0;color:#203e4a;font:500 25px/1.15 Georgia,serif}.button-soft{flex:none;border:0;border-radius:999px;background:#edf3ec;padding:12px 16px;color:#49656a;font-size:14px;font-weight:700;cursor:pointer}.button-soft:hover{background:#dcebe2}.for-later{background:#fff7e5;border-color:#f0e9d4}.for-later-head{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.for-later-head>strong{color:#203e4a;font-size:18px}.for-later-head small{margin-left:auto;color:#788784;font-size:11px}.subtle-link{border:0;background:transparent;padding:5px 0;color:#147a75;font-size:14px;font-weight:700;cursor:pointer}.subtle-link:hover{text-decoration:underline}.project-tracking-inline .tracking-list{margin-top:10px}.project-tracking-inline .tracking-row{border-color:#e7e7dc}.project-tracking-inline .tracking-empty{margin-top:8px;border:0;padding:6px 0;text-align:left;color:#7b8581}.project-tracking-inline .tracking-form{margin-top:12px}.budget-tracking-card .tracking-summary{margin-top:14px}.budget-tracking-card .tracking-expenses{margin-top:14px}
 @media(max-width:600px){.issue-log,.for-later,.budget-tracking-card{padding:15px;border-radius:20px}.issue-log-head{align-items:flex-start}.issue-log-head h2{font-size:24px}.button-soft{padding:10px 12px;font-size:12px}.for-later-head{gap:8px}.for-later-head>strong{font-size:17px}.subtle-link{font-size:13px}.demo-project-stats button{min-height:30px;padding:5px 9px;font-size:10px}}
-</style>
+
+    .archive-page-card{max-width:760px;padding:22px;border:1px solid var(--line);border-radius:18px;background:#fffefa;box-shadow:var(--shadow)}.archive-page-card h3{margin:0 0 7px;color:var(--navy);font:500 21px Georgia,serif}.archive-page-card p{color:#718587;font-size:12px;line-height:1.6}.archive-project-button{display:block;width:100%;margin-top:10px;padding:8px 10px;border:1px solid #d7e4dc;border-radius:9px;background:#f4faf6;color:#176d70;text-align:center;font-size:10px;font-weight:750}.archive-field{display:grid;gap:6px;margin:12px 0;color:#50686c;font-size:11px;font-weight:700}.archive-field input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}.archive-help{margin:6px 0 0;color:#829093;font-size:9px;font-weight:400}.archive-status{min-height:18px;margin:8px 0;color:#557075;font-size:10px}.archive-status.error{color:#a23d3d}
+  </style>
 </head>
 <body>
   
@@ -550,7 +552,7 @@
         <section id="page-templates" class="page" hidden><div class="sectionhead"><div><div class="eyebrow">Start with a FieldWorks template</div><h2>My Templates</h2><p>Choose a template to start a project with its milestones already organised.</p></div><button class="account-action" type="button" onclick="openCreateProjectCard()">Create blank project</button></div><div class="template-grid" id="templateGrid"></div></section>
         <section id="page-moments" class="page" hidden><h2 class="page-title">Recent moments</h2><div class="placeholder-card" aria-label="Recent moments placeholder"></div></section>
         <section id="page-followups" class="page" hidden><h2 class="page-title">Follow-ups</h2><div class="placeholder-card" aria-label="Follow-ups placeholder"></div></section>
-        <section id="page-archive" class="page" hidden><h2 class="page-title">Archive</h2><div class="placeholder-card" aria-label="Archive placeholder"></div></section>
+        <section id="page-archive" class="page" hidden><h2 class="page-title">Archive</h2><article class="archive-page-card"><h3>Encrypted project files</h3><p>Restore an encrypted FieldWorks project archive from any folder. You will need the password used when the file was created.</p><button id="restoreProjectArchive" class="button-primary" type="button">Restore project from .arc file</button><label class="archive-field">Archive password<input id="restoreArchivePassword" type="password" autocomplete="off" minlength="8" placeholder="Enter archive password"></label><p class="archive-help">FieldWorks archives include the project milestones, albums, notes, tracking details, and attached media.</p><p id="archivePageStatus" class="archive-status" role="status"></p></article></section>
         <section id="page-account" class="page" hidden>
           <div class="sectionhead"><div><div class="eyebrow">Your FieldWorks profile</div><h2>My Account</h2><p>Manage your sign-in and subscription.</p></div></div>
           <article class="account-page-card">
@@ -620,6 +622,17 @@
         <div class="artifact-card-head"><div><h2 id="voiceArtifactTitle">Voice note</h2><p>Record a spoken project update.</p></div><button id="cancelVoiceArtifact" class="artifact-close" type="button" aria-label="Close voice note">×</button></div>
         <p id="voiceArtifactStatus" class="artifact-status" role="status">Tap Record and allow microphone access.</p>
         <div class="artifact-actions"><button id="startVoiceArtifact" class="artifact-action primary" type="button">Record</button><button id="stopVoiceArtifact" class="artifact-action primary" type="button" hidden>Stop &amp; save</button><button id="cancelVoiceArtifactButton" class="artifact-action" type="button">Cancel</button></div>
+      </section>
+    </div>
+
+    <div id="archiveProjectOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card" role="dialog" aria-modal="true" aria-labelledby="archiveProjectTitle">
+        <div class="artifact-card-head"><div><h2 id="archiveProjectTitle">Archive project</h2><p id="archiveProjectSubtitle">Choose a password to encrypt this project file.</p></div><button id="closeArchiveProject" class="artifact-close" type="button" aria-label="Close archive dialog">×</button></div>
+        <label class="archive-field">Archive password<input id="archiveProjectPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required></label>
+        <label class="archive-field">Confirm password<input id="archiveProjectPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter password" required></label>
+        <p class="archive-help">Keep this password safe. FieldWorks cannot recover it if you forget it. You will choose the destination folder next.</p>
+        <p id="archiveProjectStatus" class="archive-status" role="status"></p>
+        <div class="artifact-actions"><button id="cancelArchiveProject" class="artifact-action" type="button">Cancel</button><button id="confirmArchiveProject" class="artifact-action primary" type="button">Choose folder &amp; archive</button></div>
       </section>
     </div>
 
@@ -939,7 +952,7 @@ function loadDemoProjectState() {
         renderProjectStageControls(projectId, project) +
         renderProjectOverallNotes(projectId, project) +
         (isDemo && notes ? '<details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + spent.toLocaleString("en-MY") + '</p></details>' : "") +
-        renderAddArtifactControls(projectId) + '</div></article>';
+        renderAddArtifactControls(projectId) + (!isDemo ? '<button class="archive-project-button" type="button" data-archive-project="' + safeId + '">Archive project…</button>' : '') + '</div></article>';
     }
     function miniRenovationCardMarkup() {
       return renderUnifiedProjectCard(MINI_RENOVATION_DEMO, true);
@@ -1443,6 +1456,8 @@ function loadDemoProjectState() {
         document.addEventListener(type, function() { clearTimeout(longPressTimer); longPressCard=null; longPressTimer=0; });
       });
       document.addEventListener("click", function(event) {
+        const archiveButton=event.target.closest("[data-archive-project]");
+        if(archiveButton){openArchiveProject(archiveButton.dataset.archiveProject);return;}
         const trackingOpen=event.target.closest("[data-open-project-tracking]");
         if(trackingOpen){openProjectTracking(trackingOpen.dataset.openProjectTracking,trackingOpen.dataset.trackingView);return;}
         if(event.target.closest("[data-close-project-tracking]")){closeProjectTracking();return;}
@@ -1759,6 +1774,76 @@ function loadDemoProjectState() {
       try { localStorage.setItem(CREATED_PROJECTS_KEY, JSON.stringify(createdProjects)); return true; }
       catch (error) { return false; }
     }
+    let archiveProjectPendingId = "";
+    function openArchiveProject(projectId) {
+      if (!window.FieldWorksArchive) { toast("Encrypted archives are available in the FieldWorks app."); return; }
+      const project=getProjectCardRecord(projectId);
+      if (!project || projectId === "demo-mini-renovation") return;
+      archiveProjectPendingId=String(projectId);
+      document.getElementById("archiveProjectPassword").value="";
+      document.getElementById("archiveProjectPasswordConfirm").value="";
+      document.getElementById("archiveProjectStatus").textContent="";
+      document.getElementById("archiveProjectStatus").classList.remove("error");
+      document.getElementById("archiveProjectTitle").textContent="Archive " + (project.name || "project");
+      document.getElementById("archiveProjectOverlay").hidden=false;
+      document.getElementById("archiveProjectPassword").focus();
+    }
+    function closeArchiveProject() { document.getElementById("archiveProjectOverlay").hidden=true; archiveProjectPendingId=""; }
+    function archiveProjectToFile() {
+      const password=document.getElementById("archiveProjectPassword").value;
+      const confirmPassword=document.getElementById("archiveProjectPasswordConfirm").value;
+      const status=document.getElementById("archiveProjectStatus");
+      if(password.length<8){status.textContent="Use a password with at least 8 characters.";status.classList.add("error");return;}
+      if(password!==confirmPassword){status.textContent="The passwords do not match.";status.classList.add("error");return;}
+      const project=getProjectCardRecord(archiveProjectPendingId);
+      if(!project){status.textContent="This project is no longer available.";status.classList.add("error");return;}
+      projectAlbumRecords(archiveProjectPendingId);
+      const archive={format:"fieldworks-project-archive",schemaVersion:1,createdAt:new Date().toISOString(),project:JSON.parse(JSON.stringify(project))};
+      status.textContent="Preparing encrypted file…";status.classList.remove("error");
+      window.FieldWorksArchive.archiveProject(archiveProjectPendingId,JSON.stringify(archive),password);
+    }
+    function setArchivePageStatus(message,isError) {
+      const status=document.getElementById("archivePageStatus");
+      if(status){status.textContent=message||"";status.classList.toggle("error",!!isError);}
+    }
+    window.onFieldWorksArchiveSaved=function(projectId){
+      loadCreatedProjects();
+      createdProjects=createdProjects.filter(function(project){return String(project.id)!==String(projectId);});
+      saveCreatedProjects();
+      [FAVORITE_PROJECTS_KEY,PINNED_PROJECTS_KEY].forEach(function(key){try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify(ids.filter(function(id){return String(id)!==String(projectId);})));}catch(error){}});
+      document.getElementById("archiveProjectOverlay").hidden=true;archiveProjectPendingId="";
+      refreshProjectCards();setArchivePageStatus("Project archived to an encrypted .arc file.",false);toast("Encrypted project archive saved.");
+    };
+    window.onFieldWorksArchiveError=function(projectId,message){
+      const status=document.getElementById("archiveProjectStatus");
+      if(projectId && String(projectId)===String(archiveProjectPendingId) && !document.getElementById("archiveProjectOverlay").hidden){status.textContent=message||"Archive failed.";status.classList.add("error");}
+      else setArchivePageStatus(message||"Archive operation failed.",true);
+    };
+    window.onFieldWorksArchiveLoaded=function(json){
+      try{
+        const archive=JSON.parse(json);
+        if(!archive||archive.format!=="fieldworks-project-archive"||archive.schemaVersion!==1||!archive.project||typeof archive.project.id!=="string"||typeof archive.project.name!=="string")throw new Error("This archive does not contain a supported FieldWorks project.");
+        loadCreatedProjects();
+        let project=archive.project;
+        const existingIndex=createdProjects.findIndex(function(item){return String(item.id)===String(project.id);});
+        if(existingIndex>=0){
+          if(window.confirm("A project with this ID already exists. Replace it with the archived copy?")){createdProjects[existingIndex]=project;}
+          else{project.id="project-restored-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);createdProjects.unshift(project);}
+        }else createdProjects.unshift(project);
+        if(!saveCreatedProjects())throw new Error("The project was read, but there is not enough device storage to restore it.");
+        setArchivePageStatus("Restored “"+project.name+"” from its encrypted archive.",false);renderCreatedProjects();showFieldWorksPage("projects");toast("Project restored from archive.");
+      }catch(error){setArchivePageStatus(error.message||"Could not restore this project archive.",true);}
+    };
+    document.getElementById("restoreProjectArchive").addEventListener("click",function(){
+      const password=document.getElementById("restoreArchivePassword").value;
+      if(!password){setArchivePageStatus("Enter the archive password first.",true);document.getElementById("restoreArchivePassword").focus();return;}
+      if(!window.FieldWorksArchive){setArchivePageStatus("Archive restore is available in the FieldWorks app.",true);return;}
+      setArchivePageStatus("Choose the .arc file to restore…",false);window.FieldWorksArchive.restoreArchive(password);
+    });
+    document.getElementById("confirmArchiveProject").addEventListener("click",archiveProjectToFile);
+    document.getElementById("closeArchiveProject").addEventListener("click",closeArchiveProject);
+    document.getElementById("cancelArchiveProject").addEventListener("click",closeArchiveProject);
+
     function escapeProjectText(value) {
       return String(value || "").replace(/[&<>"']/g, function(character) {
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character];
@@ -2131,9 +2216,10 @@ function loadDemoProjectState() {
       closeLoginCard();
     };
     document.addEventListener("keydown", function(event) {
-      if (event.key === "Escape") closeLoginCard();
+      if (event.key === "Escape") { closeLoginCard(); if(!document.getElementById("archiveProjectOverlay").hidden) closeArchiveProject(); }
     });
       openFieldWorksMenu();
 </script>
 </body>
 </html>
+
