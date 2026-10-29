@@ -305,6 +305,23 @@
   
     .demo-project-card{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(340px,.92fr);overflow:hidden;margin:14px 0 20px;border:1px solid var(--line);border-radius:20px;background:#fffefa;box-shadow:var(--shadow)}
     .demo-project-media{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:3px;min-height:310px;background:#e7eeea}
+    .project-media-placeholder,.project-media-video{display:grid;place-items:center;width:100%;height:100%;min-height:120px;background:linear-gradient(145deg,#e5f0e9,#d4e8e0);color:#237d7c;font-size:40px}
+    .project-media-video{background:#e7eef3;color:#62788d;font-size:14px;font-weight:700}
+    .project-stage-controls{margin:2px 0 12px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .project-journey-track{display:flex;gap:5px;margin:8px 0}
+    .project-stage-step{position:relative;flex:1;min-width:14px;height:20px;padding:0;border:0;border-radius:8px;background:#e8e6dc}
+    .project-stage-step.done,.project-stage-step.current{background:#f0a52a}
+    .project-stage-step.current:after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border-width:4px 4px 0;border-style:solid;border-color:#c9891d transparent transparent}
+    .project-stage-date-fields{display:grid;grid-template-columns:minmax(100px,1.2fr) minmax(80px,1fr) minmax(80px,1fr) auto;align-items:end;gap:6px;margin-top:8px}
+    .project-stage-date-fields label{display:grid;gap:3px;color:#718587;font-size:8px;font-weight:650}
+    .project-stage-date-fields select,.project-stage-date-fields input{width:100%;min-width:0;height:30px;padding:4px 5px;border:1px solid var(--line);border-radius:7px;background:#fffefa;color:var(--ink);font:inherit;font-size:9px}
+    .project-stage-save{height:30px;padding:0 8px;border:1px solid #c9ddd4;border-radius:7px;background:#f4faf6;color:#176d70;font-size:8px;font-weight:750}
+    .project-album-stage-head strong{font-size:9px}
+    .mini-album{display:grid;gap:5px}
+    .mini-album-open{display:grid;gap:4px;width:100%;padding:0;border:0;background:transparent;text-align:left;color:var(--ink)}
+    .mini-album-move-label{display:grid;gap:3px;padding-top:5px;border-top:1px solid #ecefe9;color:#718587;font-size:8px;font-weight:650}
+    .mini-album-move-label select{width:100%;min-width:0;height:28px;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:#fffefa;color:var(--ink);font-size:9px}
+    @media(max-width:480px){.project-stage-date-fields{grid-template-columns:1fr 1fr}.project-stage-date-fields label:first-child{grid-column:1/-1}.project-stage-save{grid-column:1/-1}}
     .demo-photo{min-width:0;min-height:0;overflow:hidden}.demo-photo img{display:block;width:100%;height:100%;object-fit:cover}.demo-photo-main,.demo-photo-secondary{grid-row:span 2}.demo-photo-label{position:absolute;left:12px;bottom:12px;padding:6px 9px;border-radius:20px;background:#143f4be0;color:#fff;font-size:9px;font-weight:700}
     .demo-project-copy{display:flex;flex-direction:column;padding:22px;min-width:0}.demo-project-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}.demo-project-tag{padding:6px 10px;border-radius:20px;background:#e7f3ed;color:#507569;font-size:9px}.demo-project-favorite{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff1cf;color:#a56e15;font-size:17px}.demo-project-copy h3{margin:12px 0 5px;color:var(--navy);font-family:Georgia,serif;font-size:23px;font-weight:600;line-height:1.2}.demo-project-description{margin:0;color:#748286;font-size:11px}.demo-project-stats{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-project-stats span{padding:4px 8px;border:1px solid #b7d1ca;border-radius:20px;color:#49656a;font-size:9px}.demo-project-stats b{color:var(--navy)}.demo-project-last{display:grid;gap:3px;margin:0 0 14px;color:#66797d;font-size:10px}.demo-project-last strong{color:#455e63}.demo-stage-head{display:flex;justify-content:space-between;gap:10px;color:#75858a;font-size:9px}.demo-stage-head b{color:#a17125}.demo-stage-track{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:9px 0 14px}.demo-stage-track span{height:6px;border-radius:10px;background:#e8e6dc}.demo-stage-track span.done,.demo-stage-track span.current{background:#f0a52a}.demo-journal{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;color:#60777a;font-size:10px}.demo-journal summary{cursor:pointer;color:#176d70;font-weight:750}.demo-journal ul{display:grid;gap:8px;margin:10px 0 0;padding-left:18px}.demo-journal li strong{display:block;color:var(--navy)}
     @media(max-width:850px){.demo-project-card{grid-template-columns:1fr}.demo-project-media{min-height:260px}.demo-project-copy{padding:17px}}
@@ -331,7 +348,7 @@
     @media(max-width:600px){.create-project-card{padding:18px}.created-project-card{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:13px}.created-project-icon{width:44px;height:44px}.created-project-meta{grid-column:2;white-space:normal}}
 
   
-    .project-artifacts{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.artifact-add-button{padding:9px 12px;border:1px solid #cfe1d9;border-radius:10px;background:#f4faf6;color:#176d70;font-size:10px;font-weight:750}.artifact-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:9px}.artifact-item{min-width:0;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#61777a;font-size:10px;overflow-wrap:anywhere}.artifact-item img,.artifact-item video{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:7px;background:#e8efea}.artifact-item audio{display:block;width:100%;height:34px}.artifact-item p{margin:5px 0 0;white-space:pre-wrap}.artifact-item small{display:block;margin-top:5px;color:#829094;font-size:8px}.artifact-overlay[hidden]{display:none!important}.artifact-overlay{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:18px;background:#082c5077;backdrop-filter:blur(3px)}.artifact-card{width:min(100%,460px);max-height:min(92vh,700px);overflow:auto;padding:21px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:0 22px 70px #082c5040}.artifact-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}.artifact-card-head h2{margin:0;color:var(--navy);font:500 22px/1.2 Georgia,serif}.artifact-card-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.artifact-close{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#62777a;font-size:20px}.artifact-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}.project-artifact-label{margin:0 0 6px;color:#74878a;font-size:9px;font-weight:650}.project-artifact-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.project-artifact-options .artifact-option{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:6px;min-width:0;min-height:52px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fffefa;color:#435f68;text-align:left;transition:background .15s,border-color .15s}.project-artifact-options .artifact-option:hover{border-color:#b9d9cf;background:#f5faf7}.project-artifact-options .artifact-option-icon{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;padding:4px;border-radius:8px;background:#e7f3ed;color:#188c8b}.project-artifact-options .artifact-option:nth-child(2) .artifact-option-icon{background:#f7f0df;color:#a98642}.project-artifact-options .artifact-option:nth-child(4) .artifact-option-icon{background:#edf0f6;color:#71809a}.project-artifact-options .artifact-option-icon svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.project-artifact-options .artifact-option strong{font-size:9px;font-weight:600;line-height:1.2;white-space:nowrap}.project-albums{margin-top:10px;padding:11px 12px;border-radius:13px;background:#f4f8f4}.project-albums-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--navy);font-size:10px}.project-albums-heading small{color:#829093;font-size:8px}.project-album-empty{display:grid;place-items:center;min-height:78px;margin-top:8px;padding:12px;border:1px dashed #c9d9d0;border-radius:11px;color:#879397;text-align:center;font-size:10px}.template-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}.template-card{display:flex;min-width:0;flex-direction:column;align-items:flex-start;padding:17px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}.template-art{display:grid;place-items:center;width:42px;height:42px;margin-bottom:11px;border-radius:13px;background:#e6f3ee;font-size:21px}.template-card h3{margin:0 0 6px;color:var(--navy);font-family:Georgia,serif;font-size:18px;font-weight:500}.template-card p{min-height:42px;margin:0 0 10px;color:#77878b;font-size:10px}.template-stage-preview{display:-webkit-box;overflow:hidden;margin:0 0 12px;color:#718587;font-size:8px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}.template-card .button-primary{width:100%;margin-top:auto;padding:9px 11px;border:0;border-radius:10px;background:var(--teal);color:#fff;font-size:10px;font-weight:750}.template-hint{margin:0;padding:9px 10px;border-radius:9px;background:#f3faf7;color:#61777a;font-size:10px;line-height:1.5}@media(max-width:850px){.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.template-grid{grid-template-columns:1fr}.template-card{padding:15px}.template-card p{min-height:0}}@media(max-width:480px){.project-artifact-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.project-artifact-options .artifact-option{min-height:48px;padding:8px 10px}.project-artifact-options .artifact-option strong{font-size:10px}}.mini-albums{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;margin:8px 0}.project-album-stage{margin-top:10px;padding-top:9px;border-top:1px solid #f0ede4}.project-album-stage-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:#718587;font-size:9px}.project-album-stage-head small{color:#829093;font-size:8px}.mini-album{min-width:0;padding:6px;border:1px solid var(--line);border-radius:10px;background:#fffefa;text-align:left;color:var(--ink)}.mini-album-grid{height:90px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,1fr);gap:3px;overflow:hidden;border-radius:8px;background:#e8f0eb}.mini-album-grid img,.mini-album-grid video{width:100%;height:100%;object-fit:cover}.mini-album-grid img:only-child,.mini-album-grid .mini-album-video:only-child{grid-column:1/3;grid-row:1/3}.mini-album-video{display:grid;place-items:center;background:#e7f3ed;color:#138c92;font-size:17px}.mini-album-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:5px 1px 1px;font-size:9px;font-weight:750}.mini-album-meta{display:block;margin:0 1px;color:#879397;font-size:8px}.artifact-album-card{width:min(100%,760px)}.artifact-album-stage{position:relative;display:grid;place-items:center;height:min(48vh,390px);min-height:180px;overflow:hidden;border-radius:12px;background:#071c23}.artifact-album-stage img,.artifact-album-stage video{width:100%;height:100%;object-fit:contain}.artifact-album-arrow{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border:1px solid #ffffff77;border-radius:50%;background:#071c2388;color:#fff;font-size:23px}.artifact-album-arrow:first-of-type{left:9px}.artifact-album-arrow:last-of-type{right:9px}.artifact-album-meta{display:flex;justify-content:space-between;gap:8px;margin:8px 0;color:#61787c;font-size:9px}.artifact-album-meta small{color:#829093}.artifact-album-note-label{display:block;margin:8px 0 5px;color:#62777a;font-size:10px;font-weight:700}.artifact-album-voices{display:grid;gap:7px;margin-top:10px}.artifact-album-voice{display:flex;align-items:center;gap:8px}.artifact-album-voice audio{flex:1;min-width:0}.artifact-album-voice small{color:#829093;font-size:9px}.artifact-option{display:flex;align-items:center;gap:10px;min-height:64px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);text-align:left}.artifact-option-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:#e7f3ed;color:#138c92;font-size:18px}.artifact-option strong{display:block;font-size:11px}.artifact-option small{display:block;color:#829094;font-size:9px}.artifact-status{min-height:18px;margin:11px 0 0;color:#62777a;font-size:10px}.artifact-status.error{color:#a23d3d}.artifact-note-text{width:100%;min-height:130px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;resize:vertical}.artifact-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.artifact-action{padding:9px 13px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:11px;font-weight:750}.artifact-action.primary{border:0;background:var(--teal);color:#fff}@media(max-width:500px){.artifact-options{grid-template-columns:1fr}.artifact-card{padding:17px}}
+    .project-artifacts{margin-top:12px;padding:9px 10px;border:1px solid #dce8df;border-radius:12px;background:#f5f8f4}.artifact-add-button{padding:9px 12px;border:1px solid #cfe1d9;border-radius:10px;background:#f4faf6;color:#176d70;font-size:10px;font-weight:750}.artifact-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:9px}.artifact-item{min-width:0;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#61777a;font-size:10px;overflow-wrap:anywhere}.artifact-item img,.artifact-item video{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:7px;background:#e8efea}.artifact-item audio{display:block;width:100%;height:34px}.artifact-item p{margin:5px 0 0;white-space:pre-wrap}.artifact-item small{display:block;margin-top:5px;color:#829094;font-size:8px}.artifact-overlay[hidden]{display:none!important}.artifact-overlay{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:18px;background:#082c5077;backdrop-filter:blur(3px)}.artifact-card{width:min(100%,460px);max-height:min(92vh,700px);overflow:auto;padding:21px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:0 22px 70px #082c5040}.artifact-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}.artifact-card-head h2{margin:0;color:var(--navy);font:500 22px/1.2 Georgia,serif}.artifact-card-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.artifact-close{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#62777a;font-size:20px}.artifact-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}.project-artifact-label{margin:0 0 6px;color:#74878a;font-size:9px;font-weight:650}.project-artifact-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.project-artifact-options .artifact-option{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:36px;padding:4px 5px;border:1px solid #d7e3dc;border-radius:8px;background:#fffefa;color:#435f68;text-align:center;transition:background .15s,border-color .15s}.project-artifact-options .artifact-option:hover{border-color:#b9d9cf;background:#f5faf7}.project-artifact-options .artifact-option-icon{display:grid;place-items:center;flex:0 0 19px;width:19px;height:19px;padding:3px;border-radius:6px;background:#e7f3ed;color:#188c8b}.project-artifact-options .artifact-option:nth-child(2) .artifact-option-icon{background:#f7f0df;color:#a98642}.project-artifact-options .artifact-option:nth-child(4) .artifact-option-icon{background:#edf0f6;color:#71809a}.project-artifact-options .artifact-option-icon svg{display:block;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.project-artifact-options .artifact-option strong{min-width:0;font-size:8px;font-weight:650;line-height:1.1;white-space:normal}.project-albums{margin-top:10px;padding:11px 12px;border-radius:13px;background:#f4f8f4}.project-albums-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--navy);font-size:10px}.project-albums-heading small{color:#829093;font-size:8px}.project-album-empty{display:grid;place-items:center;min-height:78px;margin-top:8px;padding:12px;border:1px dashed #c9d9d0;border-radius:11px;color:#879397;text-align:center;font-size:10px}.template-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}.template-card{display:flex;min-width:0;flex-direction:column;align-items:flex-start;padding:17px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}.template-art{display:grid;place-items:center;width:42px;height:42px;margin-bottom:11px;border-radius:13px;background:#e6f3ee;font-size:21px}.template-card h3{margin:0 0 6px;color:var(--navy);font-family:Georgia,serif;font-size:18px;font-weight:500}.template-card p{min-height:42px;margin:0 0 10px;color:#77878b;font-size:10px}.template-stage-preview{display:-webkit-box;overflow:hidden;margin:0 0 12px;color:#718587;font-size:8px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}.template-card .button-primary{width:100%;margin-top:auto;padding:9px 11px;border:0;border-radius:10px;background:var(--teal);color:#fff;font-size:10px;font-weight:750}.template-hint{margin:0;padding:9px 10px;border-radius:9px;background:#f3faf7;color:#61777a;font-size:10px;line-height:1.5}@media(max-width:850px){.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.template-grid{grid-template-columns:1fr}.template-card{padding:15px}.template-card p{min-height:0}}@media(max-width:480px){.project-artifact-options{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}.project-artifact-options .artifact-option{min-height:34px;padding:3px 2px;gap:3px}.project-artifact-options .artifact-option-icon{flex-basis:17px;width:17px;height:17px}.project-artifact-options .artifact-option-icon svg{width:12px;height:12px}.project-artifact-options .artifact-option strong{font-size:7.5px}}.mini-albums{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;margin:8px 0}.project-album-stage{margin-top:10px;padding-top:9px;border-top:1px solid #f0ede4}.project-album-stage-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:#718587;font-size:9px}.project-album-stage-head small{color:#829093;font-size:8px}.mini-album{min-width:0;padding:6px;border:1px solid var(--line);border-radius:10px;background:#fffefa;text-align:left;color:var(--ink)}.mini-album-grid{height:90px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,1fr);gap:3px;overflow:hidden;border-radius:8px;background:#e8f0eb}.mini-album-grid img,.mini-album-grid video{width:100%;height:100%;object-fit:cover}.mini-album-grid img:only-child,.mini-album-grid .mini-album-video:only-child{grid-column:1/3;grid-row:1/3}.mini-album-video{display:grid;place-items:center;background:#e7f3ed;color:#138c92;font-size:17px}.mini-album-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:5px 1px 1px;font-size:9px;font-weight:750}.mini-album-meta{display:block;margin:0 1px;color:#879397;font-size:8px}.artifact-album-card{width:min(100%,760px)}.artifact-album-stage{position:relative;display:grid;place-items:center;height:min(48vh,390px);min-height:180px;overflow:hidden;border-radius:12px;background:#071c23}.artifact-album-stage img,.artifact-album-stage video{width:100%;height:100%;object-fit:contain}.artifact-album-arrow{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border:1px solid #ffffff77;border-radius:50%;background:#071c2388;color:#fff;font-size:23px}.artifact-album-arrow:first-of-type{left:9px}.artifact-album-arrow:last-of-type{right:9px}.artifact-album-meta{display:flex;justify-content:space-between;gap:8px;margin:8px 0;color:#61787c;font-size:9px}.artifact-album-meta small{color:#829093}.artifact-album-note-label{display:block;margin:8px 0 5px;color:#62777a;font-size:10px;font-weight:700}.artifact-album-voices{display:grid;gap:7px;margin-top:10px}.artifact-album-voice{display:flex;align-items:center;gap:8px}.artifact-album-voice audio{flex:1;min-width:0}.artifact-album-voice small{color:#829093;font-size:9px}.artifact-option{display:flex;align-items:center;gap:10px;min-height:64px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);text-align:left}.artifact-option-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:#e7f3ed;color:#138c92;font-size:18px}.artifact-option strong{display:block;font-size:11px}.artifact-option small{display:block;color:#829094;font-size:9px}.artifact-status{min-height:18px;margin:11px 0 0;color:#62777a;font-size:10px}.artifact-status.error{color:#a23d3d}.artifact-note-text{width:100%;min-height:130px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;resize:vertical}.artifact-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.artifact-action{padding:9px 13px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:11px;font-weight:750}.artifact-action.primary{border:0;background:var(--teal);color:#fff}@media(max-width:500px){.artifact-options{grid-template-columns:1fr}.artifact-card{padding:17px}}
 
   </style>
 </head>
@@ -557,6 +574,7 @@
       spent: 8420,
       budget: 11200,
       stage: 2,
+      stageDates: [],
       stages: ["Plan & prepare", "Cabinet installation", "Finishing touches", "Complete"],
       latestMoment: "25 Oct 2026 · 05:30 pm",
       photos: [
@@ -569,11 +587,115 @@
         { date: "25 Oct · Sample progress photo", text: "Finishing touches: hardware fitted and sealant drying. Next up is the final clean and walkthrough." }
       ]
     };
+function loadDemoProjectState() {
+      if (demoProjectStateLoaded) return;
+      demoProjectStateLoaded = true;
+      try {
+        const saved = JSON.parse(localStorage.getItem(DEMO_PROJECT_STATE_KEY) || "{}");
+        if (Number.isInteger(saved.stage)) MINI_RENOVATION_DEMO.stage = Math.max(0, Math.min(MINI_RENOVATION_DEMO.stages.length - 1, saved.stage));
+        if (Array.isArray(saved.stageDates)) MINI_RENOVATION_DEMO.stageDates = saved.stageDates;
+      } catch (error) {}
+    }
+    function saveDemoProjectState() {
+      try {
+        localStorage.setItem(DEMO_PROJECT_STATE_KEY, JSON.stringify({
+          stage: MINI_RENOVATION_DEMO.stage,
+          stageDates: MINI_RENOVATION_DEMO.stageDates || []
+        }));
+      } catch (error) {}
+    }
+    function getProjectCardRecord(projectId) {
+      if (projectId === "demo-mini-renovation") { loadDemoProjectState(); return MINI_RENOVATION_DEMO; }
+      loadCreatedProjects();
+      return createdProjects.find(function(project) { return String(project.id) === String(projectId); }) || null;
+    }
+    function saveProjectCardRecord(projectId) {
+      if (projectId === "demo-mini-renovation") saveDemoProjectState();
+      else saveCreatedProjects();
+    }
+    function projectCardStageNames(project, projectId) {
+      const values = projectId === "demo-mini-renovation" ? project.stages : project.stageNames;
+      return Array.isArray(values) && values.length ? values : ["Planning", "In progress", "Complete"];
+    }
+    function renderProjectStageControls(projectId, project) {
+      const safeId = escapeProjectText(projectId);
+      const stages = projectCardStageNames(project, projectId);
+      const currentStage = Math.max(0, Math.min(stages.length - 1, Number(project.stage) || 0));
+      const dates = Array.isArray(project.stageDates) ? project.stageDates : [];
+      const selectedDates = dates[currentStage] || {};
+      const track = stages.map(function(stage, index) {
+        const state = index < currentStage ? "done" : index === currentStage ? "current" : "";
+        return '<button type="button" class="project-stage-step ' + state + '" data-project-stage="' + safeId + '" data-stage-index="' + index + '" aria-label="Set ' + escapeProjectText(stage) + ' as the current stage" aria-pressed="' + (index === currentStage) + '" title="' + escapeProjectText(stage) + '"></button>';
+      }).join("");
+      const options = stages.map(function(stage, index) {
+        return '<option value="' + index + '"' + (index === currentStage ? " selected" : "") + '>' + escapeProjectText(stage) + '</option>';
+      }).join("");
+      return '<section class="project-stage-controls"><div class="demo-stage-head"><span>Project journey · ' + escapeProjectText(stages[currentStage]) + '</span><b>Stage ' + (currentStage + 1) + ' of ' + stages.length + '</b></div><div class="project-journey-track" aria-label="Project journey">' + track + '</div><div class="project-stage-date-fields"><label>Stage dates<select data-stage-date-select="' + safeId + '">' + options + '</select></label><label>Start date<input type="date" data-project-stage-date="start" value="' + escapeProjectText(selectedDates.start || "") + '"></label><label>End date<input type="date" data-project-stage-date="end" value="' + escapeProjectText(selectedDates.end || "") + '"></label><button type="button" class="project-stage-save" data-save-project-stage-dates="' + safeId + '">Save dates</button></div></section>';
+    }
+    function projectCardMediaMarkup(project, projectId, isDemo) {
+      let media = [];
+      let allPhotoCount = 0;
+      if (isDemo) {
+        media = (project.photos || []).slice(0, 2).map(function(item) { return { type: "photo", url: item.src, alt: item.alt }; });
+        allPhotoCount = media.length;
+      } else {
+        const albums = projectAlbumRecords(projectId).slice().sort(function(a, b) {
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
+        albums.forEach(function(album) {
+          const items = albumMediaItems(projectId, album);
+          allPhotoCount += items.filter(function(item) { return item.type === "photo"; }).length;
+          items.forEach(function(item) { if (media.length < 2) media.push(item); });
+        });
+      }
+      const icon = project.type === "Garden Works" || project.type === "Farms & Agriculture" ? "🌱" :
+        project.type === "Catering" || project.type === "Birthday Party" ? "✿" :
+        project.type === "Field Trips" ? "⌁" : "⌂";
+      const slots = [0, 1].map(function(index) {
+        const item = media[index];
+        let content = "";
+        if (item && item.type === "photo" && item.url) content = '<img src="' + escapeProjectText(item.url) + '" alt="' + escapeProjectText(item.alt || "Project progress photo") + '">';
+        else if (item && item.type === "video") content = '<span class="project-media-video">▶ Video</span>';
+        else content = '<span class="project-media-placeholder" aria-hidden="true">' + icon + '</span>';
+        return '<div class="demo-photo ' + (index === 0 ? "demo-photo-main" : "demo-photo-secondary") + '">' + content + '</div>';
+      }).join("");
+      const countLabel = allPhotoCount ? "Progress · " + allPhotoCount + " photo" + (allPhotoCount === 1 ? "" : "s") + " in albums" : "Project journal";
+      return '<div class="demo-project-media">' + slots + '<span class="demo-photo-label">' + countLabel + '</span></div>';
+    }
+    function renderUnifiedProjectCard(project, isDemo) {
+      const projectId = isDemo ? "demo-mini-renovation" : project.id;
+      if (isDemo) loadDemoProjectState();
+      const safeId = escapeProjectText(projectId);
+      const type = escapeProjectText(project.type || "Project");
+      const name = escapeProjectText(project.name || "Untitled project");
+      const description = escapeProjectText(project.description || "No description added yet.");
+      const createdDate = new Date(project.createdAt || Date.now());
+      const created = Number.isNaN(createdDate.getTime()) ? "" : createdDate.toLocaleDateString("en-MY", {day:"numeric",month:"short",year:"numeric"});
+      const artifacts = projectArtifactList(projectId);
+      const latestArtifact = artifacts.slice().sort(function(a, b) {
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      })[0];
+      const latest = isDemo ? project.latestMoment : latestArtifact
+        ? new Date(latestArtifact.createdAt || Date.now()).toLocaleString("en-MY", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
+        : created;
+      const issues = Number(project.issueCount) || (project.issues || []).length || 0;
+      const reminders = Number(project.reminderCount) || 0;
+      const spent = Number(project.spent) || 0;
+      const notes = isDemo ? (project.journal || []).map(function(note) {
+        return '<li><strong>' + escapeProjectText(note.date) + '</strong>' + escapeProjectText(note.text) + '</li>';
+      }).join("") : "";
+      return '<article class="demo-project-card shared-project-card" data-project-card="' + safeId + '">' +
+        projectCardMediaMarkup(project, projectId, isDemo) +
+        '<div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + type + '</span><span class="demo-project-favorite" aria-hidden="true">★</span></div>' +
+        '<h3>' + name + '</h3><p class="demo-project-description">' + description + '</p>' +
+        '<div class="demo-project-stats"><span>Issues <b>' + issues + '</b></span><span>Reminders <b>' + reminders + '</b></span><span>Spent <b>RM ' + spent.toLocaleString("en-MY") + '</b></span></div>' +
+        '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
+        renderProjectStageControls(projectId, project) +
+        (isDemo && notes ? '<details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + spent.toLocaleString("en-MY") + '</p></details>' : "") +
+        renderArtifactControls(projectId) + '</div></article>';
+    }
     function miniRenovationCardMarkup() {
-      const demo = MINI_RENOVATION_DEMO;
-      const filled = demo.stages.map((stage, index) => '<span class="' + (index < demo.stage ? 'done' : index === demo.stage ? 'current' : '') + '" aria-label="' + stage + '"></span>').join('');
-      const notes = demo.journal.map(note => '<li><strong>' + note.date + '</strong>' + note.text + '</li>').join('');
-      return '<article class="demo-project-card"><div class="demo-project-media"><div class="demo-photo demo-photo-main"><img src="' + demo.photos[0].src + '" alt="' + demo.photos[0].alt + '"></div><div class="demo-photo demo-photo-secondary"><img src="' + demo.photos[1].src + '" alt="' + demo.photos[1].alt + '"></div><span class="demo-photo-label">Progress · 2 sample photos</span></div><div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + demo.type + '</span><span class="demo-project-favorite" aria-label="Favourite project">★</span></div><h3>' + demo.name + '</h3><p class="demo-project-description">' + demo.description + '</p><div class="demo-project-stats"><span>Issues <b>' + demo.issueCount + '</b></span><span>Reminders <b>' + demo.reminderCount + '</b></span><span>Spent <b>RM ' + demo.spent.toLocaleString("en-MY") + '</b></span></div><p class="demo-project-last"><strong>Latest moment</strong><span>Updated · ' + demo.latestMoment + '</span></p><div class="demo-stage-head"><span>Project journey</span><b>Stage ' + (demo.stage + 1) + ' of ' + demo.stages.length + '</b></div><div class="demo-stage-track" aria-label="Stage ' + (demo.stage + 1) + ' of ' + demo.stages.length + '">' + filled + '</div><details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + demo.budget.toLocaleString("en-MY") + '</p></details>' + renderArtifactControls("demo-mini-renovation") + '</div></article>';
+      return renderUnifiedProjectCard(MINI_RENOVATION_DEMO, true);
     }
     function renderMiniRenovationDemo() {
       const card = miniRenovationCardMarkup();
@@ -589,10 +711,12 @@
     const CREATED_PROJECTS_KEY = "fieldworks.debug.created-projects.v1";
     const DEMO_ARTIFACTS_KEY = "fieldworks.debug.demo-artifacts.v1";
     const DEMO_ALBUMS_KEY = "fieldworks.debug.demo-albums.v1";
+    const DEMO_PROJECT_STATE_KEY = "fieldworks.debug.demo-project-state.v1";
     let demoArtifacts = [];
     const FIELDWORKS_TEMPLATES = [{"id":"construction","name":"Construction project","type":"Construction","icon":"⌂","description":"Plan a renovation or build, follow each stage, and keep photos, notes, and costs together.","example":"e.g. Home renovation","stages":["Discovery & Site visit","Initiation","In Progress","Handing Over","Completed"]},{"id":"catering","name":"Catering & events","type":"Catering","icon":"✿","description":"Organise an event or catering job with a simple project journal for every update.","example":"e.g. Harvest day catering","stages":["Plan the menu","Book suppliers","Prepare","Event day","Wrap up"]},{"id":"field-trips","name":"Field study & trips","type":"Field Trips","icon":"⌁","description":"Capture field observations, trip notes, media, and follow-ups in one place.","example":"e.g. Riverbank field study","stages":["Plan the visit","Confirm access","Collect observations","Review findings","Share report"]},{"id":"garden-works","name":"Garden Works","type":"Garden Works","icon":"🌿","description":"Plan the garden, prepare the site, track planting, and keep care notes together.","example":"e.g. Backyard garden","stages":["Plan the garden","Prepare the ground","Planting","Care and maintenance","Garden complete"]},{"id":"farms-agriculture","name":"Farms & Agriculture","type":"Farms & Agriculture","icon":"🌱","description":"Plan land, crop cycles, field care, harvest, and post-harvest work.","example":"e.g. Small farm project","stages":["Land assessment & planning","Land preparation & inputs","Planting & establishment","Crop care & monitoring","Harvest & post-harvest review"]},{"id":"birthday-party","name":"Birthday Party","type":"Birthday Party","icon":"🎂","description":"Organise the date, guests, venue, and party-day details in one project.","example":"e.g. Aina’s birthday","stages":["Choose date and theme","Guest list and invitations","Book venue and supplies","Party day","Thank you and wrap up"]},{"id":"charity-function","name":"Charity Function","type":"Charity Function","icon":"♥","description":"Coordinate the cause, team, promotion, event day, and supporter follow-up.","example":"e.g. Community fundraiser","stages":["Set purpose and target","Form the team","Plan venue and programme","Promote and gather support","Function day","Report and thank supporters"]}];
     let selectedProjectTemplateId = "";
     let demoAlbums = [];
+    let demoProjectStateLoaded = false;
     let demoArtifactsLoaded = false;
     let activeArtifactProjectId = "";
     let activeMediaType = "";
@@ -808,25 +932,23 @@
     function renderArtifactControls(projectId) {
       const safeId = escapeProjectText(projectId);
       const albums = projectAlbumRecords(projectId);
-      const grouped = {};
-      let albumCount = 0;
-      albums.forEach(function(album) {
-        if (!albumMediaItems(projectId, album).length) return;
-        albumCount += 1;
-        const stage = Math.max(0, Number(album.stage) || 0);
-        (grouped[stage] || (grouped[stage] = [])).push(album);
-      });
       const project = projectId === "demo-mini-renovation"
         ? MINI_RENOVATION_DEMO
-        : createdProjects.find(function(item) { return item.id === projectId; });
+        : createdProjects.find(function(item) { return String(item.id) === String(projectId); });
+      const stageNames = projectCardStageNames(project || {}, projectId);
+      const grouped = {};
+      albums.forEach(function(album) {
+        if (!albumMediaItems(projectId, album).length) return;
+        const stage = Math.max(0, Math.min(stageNames.length - 1, Number(album.stage) || 0));
+        (grouped[stage] || (grouped[stage] = [])).push(album);
+      });
+      const albumCount = Object.keys(grouped).reduce(function(sum, stage) { return sum + grouped[stage].length; }, 0);
       const albumMarkup = albumCount
         ? '<div class="project-albums"><div class="project-albums-heading"><strong>Project albums</strong><small>' + albumCount + ' ' + (albumCount === 1 ? 'album' : 'albums') + ' · grouped by stage</small></div>' +
           Object.keys(grouped).sort(function(a,b) { return Number(a)-Number(b); }).map(function(stageValue) {
             const stage = Number(stageValue);
-            const stageName = project && Array.isArray(project.stageNames)
-              ? project.stageNames[stage] || ("Stage " + (stage + 1))
-              : (projectId === "demo-mini-renovation" ? MINI_RENOVATION_DEMO.stages[stage] || ("Stage " + (stage + 1)) : "Stage " + (stage + 1));
-            const cards = grouped[stage].sort(function(a,b) { return new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime(); }).map(function(album) {
+            const stageName = stageNames[stage] || ("Stage " + (stage + 1));
+            const cards = grouped[stage].sort(function(a,b) { return new Date(b.createdAt || 0).getTime()-new Date(a.createdAt || 0).getTime(); }).map(function(album) {
               const items = albumMediaItems(projectId, album);
               const preview = items.slice(0,4).map(function(item) {
                 return item.type === "video" ? '<span class="mini-album-video">▶</span>' : '<img src="' + escapeProjectText(item.url) + '" alt="">';
@@ -834,7 +956,10 @@
               const date = new Date(album.createdAt || Date.now());
               const title = escapeProjectText(album.title || (Number.isNaN(date.getTime()) ? "Project album" : date.toLocaleString("en-MY", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})));
               const notes = (album.note ? 1 : 0) + (album.voiceNotes || []).length;
-              return '<button class="mini-album" type="button" data-open-album="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '"><span class="mini-album-grid">' + preview + '</span><span class="mini-album-title">' + title + '</span><span class="mini-album-meta">' + items.length + ' ' + (items.length === 1 ? 'item' : 'items') + (notes ? ' · ' + notes + ' ' + (notes === 1 ? 'note' : 'notes') : '') + ' · open album</span></button>';
+              const moveOptions = stageNames.map(function(name,index) {
+                return '<option value="' + index + '"' + (index === stage ? " selected" : "") + '>' + escapeProjectText(name) + '</option>';
+              }).join("");
+              return '<article class="mini-album"><button class="mini-album-open" type="button" data-open-album="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '"><span class="mini-album-grid">' + preview + '</span><span class="mini-album-title">' + title + '</span><span class="mini-album-meta">' + items.length + ' ' + (items.length === 1 ? 'item' : 'items') + (notes ? ' · ' + notes + ' ' + (notes === 1 ? 'note' : 'notes') : '') + ' · open album</span></button><label class="mini-album-move-label">Move album to<select data-move-album-project="' + safeId + '" data-move-album-id="' + escapeProjectText(album.id) + '">' + moveOptions + '</select></label></article>';
             }).join("");
             return '<section class="project-album-stage"><div class="project-album-stage-head"><strong>' + escapeProjectText(stageName) + '</strong><small>' + grouped[stage].length + ' ' + (grouped[stage].length === 1 ? 'album' : 'albums') + '</small></div><div class="mini-albums">' + cards + '</div></section>';
           }).join("") + '</div>'
@@ -984,6 +1109,67 @@
         if (albumToReopen) openArtifactAlbum(projectId, albumToReopen);
       }
     }
+    function wireProjectCardControls() {
+      document.addEventListener("click", function(event) {
+        const stageButton = event.target.closest("[data-project-stage][data-stage-index]");
+        if (stageButton) {
+          const projectId = stageButton.dataset.projectStage;
+          const project = getProjectCardRecord(projectId);
+          if (!project) return;
+          project.stage = Number(stageButton.dataset.stageIndex) || 0;
+          saveProjectCardRecord(projectId);
+          refreshProjectCards();
+          return;
+        }
+        const saveDates = event.target.closest("[data-save-project-stage-dates]");
+        if (saveDates) {
+          const projectId = saveDates.dataset.saveProjectStageDates;
+          const card = saveDates.closest("[data-project-card]");
+          const project = getProjectCardRecord(projectId);
+          if (!project || !card) return;
+          const selector = card.querySelector("[data-stage-date-select]");
+          const index = selector ? Number(selector.value) || 0 : 0;
+          const start = card.querySelector('[data-project-stage-date="start"]').value;
+          const end = card.querySelector('[data-project-stage-date="end"]').value;
+          if (start && end && end < start) { toast("The end date must be after the start date."); return; }
+          if (!Array.isArray(project.stageDates)) project.stageDates = [];
+          project.stageDates[index] = { start: start, end: end };
+          saveProjectCardRecord(projectId);
+          refreshProjectCards();
+          return;
+        }
+      });
+      document.addEventListener("change", function(event) {
+        const stageSelect = event.target.closest("[data-stage-date-select]");
+        if (stageSelect) {
+          const card = stageSelect.closest("[data-project-card]");
+          const project = getProjectCardRecord(stageSelect.dataset.stageDateSelect);
+          const index = Number(stageSelect.value) || 0;
+          const dates = project && Array.isArray(project.stageDates) ? project.stageDates[index] || {} : {};
+          if (card) {
+            card.querySelector('[data-project-stage-date="start"]').value = dates.start || "";
+            card.querySelector('[data-project-stage-date="end"]').value = dates.end || "";
+          }
+          return;
+        }
+        const moveSelect = event.target.closest("[data-move-album-project]");
+        if (moveSelect) {
+          const projectId = moveSelect.dataset.moveAlbumProject;
+          const albumId = moveSelect.dataset.moveAlbumId;
+          const album = projectAlbumRecords(projectId).find(function(item) { return String(item.id) === String(albumId); });
+          if (!album) return;
+          album.stage = Math.max(0, Number(moveSelect.value) || 0);
+          saveProjectArtifactData(projectId);
+          refreshProjectCards();
+        }
+      });
+    }
+    function refreshProjectCards() {
+      const top = window.scrollY;
+      renderMiniRenovationDemo();
+      renderCreatedProjects();
+      requestAnimationFrame(function() { window.scrollTo({ top: top, behavior: "auto" }); });
+    }
     function wireArtifactMenu() {
       document.addEventListener("click", function(event) {
         const closeButton = event.target.closest("[data-close-artifact]");
@@ -1123,13 +1309,7 @@
       });
     }
     function renderCreatedProjectCard(project) {
-      const name = escapeProjectText(project.name);
-      const type = escapeProjectText(project.type);
-      const description = escapeProjectText(project.description || "No description added yet.");
-      const createdAt = new Date(project.createdAt);
-      const created = Number.isNaN(createdAt.getTime()) ? "" : createdAt.toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" });
-      const icon = type === "Garden Works" || type === "Farms &amp; Agriculture" ? "🌱" : type === "Catering" || type === "Birthday Party" ? "✿" : type === "Field Trips" ? "⌁" : "⌂";
-      return '<article class="created-project-card"><div class="created-project-icon" aria-hidden="true">' + icon + '</div><div class="created-project-info"><span class="demo-project-tag">' + type + '</span><h3>' + name + '</h3><p>' + description + '</p></div><span class="created-project-meta">Created' + (created ? ' · ' + created : '') + '</span>' + renderArtifactControls(project.id) + '</article>';
+      return renderUnifiedProjectCard(project, false);
     }
     function renderCreatedProjects() {
       loadCreatedProjects();
@@ -1191,6 +1371,7 @@
         description: document.getElementById("newProjectDescription").value.trim(),
         createdAt: new Date().toISOString(),
         stage: 0,
+        stageDates: [],
         stageNames: (template ? template.stages : ["Discovery & Site visit", "Initiation", "In Progress", "Handing Over", "Completed"]).slice(),
         templateId: template ? template.id : "",
         template: template ? template.name : "",
@@ -1250,6 +1431,7 @@
 
     wireCreateProjectCard();
     wireArtifactMenu();
+    wireProjectCardControls();
     let authMode = "signin";
     let signedInEmail = "";
     let billingCatalog = {};
