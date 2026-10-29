@@ -10,6 +10,8 @@ import android.graphics.Bitmap;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.provider.DocumentsContract;
+import android.content.SharedPreferences;
 import android.provider.OpenableColumns;
 import android.webkit.MimeTypeMap;
 import androidx.core.content.FileProvider;
@@ -70,18 +72,17 @@ import android.os.CancellationSignal;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 public class MainActivity extends Activity {
     private static final int CAMERA_PHOTO_REQUEST = 2301;
     private static final int CAMERA_VIDEO_REQUEST = 2302;
     private static final int MEDIA_PICKER_REQUEST = 2303;
     private static final int AUDIO_PERMISSION_REQUEST = 2304;
-    private static final int ARCHIVE_CREATE_REQUEST = 2305;
-    private static final int ARCHIVE_OPEN_REQUEST = 2306;
+    private static final int ARCHIVE_DIRECTORY_REQUEST = 2307;
     private static final byte[] ARCHIVE_MAGIC = new byte[]{'F','W','A','R',1};
-    private byte[] pendingArchiveBytes;
     private String pendingArchiveProjectId = "";
-    private String pendingArchivePassword = "";
+    private final List<Uri> pendingArchiveFiles = new ArrayList<>();
     private final ExecutorService archiveExecutor = Executors.newSingleThreadExecutor();
     private static final int MAX_MEDIA_PER_PICK = 5;
     private WebView webView;
@@ -798,45 +799,16 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ARCHIVE_CREATE_REQUEST) {
-            String archivedProject = pendingArchiveProjectId;
-            byte[] archiveBytes = pendingArchiveBytes;
-            pendingArchiveBytes=null; pendingArchiveProjectId="";
-            if (resultCode == RESULT_OK && data != null && data.getData() != null && archiveBytes != null) {
-                Uri destination=data.getData();
-                archiveExecutor.execute(() -> {
-                    try (OutputStream output=getContentResolver().openOutputStream(destination, "w")) {
-                        if(output==null)throw new IOException("Could not open the selected folder for writing.");
-                        output.write(archiveBytes); output.flush();
-                        notifyArchiveSaved(archivedProject);
-                    } catch(Exception error) { notifyArchiveError(archivedProject,"Could not save the encrypted archive. Check the selected location has space and write access."); }
-                });
-            } else if (!archivedProject.isEmpty()) {
-                notifyArchiveError(archivedProject,"Archive save was cancelled. The project remains in FieldWorks.");
-            }
-            return;
-        }
-        if (requestCode == ARCHIVE_OPEN_REQUEST) {
-            String password=pendingArchivePassword; pendingArchivePassword="";
+        if (requestCode == ARCHIVE_DIRECTORY_REQUEST) {
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
-                Uri source=data.getData();
-                archiveExecutor.execute(() -> {
-                    try (InputStream input=getContentResolver().openInputStream(source)) {
-                        if(input==null)throw new IOException("Could not read the selected archive.");
-                        java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();
-                        byte[] buffer=new byte[8192]; int count; while((count=input.read(buffer))!=-1)bytes.write(buffer,0,count);
-                        String json=new String(decryptArchive(bytes.toByteArray(),password),StandardCharsets.UTF_8);
-                        JSONObject portable=new JSONObject(json);
-                        if (!"fieldworks-project-archive".equals(portable.optString("format")) || portable.optInt("schemaVersion") != 1 || !(portable.opt("project") instanceof JSONObject))
-                            throw new IOException("This archive does not contain a supported FieldWorks project.");
-                        JSONObject restored=restoreArchiveMedia(portable);
-                        notifyArchiveLoaded(restored.toString());
-                    } catch(javax.crypto.AEADBadTagException error) { notifyArchiveError("","Incorrect archive password or damaged archive."); }
-                    catch(Exception error) { notifyArchiveError("",error.getMessage()!=null && error.getMessage().contains("FieldWorks") ? error.getMessage() : "Could not read this archive. Check the password and choose a valid .arc file."); }
-                });
-            } else {
-                notifyArchiveError("","Archive restore was cancelled.");
-            }
+                Uri tree = data.getData();
+                int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                try { getContentResolver().takePersistableUriPermission(tree, flags); } catch (Exception ignored) {}
+                getSharedPreferences("fieldworks_archive", MODE_PRIVATE).edit().putString("directory_uri", tree.toString()).apply();
+                synchronized (pendingArchiveFiles) { pendingArchiveFiles.clear(); }
+                notifyArchiveDirectorySelected(archiveDirectoryName(tree));
+                listFieldWorksArchives();
+            } else notifyArchiveError("", "Folder selection was cancelled.");
             return;
         }
         if (requestCode == MEDIA_PICKER_REQUEST) {
@@ -904,44 +876,150 @@ public class MainActivity extends Activity {
 
     private final class ArchiveBridge {
         @JavascriptInterface
-        public void archiveProject(String projectId, String json, String password) {
-            try {
-                if (projectId == null || projectId.trim().isEmpty() || json == null || json.isEmpty())
-                    throw new IllegalArgumentException("Project archive data is missing.");
-                if (password == null || password.length() < 8)
-                    throw new IllegalArgumentException("Use an archive password with at least 8 characters.");
-                JSONObject portable = makeArchiveMediaPortable(new JSONObject(json));
-                pendingArchiveBytes = encryptArchive(portable.toString().getBytes(StandardCharsets.UTF_8), password);
-                pendingArchiveProjectId = projectId;
-                String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US).format(new java.util.Date());
-                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("application/octet-stream");
-                intent.putExtra(Intent.EXTRA_TITLE, "fw_" + timestamp + ".arc");
-                runOnUiThread(() -> startActivityForResult(intent, ARCHIVE_CREATE_REQUEST));
-            } catch (Exception error) {
-                notifyArchiveError(projectId, error.getMessage() == null ? "Could not prepare the encrypted archive." : error.getMessage());
-            }
+        public String getDirectoryName() {
+            Uri tree = getArchiveDirectoryUri();
+            return tree == null ? "" : archiveDirectoryName(tree);
         }
-
         @JavascriptInterface
-        public void restoreArchive(String password) {
-            if (password == null || password.isEmpty()) { notifyArchiveError("", "Enter the archive password."); return; }
-            pendingArchivePassword = password;
+        public void pickDirectory() {
             runOnUiThread(() -> {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("*/*");
-                intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/octet-stream", "application/x-fieldworks-archive"});
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-                startActivityForResult(intent, ARCHIVE_OPEN_REQUEST);
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                try { startActivityForResult(intent, ARCHIVE_DIRECTORY_REQUEST); }
+                catch (Exception error) { notifyArchiveError("", "Could not open the folder picker."); }
             });
         }
+        @JavascriptInterface
+        public void listArchives() { listFieldWorksArchives(); }
+        @JavascriptInterface
+        public void archiveProject(String projectId, String json) {
+            if (projectId == null || projectId.trim().isEmpty() || json == null || json.isEmpty()) {
+                notifyArchiveError(projectId, "Project archive data is missing."); return;
+            }
+            pendingArchiveProjectId = projectId;
+            archiveExecutor.execute(() -> {
+                try {
+                    String username = currentArchiveUsername();
+                    Uri tree = getArchiveDirectoryUri();
+                    if (tree == null) throw new IOException("Choose an archive folder first.");
+                    JSONObject portable = makeArchiveMediaPortable(new JSONObject(json));
+                    portable.put("ownerUsername", username);
+                    byte[] archiveBytes = encryptArchive(portable.toString().getBytes(StandardCharsets.UTF_8), username);
+                    String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss_SSS", java.util.Locale.US).format(new java.util.Date());
+                    Uri destination = DocumentsContract.createDocument(getContentResolver(), tree, "application/octet-stream", "fw_" + timestamp + ".arc");
+                    if (destination == null) throw new IOException("Could not create the archive file in the selected folder.");
+                    try (OutputStream output = getContentResolver().openOutputStream(destination, "w")) {
+                        if (output == null) throw new IOException("Could not open the selected folder for writing.");
+                        output.write(archiveBytes); output.flush();
+                    }
+                    notifyArchiveSaved(projectId);
+                } catch (Exception error) {
+                    notifyArchiveError(projectId, error.getMessage() == null ? "Could not save this project archive." : error.getMessage());
+                }
+            });
+        }
+        @JavascriptInterface
+        public void restoreArchive(int index) {
+            archiveExecutor.execute(() -> {
+                try {
+                    String username = currentArchiveUsername();
+                    Uri source;
+                    synchronized (pendingArchiveFiles) {
+                        if (index < 0 || index >= pendingArchiveFiles.size()) throw new IOException("Refresh the archive list and choose a file.");
+                        source = pendingArchiveFiles.get(index);
+                    }
+                    try (InputStream input = getContentResolver().openInputStream(source)) {
+                        if (input == null) throw new IOException("Could not read the selected archive.");
+                        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+                        byte[] buffer = new byte[8192]; int count;
+                        while ((count = input.read(buffer)) != -1) bytes.write(buffer, 0, count);
+                        String json = new String(decryptArchive(bytes.toByteArray(), username), StandardCharsets.UTF_8);
+                        JSONObject portable = new JSONObject(json);
+                        if (!username.equalsIgnoreCase(portable.optString("ownerUsername", "").trim()))
+                            throw new IOException("This archive belongs to a different FieldWorks username.");
+                        if (!"fieldworks-project-archive".equals(portable.optString("format")) || portable.optInt("schemaVersion") != 1 || !(portable.opt("project") instanceof JSONObject))
+                            throw new IOException("This archive does not contain a supported FieldWorks project.");
+                        notifyArchiveLoaded(restoreArchiveMedia(portable).toString());
+                    } catch (javax.crypto.AEADBadTagException error) {
+                        notifyArchiveError("", "This archive does not match the signed-in username or is damaged.");
+                    }
+                } catch (Exception error) {
+                    notifyArchiveError("", error.getMessage() == null ? "Could not restore this project archive." : error.getMessage());
+                }
+            });
+        }
+    }
+
+    private String currentArchiveUsername() throws IOException {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || user.getEmail() == null || user.getEmail().trim().isEmpty())
+            throw new IOException("Sign in with an email username to archive or restore projects.");
+        return user.getEmail().trim().toLowerCase(java.util.Locale.ROOT);
+    }
+    private Uri getArchiveDirectoryUri() {
+        String value = getSharedPreferences("fieldworks_archive", MODE_PRIVATE).getString("directory_uri", "");
+        if (value == null || value.isEmpty()) return null;
+        try { return Uri.parse(value); } catch (Exception error) { return null; }
+    }
+    private String archiveDirectoryName(Uri tree) {
+        try {
+            String documentId = DocumentsContract.getTreeDocumentId(tree);
+            int separator = documentId.indexOf(':');
+            String path = separator >= 0 ? documentId.substring(separator + 1) : documentId;
+            return path.isEmpty() ? "Selected folder" : path;
+        } catch (Exception error) { return "Selected folder"; }
+    }
+    private void listFieldWorksArchives() {
+        archiveExecutor.execute(() -> {
+            JSONArray files = new JSONArray();
+            List<Uri> documentUris = new ArrayList<>();
+            try {
+                Uri tree = getArchiveDirectoryUri();
+                if (tree == null) throw new IOException("Choose an archive folder first.");
+                Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree));
+                String[] projection = new String[]{DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_LAST_MODIFIED};
+                try (Cursor cursor = getContentResolver().query(childrenUri, projection, null, null, null)) {
+                    if (cursor != null) {
+                        int idColumn = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID);
+                        int nameColumn = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+                        int modifiedColumn = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_LAST_MODIFIED);
+                        while (cursor.moveToNext()) {
+                            String name = nameColumn >= 0 ? cursor.getString(nameColumn) : "";
+                            if (name == null || !name.toLowerCase(java.util.Locale.ROOT).endsWith(".arc")) continue;
+                            String documentId = idColumn >= 0 ? cursor.getString(idColumn) : "";
+                            Uri documentUri = DocumentsContract.buildDocumentUriUsingTree(tree, documentId);
+                            JSONObject item = new JSONObject();
+                            int index = documentUris.size();
+                            item.put("index", index); item.put("name", name);
+                            long modified = modifiedColumn >= 0 ? cursor.getLong(modifiedColumn) : 0L;
+                            item.put("modified", modified > 0 ? new java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault()).format(new java.util.Date(modified)) : "");
+                            files.put(item); documentUris.add(documentUri);
+                        }
+                    }
+                }
+                synchronized (pendingArchiveFiles) { pendingArchiveFiles.clear(); pendingArchiveFiles.addAll(documentUris); }
+                notifyArchiveList(files.toString());
+            } catch (Exception error) {
+                notifyArchiveError("", error.getMessage() == null ? "Could not read archive files from this folder." : error.getMessage());
+                notifyArchiveList("[]");
+            }
+        });
     }
 
     private void notifyArchiveError(String projectId, String message) {
         if (webView == null) return;
         String script = "window.onFieldWorksArchiveError && window.onFieldWorksArchiveError(" + JSONObject.quote(projectId == null ? "" : projectId) + "," + JSONObject.quote(message == null ? "Archive failed." : message) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+
+    private void notifyArchiveDirectorySelected(String label) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksArchiveDirectorySelected && window.onFieldWorksArchiveDirectorySelected(" + JSONObject.quote(label == null ? "" : label) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+    private void notifyArchiveList(String json) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksArchiveList && window.onFieldWorksArchiveList(" + JSONObject.quote(json == null ? "[]" : json) + ")";
         runOnUiThread(() -> webView.evaluateJavascript(script, null));
     }
 
