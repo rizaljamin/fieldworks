@@ -311,11 +311,23 @@
     .project-journey-track{display:flex;gap:5px;margin:8px 0}
     .project-stage-step{position:relative;flex:1;min-width:14px;height:22px;padding:0;border:0;border-radius:9px;background:transparent}
     .project-stage-step:before{content:"";position:absolute;left:0;right:0;top:8px;height:6px;border-radius:9px;background:#ebe9e0}
+    .project-stage-step.selected:not(.current):before{background:#65bcb5}
     .project-stage-step.current:before{background:#f5a11a}
     .project-stage-step.current:after{content:"";position:absolute;left:50%;top:1px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #f5a11a;z-index:1}
     .project-stage-labels{display:grid;gap:3px;margin-top:4px}
     .project-stage-label{min-width:0;min-height:32px;padding:3px 2px;border:0;border-radius:6px;background:transparent;color:#879294;text-align:center;font-size:8px;line-height:1.2}
     .project-stage-label.selected{background:#e4f3f1;color:#087d84;font-weight:800}
+    .project-milestone-list{display:grid;gap:5px;margin-top:12px}
+    .project-milestone-list>strong,.project-stage-dates>strong{color:#526b70;font-size:9px}
+    .project-milestone-choice{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fffefa;color:#536a6e;font-size:9px}
+    .project-milestone-choice small{color:#879294;font-weight:650}
+    .project-milestone-radio{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#718587;font-size:8px}
+    .project-milestone-radio input{accent-color:#138c92}
+    .project-stage-dates{display:grid;gap:6px;margin-top:12px}
+    .project-stage-date-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(100px,.8fr) minmax(100px,.8fr);align-items:center;gap:6px;padding:7px;border:1px solid var(--line);border-radius:9px;background:#fffefa}
+    .project-stage-date-row>strong{color:#526b70;font-size:9px;line-height:1.25}
+    .project-stage-date-row label{display:grid;gap:3px;color:#819092;font-size:8px;font-weight:700;cursor:pointer}
+    .project-stage-date-row input{width:100%;min-width:0;height:30px;padding:4px 5px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:9px;cursor:pointer}
     .project-current-stage{margin-top:8px}
     .project-stage-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
     .project-stage-date-panel{display:grid;gap:4px;min-width:0;padding:8px;border:1px solid var(--line);border-radius:9px;background:#fffefa;color:#718587;font-size:9px;font-weight:700;cursor:pointer}
@@ -337,9 +349,9 @@
     .mini-album-open{display:grid;gap:4px;width:100%;padding:0;border:0;background:transparent;text-align:left;color:var(--ink)}
     .mini-album-move-label{display:grid;grid-template-columns:auto 13px minmax(0,1fr);align-items:center;gap:4px;padding-top:5px;border-top:1px solid #ecefe9;color:#718587;font-size:8px;font-weight:650}.mini-album-move-arrow{color:#138c92;font-size:15px;font-weight:800;text-align:center}
     .mini-album-move-label select{width:100%;min-width:0;height:28px;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:#fffefa;color:var(--ink);font-size:9px}
-    @media(max-width:480px){.project-stage-label{font-size:7px;overflow-wrap:anywhere}.project-stage-date-fields{grid-template-columns:1fr 1fr}.project-stage-save{grid-column:1/-1}}
+    @media(max-width:480px){.project-stage-label{font-size:7px;overflow-wrap:anywhere}.project-stage-date-row{grid-template-columns:minmax(80px,.8fr) minmax(92px,1fr) minmax(92px,1fr);gap:4px;padding:5px}.project-stage-date-row input{font-size:8px}.project-milestone-choice{padding:6px}.project-stage-save{grid-column:1/-1}}
     .demo-photo{min-width:0;min-height:0;overflow:hidden}.demo-photo img{display:block;width:100%;height:100%;object-fit:cover}.demo-photo-main,.demo-photo-secondary{grid-row:span 2}.demo-photo-label{position:absolute;left:12px;bottom:12px;padding:6px 9px;border-radius:20px;background:#143f4be0;color:#fff;font-size:9px;font-weight:700}
-    .demo-project-copy{display:flex;flex-direction:column;padding:22px;min-width:0}.demo-project-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}.demo-project-tag{padding:6px 10px;border-radius:20px;background:#e7f3ed;color:#507569;font-size:9px}.demo-project-favorite{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff1cf;color:#a56e15;font-size:17px}.demo-project-copy h3{margin:12px 0 5px;color:var(--navy);font-family:Georgia,serif;font-size:23px;font-weight:600;line-height:1.2}.demo-project-description{margin:0;color:#748286;font-size:11px}.demo-project-stats{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-project-stats span{padding:4px 8px;border:1px solid #b7d1ca;border-radius:20px;color:#49656a;font-size:9px}.demo-project-stats b{color:var(--navy)}.demo-project-last{display:grid;gap:3px;margin:0 0 14px;color:#66797d;font-size:10px}.demo-project-last strong{color:#455e63}.demo-stage-head{display:flex;justify-content:space-between;gap:10px;color:#75858a;font-size:9px}.demo-stage-head b{color:#a17125}.demo-stage-track{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:9px 0 14px}.demo-stage-track span{height:6px;border-radius:10px;background:#e8e6dc}.demo-stage-track span.done,.demo-stage-track span.current{background:#f0a52a}.demo-journal{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;color:#60777a;font-size:10px}.demo-journal summary{cursor:pointer;color:#176d70;font-weight:750}.demo-journal ul{display:grid;gap:8px;margin:10px 0 0;padding-left:18px}.demo-journal li strong{display:block;color:var(--navy)}
+    .demo-project-copy{display:flex;flex-direction:column;padding:22px;min-width:0}.demo-project-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}.demo-project-tag{padding:6px 10px;border-radius:20px;background:#e7f3ed;color:#507569;font-size:9px}.demo-project-favorite{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;padding:0;border:1px solid #eadfc8;border-radius:50%;background:#fff9e9;color:#8b681f;font-size:17px;line-height:1;cursor:pointer}.demo-project-favorite[aria-pressed="true"]{background:#fff0cc;color:#9b6813;border-color:#f0d493}.demo-project-favorite:hover{transform:scale(1.06)}.demo-project-copy h3{margin:12px 0 5px;color:var(--navy);font-family:Georgia,serif;font-size:23px;font-weight:600;line-height:1.2}.demo-project-description{margin:0;color:#748286;font-size:11px}.demo-project-stats{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-project-stats span{padding:4px 8px;border:1px solid #b7d1ca;border-radius:20px;color:#49656a;font-size:9px}.demo-project-stats b{color:var(--navy)}.demo-project-last{display:grid;gap:3px;margin:0 0 14px;color:#66797d;font-size:10px}.demo-project-last strong{color:#455e63}.demo-stage-head{display:flex;justify-content:space-between;gap:10px;color:#75858a;font-size:9px}.demo-stage-head b{color:#a17125}.demo-stage-track{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:9px 0 14px}.demo-stage-track span{height:6px;border-radius:10px;background:#e8e6dc}.demo-stage-track span.done,.demo-stage-track span.current{background:#f0a52a}.demo-journal{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;color:#60777a;font-size:10px}.demo-journal summary{cursor:pointer;color:#176d70;font-weight:750}.demo-journal ul{display:grid;gap:8px;margin:10px 0 0;padding-left:18px}.demo-journal li strong{display:block;color:var(--navy)}
     @media(max-width:850px){.demo-project-card{grid-template-columns:1fr}.demo-project-media{min-height:260px}.demo-project-copy{padding:17px}}
 
   
@@ -610,6 +622,7 @@ function loadDemoProjectState() {
         const saved = JSON.parse(localStorage.getItem(DEMO_PROJECT_STATE_KEY) || "{}");
         if (Number.isInteger(saved.stage)) MINI_RENOVATION_DEMO.stage = Math.max(0, Math.min(MINI_RENOVATION_DEMO.stages.length - 1, saved.stage));
         if (Array.isArray(saved.stageDates)) MINI_RENOVATION_DEMO.stageDates = saved.stageDates;
+        if (Number.isInteger(saved.selectedStage)) MINI_RENOVATION_DEMO.selectedStage = Math.max(0, Math.min(MINI_RENOVATION_DEMO.stages.length - 1, saved.selectedStage));
         if (typeof saved.comments === "string") MINI_RENOVATION_DEMO.comments = saved.comments;
       } catch (error) {}
     }
@@ -617,6 +630,7 @@ function loadDemoProjectState() {
       try {
         localStorage.setItem(DEMO_PROJECT_STATE_KEY, JSON.stringify({
           stage: MINI_RENOVATION_DEMO.stage,
+          selectedStage: MINI_RENOVATION_DEMO.selectedStage,
           stageDates: MINI_RENOVATION_DEMO.stageDates || [],
           comments: MINI_RENOVATION_DEMO.comments || ""
         }));
@@ -645,17 +659,25 @@ function loadDemoProjectState() {
       const safeId = escapeProjectText(projectId);
       const stages = projectCardStageNames(project, projectId);
       const currentStage = Math.max(0, Math.min(stages.length - 1, Number(project.stage) || 0));
-      const selectedDates = (Array.isArray(project.stageDates) ? project.stageDates[currentStage] : null) || {};
+      const selectedStage = Math.max(0, Math.min(stages.length - 1, Number.isInteger(Number(project.selectedStage)) ? Number(project.selectedStage) : currentStage));
       const track = stages.map(function(stage, index) {
-        const selected = index === currentStage;
-        const state = selected ? "current" : "";
-        return '<button type="button" class="project-stage-step ' + state + '" data-project-stage="' + safeId + '" data-stage-index="' + index + '" aria-label="Set ' + escapeProjectText(stage) + ' as the current stage" aria-pressed="' + selected + '" title="' + escapeProjectText(stage) + '"></button>';
+        const isCurrent = index === currentStage;
+        const isSelected = index === selectedStage;
+        return '<button type="button" class="project-stage-step' + (isCurrent ? ' current' : '') + (isSelected ? ' selected' : '') + '" data-project-stage-select="' + safeId + '" data-stage-index="' + index + '" aria-label="Select ' + escapeProjectText(stage) + ' stage" aria-pressed="' + isSelected + '" title="' + escapeProjectText(stage) + '"></button>';
       }).join("");
       const labels = stages.map(function(stage, index) {
-        const selected = index === currentStage;
-        return '<button type="button" class="project-stage-label' + (selected ? ' selected' : '') + '" data-project-stage="' + safeId + '" data-stage-index="' + index + '" aria-pressed="' + selected + '">' + escapeProjectText(stage) + '</button>';
+        const selected = index === selectedStage;
+        return '<button type="button" class="project-stage-label' + (selected ? ' selected' : '') + '" data-project-stage-select="' + safeId + '" data-stage-index="' + index + '" aria-pressed="' + selected + '">' + escapeProjectText(stage) + '</button>';
       }).join("");
-      return '<section class="project-stage-controls"><div class="demo-stage-head"><span>Project journey</span><b>Stage ' + (currentStage + 1) + ' of ' + stages.length + '</b></div><div class="project-journey-track" aria-label="Project journey">' + track + '</div><div class="project-stage-labels" style="grid-template-columns:repeat(' + stages.length + ',minmax(0,1fr))">' + labels + '</div><div class="demo-stage-head project-current-stage"><span>Current milestone</span><b>' + escapeProjectText(stages[currentStage]) + '</b></div><div class="project-stage-date-fields" data-stage-date-panel="' + safeId + '" data-stage-index="' + currentStage + '"><label class="project-stage-date-panel">Start date<input type="date" data-project-stage-date="start" value="' + escapeProjectText(selectedDates.start || "") + '"></label><label class="project-stage-date-panel">End date<input type="date" data-project-stage-date="end" value="' + escapeProjectText(selectedDates.end || "") + '"></label><button type="button" class="project-stage-save" data-save-project-stage-dates="' + safeId + '">Save dates for ' + escapeProjectText(stages[currentStage]) + '</button></div></section>';
+      const dates = stages.map(function(stage, index) {
+        const date = (Array.isArray(project.stageDates) ? project.stageDates[index] : null) || {};
+        return '<div class="project-stage-date-row" data-stage-date-row="' + index + '"><strong>' + escapeProjectText(stage) + '</strong><label>Start date<input type="date" data-project-stage-date="start" data-stage-date-index="' + index + '" value="' + escapeProjectText(date.start || "") + '" aria-label="' + escapeProjectText(stage) + ' start date"></label><label>End date<input type="date" data-project-stage-date="end" data-stage-date-index="' + index + '" value="' + escapeProjectText(date.end || "") + '" aria-label="' + escapeProjectText(stage) + ' end date"></label></div>';
+      }).join("");
+      const milestoneChoices = stages.map(function(stage, index) {
+        const current = index === currentStage;
+        return '<label class="project-milestone-choice"><span>' + escapeProjectText(stage) + ' <small>' + (index + 1) + '/' + stages.length + '</small></span><span class="project-milestone-radio"><input type="radio" name="current-stage-' + safeId + '" data-current-stage-project="' + safeId + '" value="' + index + '"' + (current ? ' checked' : '') + '> Current stage</span></label>';
+      }).join("");
+      return '<section class="project-stage-controls"><div class="demo-stage-head"><span>Project journey · select a stage</span><b>Stage ' + (currentStage + 1) + ' of ' + stages.length + '</b></div><div class="project-journey-track" aria-label="Project journey">' + track + '</div><div class="project-stage-labels" style="grid-template-columns:repeat(' + stages.length + ',minmax(0,1fr))">' + labels + '</div><div class="project-milestone-list"><strong>Milestone list</strong>' + milestoneChoices + '</div><div class="project-stage-dates"><strong>Stage dates · click a date field to edit</strong>' + dates + '</div></section>';
     }
     function renderProjectOverallNotes(projectId, project) {
       const safeId = escapeProjectText(projectId);
@@ -715,7 +737,7 @@ function loadDemoProjectState() {
       }).join("") : "";
       return '<article class="demo-project-card shared-project-card' + (readPinnedProjectIds().indexOf(projectId) >= 0 ? ' is-pinned' : '') + '" data-project-card="' + safeId + '">' +
         projectCardMediaMarkup(project, projectId, isDemo) +
-        '<div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + type + '</span><span class="demo-project-favorite" aria-hidden="true">★</span></div>' +
+        '<div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + type + '</span><button type="button" class="demo-project-favorite" data-favorite-project="' + safeId + '" aria-pressed="' + isProjectFavorite(projectId) + '" aria-label="' + (isProjectFavorite(projectId) ? 'Remove ' + name + ' from favourites' : 'Add ' + name + ' to favourites') + '" title="' + (isProjectFavorite(projectId) ? 'Remove from favourites' : 'Add to favourites') + '">' + (isProjectFavorite(projectId) ? '★' : '☆') + '</button></div>' +
         '<h3 class="project-title-line" title="Long-press to pin or unpin this project." aria-label="' + name + '. Long-press to pin or unpin this project."><span class="project-title-copy">' + name + (readPinnedProjectIds().indexOf(projectId) >= 0 ? '<svg class="pinned-project-icon" viewBox="0 0 24 32" role="img" aria-label="Pinned project" title="Pinned project"><ellipse cx="12" cy="30.4" rx="5.1" ry="1.35" fill="#111"/><path d="M9.6 13.1 13.1 14.2 7 29.9 5.8 29.6z" fill="#85898d"/><path d="m12.8 14.1 2.3 1-7.9 14.7-1.1-.2z" fill="#b7babd"/><path d="m12.1 13.3 2.4.8-1.5 2-2.8-1z" fill="#666a6e"/><circle cx="12" cy="8" r="7.1" fill="#ed1016"/><path d="M5.1 9.1a7.1 7.1 0 0 0 13.8 0 7.1 7.1 0 0 1-13.8 0" fill="#c90008"/><circle cx="12" cy="5.3" r="1.25" fill="#fff"/></svg>' : '') + '</span></h3><p class="demo-project-description">' + description + '</p>' +
         '<div class="demo-project-stats"><span>Issues <b>' + issues + '</b></span><span>Reminders <b>' + reminders + '</b></span><span>Spent <b>RM ' + spent.toLocaleString("en-MY") + '</b></span></div>' +
         '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
@@ -1157,31 +1179,16 @@ function loadDemoProjectState() {
         document.addEventListener(type, function() { clearTimeout(longPressTimer); longPressCard=null; longPressTimer=0; });
       });
       document.addEventListener("click", function(event) {
-        const stageButton = event.target.closest("[data-project-stage][data-stage-index]");
+        const favoriteButton = event.target.closest("[data-favorite-project]");
+        if (favoriteButton) { toggleFavoriteProject(favoriteButton.dataset.favoriteProject); return; }
+        const stageButton = event.target.closest("[data-project-stage-select][data-stage-index]");
         if (stageButton) {
-          const projectId = stageButton.dataset.projectStage;
+          const projectId = stageButton.dataset.projectStageSelect;
           const project = getProjectCardRecord(projectId);
           if (!project) return;
-          project.stage = Number(stageButton.dataset.stageIndex) || 0;
+          project.selectedStage = Number(stageButton.dataset.stageIndex) || 0;
           saveProjectCardRecord(projectId);
           refreshProjectCards();
-          return;
-        }
-        const saveDates = event.target.closest("[data-save-project-stage-dates]");
-        if (saveDates) {
-          const projectId = saveDates.dataset.saveProjectStageDates;
-          const card = saveDates.closest("[data-project-card]");
-          const project = getProjectCardRecord(projectId);
-          if (!project || !card) return;
-          const panel = card.querySelector("[data-stage-date-panel]");
-          const index = panel ? Number(panel.dataset.stageIndex) || 0 : Number(project.stage) || 0;
-          const start = card.querySelector('[data-project-stage-date="start"]').value;
-          const end = card.querySelector('[data-project-stage-date="end"]').value;
-          if (start && end && end < start) { toast("The end date must be after the start date."); return; }
-          if (!Array.isArray(project.stageDates)) project.stageDates = [];
-          project.stageDates[index] = { start: start, end: end };
-          saveProjectCardRecord(projectId);
-          toast("Stage dates saved.");
           return;
         }
         const saveNotes = event.target.closest("[data-save-project-notes]");
@@ -1193,21 +1200,37 @@ function loadDemoProjectState() {
           project.comments = card.querySelector("[data-project-overall-notes]").value.trim();
           saveProjectCardRecord(projectId);
           toast("Project notes saved.");
+          return;
         }
       });
       document.addEventListener("change", function(event) {
+        const currentStageRadio = event.target.closest("[data-current-stage-project]");
+        if (currentStageRadio) {
+          const projectId = currentStageRadio.dataset.currentStageProject;
+          const project = getProjectCardRecord(projectId);
+          if (!project) return;
+          project.stage = Math.max(0, Number(currentStageRadio.value) || 0);
+          project.selectedStage = project.stage;
+          saveProjectCardRecord(projectId);
+          refreshProjectCards();
+          return;
+        }
         const stageDate = event.target.closest("[data-project-stage-date]");
         if (stageDate) {
-          const card = stageDate.closest("[data-project-card]");
-          const project = getProjectCardRecord(card && card.dataset.projectCard);
-          const panel = card && card.querySelector("[data-stage-date-panel]");
-          if (!project || !panel) return;
-          const index = Number(panel.dataset.stageIndex) || 0;
-          const current = (project.stageDates || [])[index] || {};
-          current[stageDate.dataset.projectStageDate] = stageDate.value;
+          const projectId = stageDate.closest("[data-project-card]").dataset.projectCard;
+          const project = getProjectCardRecord(projectId);
+          if (!project) return;
+          const index = Number(stageDate.dataset.stageDateIndex) || 0;
           if (!Array.isArray(project.stageDates)) project.stageDates = [];
+          const current = Object.assign({}, project.stageDates[index] || {});
+          current[stageDate.dataset.projectStageDate] = stageDate.value;
+          if (current.start && current.end && current.end < current.start) {
+            toast("The end date must be after the start date.");
+            stageDate.value = (project.stageDates[index] || {})[stageDate.dataset.projectStageDate] || "";
+            return;
+          }
           project.stageDates[index] = current;
-          saveProjectCardRecord(card.dataset.projectCard);
+          saveProjectCardRecord(projectId);
           return;
         }
         const moveSelect = event.target.closest("[data-move-album-project]");
@@ -1223,6 +1246,34 @@ function loadDemoProjectState() {
       });
     }
     const PINNED_PROJECTS_KEY = "fieldworks.debug.pinned-projects.v1";
+    const FAVORITE_PROJECTS_KEY = "fieldworks.debug.favorite-projects.v1";
+    function readFavoriteProjectIds() {
+      try { const value = JSON.parse(localStorage.getItem(FAVORITE_PROJECTS_KEY) || "[]"); return Array.isArray(value) ? value.map(String) : []; }
+      catch (error) { return []; }
+    }
+    function isProjectFavorite(projectId) {
+      return readFavoriteProjectIds().indexOf(String(projectId)) >= 0 || readPinnedProjectIds().indexOf(String(projectId)) >= 0;
+    }
+    function toggleFavoriteProject(projectId) {
+      const id = String(projectId);
+      const favorites = readFavoriteProjectIds();
+      const pins = readPinnedProjectIds();
+      const isOn = favorites.indexOf(id) >= 0 || pins.indexOf(id) >= 0;
+      if (isOn) {
+        const f = favorites.indexOf(id); if (f >= 0) favorites.splice(f,1);
+        const p = pins.indexOf(id); if (p >= 0) pins.splice(p,1);
+        try {
+          localStorage.setItem(FAVORITE_PROJECTS_KEY,JSON.stringify(favorites));
+          localStorage.setItem(PINNED_PROJECTS_KEY,JSON.stringify(pins));
+        } catch (error) {}
+        toast("Removed from Favourite Projects.");
+      } else {
+        favorites.unshift(id);
+        try { localStorage.setItem(FAVORITE_PROJECTS_KEY,JSON.stringify(favorites)); } catch (error) {}
+        toast("Added to Favourite Projects.");
+      }
+      renderCreatedProjects();
+    }
     function readPinnedProjectIds() {
       try { const value = JSON.parse(localStorage.getItem(PINNED_PROJECTS_KEY) || "[]"); return Array.isArray(value) ? value.map(String) : []; }
       catch (error) { return []; }
@@ -1385,13 +1436,18 @@ function loadDemoProjectState() {
     function renderCreatedProjects() {
       loadCreatedProjects();
       const pinnedIds = readPinnedProjectIds();
+      const favoriteIds = readFavoriteProjectIds();
       const projects = [MINI_RENOVATION_DEMO].concat(createdProjects).sort(function(a,b) {
         const aId = String(a === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : a.id);
         const bId = String(b === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : b.id);
-        const aRank = pinnedIds.indexOf(aId), bRank = pinnedIds.indexOf(bId);
-        if (aRank >= 0 && bRank >= 0) return aRank - bRank;
-        if (aRank >= 0) return -1;
-        if (bRank >= 0) return 1;
+        const aPin = pinnedIds.indexOf(aId), bPin = pinnedIds.indexOf(bId);
+        if (aPin >= 0 && bPin >= 0) return aPin - bPin;
+        if (aPin >= 0) return -1;
+        if (bPin >= 0) return 1;
+        const aFav = favoriteIds.indexOf(aId), bFav = favoriteIds.indexOf(bId);
+        if (aFav >= 0 && bFav >= 0) return aFav - bFav;
+        if (aFav >= 0) return -1;
+        if (bFav >= 0) return 1;
         return a === MINI_RENOVATION_DEMO ? -1 : b === MINI_RENOVATION_DEMO ? 1 : 0;
       });
       function cardsFor(items) {
@@ -1399,21 +1455,19 @@ function loadDemoProjectState() {
           return renderUnifiedProjectCard(project, project === MINI_RENOVATION_DEMO);
         }).join("");
       }
-      const favourites = projects.filter(function(project) {
-        const id = project === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : String(project.id);
-        return pinnedIds.indexOf(id) >= 0;
-      });
-      const unpinned = projects.filter(function(project) {
-        const id = project === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : String(project.id);
-        return pinnedIds.indexOf(id) < 0;
-      });
+      function isInFavorites(project) {
+        const id = String(project === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : project.id);
+        return pinnedIds.indexOf(id) >= 0 || favoriteIds.indexOf(id) >= 0;
+      }
+      const favourites = projects.filter(isInFavorites);
+      const otherProjects = projects.filter(function(project) { return !isInFavorites(project); });
       const favoriteSlot = document.getElementById("homeMiniRenovation");
       const home = document.getElementById("homeCreatedProjects");
       const list = document.getElementById("projectsCreatedProjects");
-      const favoriteEmpty = '<div class="empty">Favourite projects will appear here. Long-press a project card to pin it.</div>';
+      const favoriteEmpty = '<div class="empty">No favourite projects yet. Tap the star on a project to add it here.</div>';
       const projectEmpty = '<div class="empty">Projects you create will appear here.</div>';
       if (favoriteSlot) favoriteSlot.innerHTML = cardsFor(favourites) || favoriteEmpty;
-      if (home) home.innerHTML = cardsFor(unpinned) || projectEmpty;
+      if (home) home.innerHTML = cardsFor(otherProjects) || projectEmpty;
       if (list) list.innerHTML = cardsFor(projects) || projectEmpty;
       const demoProjects = document.getElementById("projectsMiniRenovation");
       if (demoProjects) demoProjects.innerHTML = "";
