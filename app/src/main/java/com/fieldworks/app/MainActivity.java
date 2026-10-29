@@ -946,10 +946,18 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Android 15+ enforces edge-to-edge for this target SDK; fit the WebView
-        // inside the status, navigation, and tablet taskbar system bars.
-        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+        // Android 15+ enforces edge-to-edge at this target SDK. Keep the WebView
+        // drawing edge-to-edge, then inset its web content beneath system bars.
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         webView = new WebView(this);
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(webView, (view, windowInsets) -> {
+            androidx.core.graphics.Insets safeInsets = windowInsets.getInsets(
+                    androidx.core.view.WindowInsetsCompat.Type.systemBars()
+                            | androidx.core.view.WindowInsetsCompat.Type.displayCutout());
+            view.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
+            return windowInsets;
+        });
+        webView.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
         webView.setWebViewClient(new WebViewClient());
         webView.setVerticalScrollBarEnabled(false);
         WebSettings settings = webView.getSettings();
@@ -962,6 +970,7 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
         webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
         setContentView(webView);
+        androidx.core.view.ViewCompat.requestApplyInsets(webView);
         webView.loadUrl("file:///android_asset/index.html");
     }
 
