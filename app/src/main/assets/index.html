@@ -440,14 +440,23 @@
     .project-albums-heading>small{display:flex;align-items:center;gap:8px}
     .project-albums-show-all{padding:3px 8px;border:1px solid #c9ddd4;border-radius:8px;background:#f4faf6;color:#176d70;font:inherit;font-size:8px;font-weight:750}
     @media(max-width:480px){.project-milestone-edit-title{grid-template-columns:1fr;align-items:start}.project-milestone-current-radio{padding-left:2px}}
-      .demo-project-media{align-self:start;width:100%;aspect-ratio:1/1;max-height:480px;min-height:0;display:block;overflow:hidden;padding:12px;background:linear-gradient(145deg,#e7eeea,#dce9e2)}
-    .project-photo-stack{position:relative;display:block;width:100%;height:100%;padding:0;border:0;background:transparent;overflow:visible;touch-action:manipulation}
-    .project-photo-card{position:absolute;inset:4px 16px 14px 4px;display:grid;place-items:center;overflow:hidden;border:1px solid #d8dfd8;border-radius:13px;background:#fff;box-shadow:0 5px 16px #1837471c;transform:translate(calc(var(--stack-depth)*3px),calc(var(--stack-depth)*4px)) rotate(calc(var(--stack-depth)*.8deg));transform-origin:center;transition:transform .22s ease,box-shadow .22s ease;z-index:calc(10 - var(--stack-depth))}
-    .project-photo-card.is-front{transform:translate(0,0) rotate(0);box-shadow:0 9px 22px #1837472a}
-    .project-photo-card img{display:block;width:100%;height:100%;object-fit:cover}
-    .project-photo-card .project-media-placeholder{width:100%;height:100%;min-height:0}
-    .project-photo-stack .demo-photo-label{left:12px;bottom:12px;z-index:20;pointer-events:none}
+      .demo-project-media{align-self:start;width:100%;aspect-ratio:1/1;max-height:480px;min-height:0;display:block;overflow:hidden;padding:10px;background:linear-gradient(145deg,#e7eeea,#dce9e2)}
+    .project-photo-collage{display:grid;width:100%;height:100%;grid-template-columns:1.2fr 1fr;grid-template-rows:minmax(0,1fr);gap:5px;overflow:hidden;border-radius:13px}
+    .project-collage-lead{grid-column:1;grid-row:1}
+    .project-collage-secondary{display:grid;min-width:0;min-height:0;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:5px}
+    .project-photo-collage.secondary-1 .project-collage-secondary{grid-template-columns:1fr;grid-template-rows:1fr}
+    .project-photo-collage.secondary-2 .project-collage-secondary{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))}
+    .project-collage-photo{display:block;min-width:0;min-height:0;overflow:hidden;border:1px solid #fff;border-radius:9px;background:#e2ece6}
+    .project-collage-photo img{display:block;width:100%;height:100%;object-fit:cover}
+    .project-collage-photo .project-media-placeholder{display:grid;width:100%;height:100%;min-height:0;place-items:center}
+    .demo-project-media>.demo-photo-label{left:16px;bottom:16px;z-index:2;pointer-events:none}
+    .project-artifact-options{width:max-content;max-width:100%;grid-template-columns:repeat(4,minmax(0,74px));justify-content:start;gap:6px}
+    .project-artifact-options .artifact-option{min-height:30px;padding:2px 4px;gap:3px;border-radius:7px}
+    .project-artifact-options .artifact-option-icon{flex-basis:16px;width:16px;height:16px;padding:2px}
+    .project-artifact-options .artifact-option-icon svg{width:12px;height:12px}
+    .project-artifact-options .artifact-option strong{font-size:7.5px}
     @media(max-width:850px){.demo-project-media{aspect-ratio:1/1;max-height:440px;min-height:0}}
+    @media(max-width:420px){.project-artifact-options{width:100%;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}}
   </style>
 </head>
 <body>
@@ -846,16 +855,19 @@ function loadDemoProjectState() {
         project.type === "Catering" || project.type === "Birthday Party" ? "✿" :
         project.type === "Field Trips" ? "⌁" : "⌂";
       if (!media.length) media.push({type:"placeholder"});
-      const cards = media.map(function(item, index) {
+      function photoMarkup(item, index, extraClass) {
         const content = item.type === "photo" && item.url
           ? '<img src="' + escapeProjectText(item.url) + '" alt="' + escapeProjectText(item.alt || "Project progress photo") + '">'
           : '<span class="project-media-placeholder" aria-hidden="true">' + icon + '</span>';
-        return '<span class="project-photo-card' + (index === 0 ? ' is-front' : '') + '" data-photo-index="' + index + '" style="--stack-depth:' + index + '">' + content + '</span>';
+        return '<span class="project-collage-photo' + (extraClass ? ' ' + extraClass : '') + '" data-photo-index="' + index + '">' + content + '</span>';
+      }
+      const lead = photoMarkup(media[0], 0, "project-collage-lead");
+      const secondary = media.slice(1, 5).map(function(item, index) {
+        return photoMarkup(item, index + 1, "");
       }).join("");
-      const countLabel = allPhotoCount
-        ? "Tap to flip · " + allPhotoCount + " photo" + (allPhotoCount === 1 ? "" : "s")
-        : "Project journal";
-      return '<div class="demo-project-media"><button type="button" class="project-photo-stack" data-photo-stack="' + escapeProjectText(projectId) + '" aria-label="Project photos. Tap to flip through ' + media.length + ' images.">' + cards + '<span class="demo-photo-label">' + countLabel + '</span></button></div>';
+      const collageClass = "project-photo-collage secondary-" + Math.max(0, media.length - 1);
+      const countLabel = allPhotoCount ? "Progress · " + allPhotoCount + " photos" : "Project journal";
+      return '<div class="demo-project-media"><div class="' + collageClass + '">' + lead + '<div class="project-collage-secondary">' + secondary + '</div></div><span class="demo-photo-label">' + countLabel + '</span></div>';
     }
     function renderUnifiedProjectCard(project, isDemo) {
       const projectId = isDemo ? "demo-mini-renovation" : project.id;
@@ -1344,21 +1356,6 @@ function loadDemoProjectState() {
         document.addEventListener(type, function() { clearTimeout(longPressTimer); longPressCard=null; longPressTimer=0; });
       });
       document.addEventListener("click", function(event) {
-        const photoStack = event.target.closest("[data-photo-stack]");
-        if (photoStack) {
-          const cards = Array.from(photoStack.querySelectorAll(".project-photo-card"));
-          if (cards.length > 1) {
-            const current = Number(photoStack.dataset.frontIndex) || 0;
-            const next = (current + 1) % cards.length;
-            photoStack.dataset.frontIndex = String(next);
-            cards.forEach(function(card, index) {
-              const depth = (index - next + cards.length) % cards.length;
-              card.style.setProperty("--stack-depth", String(depth));
-              card.classList.toggle("is-front", depth === 0);
-            });
-          }
-          return;
-        }
         const openMilestones = event.target.closest("[data-open-project-milestones]");
         if (openMilestones) { openProjectMilestones(openMilestones.dataset.openProjectMilestones); return; }
         if (event.target.closest("[data-close-project-milestones]")) { closeProjectMilestones(); return; }
