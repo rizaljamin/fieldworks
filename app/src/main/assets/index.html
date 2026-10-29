@@ -110,7 +110,8 @@
       background: #103f5a;
     }
     .side-guest small { display: block; color: #9ebfc0; font-size: 8px; letter-spacing: 1px; }
-    .side-guest b { display: block; margin-top: 3px; font-size: 13px; }
+    .side-guest b { display: block; margin-top: 3px; font-size: 13px; overflow-wrap: anywhere; }
+    .side-guest p { overflow-wrap: anywhere; }
     .side-guest p { margin: 4px 0 0; color: #b5c8c8; font-size: 10px; }
 
     .shell {
@@ -324,7 +325,7 @@
     .create-project-cancel,.create-project-submit{padding:10px 15px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:12px;font-weight:750}
     .create-project-submit{border:0;background:var(--teal);color:#fff}
     .created-project-list{display:grid;gap:12px}
-    .created-project-card{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:center;gap:14px;margin:0 0 12px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}
+    .created-project-card{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:center;gap:14px;margin:0 0 12px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}.created-project-card .project-artifacts{grid-column:1/-1;width:100%;min-width:0}
     .created-project-icon{display:grid;place-items:center;width:54px;height:54px;border-radius:14px;background:#e7f3ed;color:#138c92;font-size:22px}
     .created-project-info{min-width:0}.created-project-info .demo-project-tag{display:inline-block}.created-project-info h3{margin:6px 0 3px;color:var(--navy);font-family:Georgia,serif;font-size:18px}.created-project-info p{margin:0;color:#75858a;font-size:11px;overflow-wrap:anywhere}.created-project-meta{color:#75858a;font-size:10px;white-space:nowrap}
     @media(max-width:600px){.create-project-card{padding:18px}.created-project-card{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:13px}.created-project-icon{width:44px;height:44px}.created-project-meta{grid-column:2;white-space:normal}}
@@ -364,9 +365,9 @@
       <button class="side-link" type="button" data-page="archive" onclick="showFieldWorksPage('archive')"><span>▤</span>Archive</button>
       <button class="side-link" type="button" data-page="account" onclick="showFieldWorksPage('account')"><span>♙</span>My Account</button>
       <div class="side-guest">
-        <small>WORKING AS</small>
-        <b>Guest</b>
-        <p>FieldWorks debug menu preview.</p>
+        <small id="sideAccountLabel">WORKING AS</small>
+        <b id="sideAccountName">Guest</b>
+        <p id="sideAccountMessage">FieldWorks debug menu preview.</p>
       </div>
     </aside>
 
@@ -742,6 +743,50 @@
         lastStage = stage;
       });
       flushLegacyBatch();
+      const singletonAlbums = albums.filter(function(album) {
+        return String(album.id).indexOf("album-") === 0 &&
+          albumMediaItems(projectId, album).length === 1 &&
+          !album.note && !(album.voiceNotes || []).length;
+      }).sort(function(a, b) {
+        const stageDiff = (Number(a.stage) || 0) - (Number(b.stage) || 0);
+        if (stageDiff) return stageDiff;
+        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+      });
+      let singleAlbumBatch = [];
+      let previousAlbumTime = 0;
+      let previousAlbumStage = -1;
+      function mergeLegacyAlbumBatch() {
+        if (singleAlbumBatch.length > 1) {
+          const primary = singleAlbumBatch[0];
+          singleAlbumBatch.slice(1).forEach(function(source) {
+            const item = albumMediaItems(projectId, source)[0];
+            if (!item) return;
+            if (primary.items.indexOf(item.id) < 0) primary.items.push(item.id);
+            item.albumId = primary.id;
+            const sourceIndex = albums.indexOf(source);
+            if (sourceIndex >= 0) albums.splice(sourceIndex, 1);
+            delete byId[String(source.id)];
+          });
+          changed = true;
+        }
+        singleAlbumBatch = [];
+      }
+      singleAlbumBatch = [];
+      singletonAlbums.forEach(function(album) {
+        const date = new Date(album.createdAt || 0).getTime();
+        const time = Number.isFinite(date) ? date : 0;
+        const stage = Math.max(0, Number(album.stage) || 0);
+        if (singleAlbumBatch.length && (
+          stage !== previousAlbumStage ||
+          !time ||
+          !previousAlbumTime ||
+          time - previousAlbumTime > 100
+        )) mergeLegacyAlbumBatch();
+        singleAlbumBatch.push(album);
+        previousAlbumTime = time;
+        previousAlbumStage = stage;
+      });
+      mergeLegacyAlbumBatch();
       artifacts.forEach(function(item) {
         if (item.type !== "voice" || !item.albumId) return;
         const album = byId[String(item.albumId)];
@@ -1267,6 +1312,12 @@
     function updateAuthUI(email) {
       signedInEmail = email || "";
       const signedIn = !!signedInEmail;
+      const sideLabel = document.getElementById("sideAccountLabel");
+      const sideName = document.getElementById("sideAccountName");
+      const sideMessage = document.getElementById("sideAccountMessage");
+      if (sideLabel) sideLabel.textContent = signedIn ? "SIGNED IN AS" : "WORKING AS";
+      if (sideName) sideName.textContent = signedInEmail || "Guest";
+      if (sideMessage) sideMessage.textContent = signedIn ? "Your account is connected. Project data stays on this device." : "FieldWorks debug menu preview.";
       document.getElementById("guestPillLabel").textContent = signedIn ? email : "Guest mode";
       const profile = document.getElementById("profileButton");
       profile.textContent = signedIn ? email.trim().charAt(0).toUpperCase() : "G";
