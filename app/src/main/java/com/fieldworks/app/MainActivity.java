@@ -946,15 +946,24 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Android 15+ enforces edge-to-edge at this target SDK. Keep the WebView
-        // drawing edge-to-edge, then inset its web content beneath system bars.
+        // Android 15+ enforces edge-to-edge at this target SDK. Keep the native
+        // bars outside the WebView by sizing its parent to the safe content area.
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        android.widget.FrameLayout appFrame = new android.widget.FrameLayout(this);
+        appFrame.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
         webView = new WebView(this);
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(webView, (view, windowInsets) -> {
+        android.widget.FrameLayout.LayoutParams webParams = new android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        appFrame.addView(webView, webParams);
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(appFrame, (view, windowInsets) -> {
             androidx.core.graphics.Insets safeInsets = windowInsets.getInsets(
                     androidx.core.view.WindowInsetsCompat.Type.systemBars()
                             | androidx.core.view.WindowInsetsCompat.Type.displayCutout());
-            view.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
+            android.widget.FrameLayout.LayoutParams params =
+                    (android.widget.FrameLayout.LayoutParams) webView.getLayoutParams();
+            params.setMargins(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
+            webView.setLayoutParams(params);
             return windowInsets;
         });
         webView.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
@@ -969,8 +978,8 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
         webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
         webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
-        setContentView(webView);
-        androidx.core.view.ViewCompat.requestApplyInsets(webView);
+        setContentView(appFrame);
+        androidx.core.view.ViewCompat.requestApplyInsets(appFrame);
         webView.loadUrl("file:///android_asset/index.html");
     }
 
