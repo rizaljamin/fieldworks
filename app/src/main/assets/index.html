@@ -482,6 +482,7 @@
 @media(max-width:600px){.issue-log,.for-later,.budget-tracking-card{padding:15px;border-radius:20px}.issue-log-head{align-items:flex-start}.issue-log-head h2{font-size:24px}.button-soft{padding:10px 12px;font-size:12px}.for-later-head{gap:8px}.for-later-head>strong{font-size:17px}.subtle-link{font-size:13px}.demo-project-stats button{min-height:30px;padding:5px 9px;font-size:10px}}
 
     .archive-page-card{max-width:760px;padding:22px;border:1px solid var(--line);border-radius:18px;background:#fffefa;box-shadow:var(--shadow)}.archive-page-card h3{margin:0 0 7px;color:var(--navy);font:500 21px Georgia,serif}.archive-page-card p{color:#718587;font-size:12px;line-height:1.6}.archive-project-button{display:block;width:100%;margin-top:10px;padding:8px 10px;border:1px solid #d7e4dc;border-radius:9px;background:#f4faf6;color:#176d70;text-align:center;font-size:10px;font-weight:750}.archive-field{display:grid;gap:6px;margin:12px 0;color:#50686c;font-size:11px;font-weight:700}.archive-field input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}.archive-help{margin:6px 0 0;color:#829093;font-size:9px;font-weight:400}.archive-status{min-height:18px;margin:8px 0;color:#557075;font-size:10px}.archive-status.error{color:#a23d3d}
+    .project-journal{margin:14px 0 15px}.project-journal-intro{margin:0 0 10px}.project-journal-intro .eyebrow{margin:0 0 4px;color:#16877f;font-size:9px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}.project-journal-intro h3{margin:0;color:var(--navy);font-size:22px}.project-journal-intro p{margin:4px 0 0;color:#7c8b8d;font-size:10px}.journal-stage-list{display:grid;gap:9px}.journal-stage{overflow:hidden;border:1px solid #e1e9e1;border-radius:16px;background:#f9fbf7}.journal-stage>summary{display:grid;grid-template-columns:minmax(0,1fr) auto 18px;align-items:center;gap:9px;min-height:64px;padding:12px 14px;list-style:none;cursor:pointer}.journal-stage>summary::-webkit-details-marker{display:none}.journal-stage-title{min-width:0}.journal-stage-title strong{display:block;color:#31565d;font-size:11px;line-height:1.4}.journal-stage-title small{display:block;margin-top:3px;color:#879395;font-size:9px}.journal-stage-count{padding:6px 10px;border-radius:999px;background:#e6f3ed;color:#587674;font-size:9px;font-weight:750;white-space:nowrap}.journal-stage-chevron{color:#16877f;font-size:19px;line-height:1;transition:transform .16s}.journal-stage[open] .journal-stage-chevron{transform:rotate(180deg)}.journal-stage-body{padding:0 13px 14px 14px}.journal-empty{padding:16px 12px;border-top:1px solid #e7ece5;color:#829091;font-size:10px}.journal-moment{position:relative;display:grid;grid-template-columns:25px minmax(0,1fr);gap:9px;padding:0 0 12px}.journal-moment:last-child{padding-bottom:0}.journal-moment:not(:last-child):before{position:absolute;top:23px;bottom:-1px;left:11px;width:1px;background:#d9e5dd;content:""}.journal-moment-marker{z-index:1;display:grid;width:23px;height:23px;place-items:center;border-radius:50%;background:#e2f3ee;color:#16877f;font-size:11px}.journal-moment-card{min-width:0;padding:11px;border:1px solid #e3e9e2;border-radius:14px;background:#fffefa}.journal-moment-meta{margin:0 0 6px;color:#849092;font-size:9px;line-height:1.45}.journal-moment-card h4{margin:0 0 7px;color:#31565d;font-size:11px}.journal-album-thumbs{display:flex;gap:6px;overflow-x:auto;margin:7px 0}.journal-album-thumbs img,.journal-album-video{flex:0 0 70px;width:70px;height:70px;border-radius:9px;object-fit:cover;background:#e7f0ea}.journal-album-video{display:grid;place-items:center;color:#16877f;font-size:20px}.journal-comment{margin:9px 0 0;padding:9px;border:1px solid #ecece3;border-radius:12px;background:#fbfcf9}.journal-comment label{display:block;margin-bottom:6px;color:#60787a;font-size:9px;font-weight:750}.journal-comment textarea{box-sizing:border-box;width:100%;min-height:60px;padding:9px 10px;border:1px solid #e0e7df;border-radius:9px;background:#fff;color:#294c54;font:inherit;font-size:10px;resize:vertical}.journal-comment-actions{display:flex;justify-content:flex-end;margin-top:6px}.journal-comment-actions button,.journal-open-album{border:0;border-radius:999px;background:#16877f;padding:8px 12px;color:#fff;font-size:9px;font-weight:750;cursor:pointer}.journal-open-album{display:inline-block;margin-top:8px;background:#e8f5f0;color:#147a75}.journal-artifact-copy{margin:5px 0 0;color:#5e7478;font-size:10px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.journal-audio{display:block;width:100%;height:34px;margin-top:7px}
   </style>
 </head>
 <body>
@@ -827,6 +828,57 @@ function loadDemoProjectState() {
       }).join("");
       return '<section class="project-stage-controls"><div class="project-journey-heading"><span>Project journey · tap a stage to see its artifacts</span><button type="button" class="project-current-picker" data-open-project-milestones="' + safeId + '" aria-label="Edit project milestones. Current stage: ' + escapeProjectText(stages[currentStage]) + '">' + escapeProjectText(stages[currentStage]) + '</button></div><div class="project-journey-track" aria-label="Project journey" style="gap:7px">' + track + '</div><div class="project-stage-labels" style="grid-template-columns:repeat(' + stages.length + ',minmax(0,1fr))">' + labels + '</div></section>';
     }
+    function renderProjectJournal(projectId, project) {
+      const safeId = escapeProjectText(projectId);
+      const stages = projectCardStageNames(project, projectId);
+      const currentStage = Math.max(0, Math.min(stages.length - 1, Number(project.stage) || 0));
+      const storedExpanded = project.journalExpandedStage;
+      const expandedStage = storedExpanded === null ? -1 : Number.isInteger(Number(storedExpanded)) ? Math.max(0, Math.min(stages.length - 1, Number(storedExpanded))) : currentStage;
+      const albums = projectAlbumRecords(projectId);
+      const artifacts = projectArtifactList(projectId);
+      const stageEntries = stages.map(function(stageName, stageIndex) {
+        const entries = [];
+        albums.forEach(function(album) {
+          const albumStageValue = album.stage === undefined || album.stage === null || album.stage === "" ? stageForProject(projectId) : Number(album.stage) || 0;
+          const albumStage = Math.max(0, Math.min(stages.length - 1, albumStageValue));
+          if (albumStage !== stageIndex) return;
+          const media = albumMediaItems(projectId, album);
+          const voices = artifacts.filter(function(item) { return item.type === "voice" && String(item.albumId || "") === String(album.id); });
+          if (!media.length && !voices.length && !album.note) return;
+          const date = new Date(album.createdAt || Date.now());
+          const timestamp = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("en-MY", {day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+          const title = escapeProjectText(album.title || "Upload batch");
+          const mediaLabel = media.length + " " + (media.length === 1 ? (media[0].type === "photo" ? "photo" : "video") : "items") + (media.length === 1 ? " in this album" : " in this album");
+          const thumbs = media.slice(0,5).map(function(item) {
+            return item.type === "video"
+              ? '<span class="journal-album-video" aria-label="Video">▶</span>'
+              : '<img src="' + escapeProjectText(item.url) + '" alt="' + escapeProjectText(item.name || "Project photo") + '">';
+          }).join("");
+          const audio = voices.map(function(item) {
+            return '<audio class="journal-audio" controls preload="metadata" src="' + escapeProjectText(item.url || "") + '"></audio>';
+          }).join("");
+          const comment = '<div class="journal-comment"><label for="journal-comment-' + safeId + '-' + escapeProjectText(album.id) + '">Comment on this album</label><textarea id="journal-comment-' + safeId + '-' + escapeProjectText(album.id) + '" data-journal-comment-text="' + escapeProjectText(album.id) + '" placeholder="Add a comment about this photo batch…">' + escapeProjectText(album.note || "") + '</textarea><div class="journal-comment-actions"><button type="button" data-save-journal-comment="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '">▣&nbsp; comment</button></div></div>';
+          entries.push({time:date.getTime() || 0, html:'<article class="journal-moment"><span class="journal-moment-marker" aria-hidden="true">▧</span><div class="journal-moment-card"><p class="journal-moment-meta">Upload batch' + (timestamp ? ' · ' + escapeProjectText(timestamp) : '') + ' · Stage · ' + escapeProjectText(stageName) + '</p><h4>' + title + '</h4><p class="journal-artifact-copy">' + mediaLabel + '</p>' + (thumbs ? '<div class="journal-album-thumbs">' + thumbs + '</div>' : '') + audio + comment + '<button type="button" class="journal-open-album" data-open-album="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '">Open this album · ' + (media.length + voices.length) + ' items</button></div></article>'});
+        });
+        artifacts.forEach(function(item) {
+          if ((item.type !== "note" && item.type !== "voice") || item.albumId) return;
+          const itemStageValue = item.stage === undefined || item.stage === null || item.stage === "" ? stageForProject(projectId) : Number(item.stage) || 0;
+          const itemStage = Math.max(0, Math.min(stages.length - 1, itemStageValue));
+          if (itemStage !== stageIndex) return;
+          const date = new Date(item.createdAt || Date.now());
+          const timestamp = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("en-MY", {day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+          const body = item.type === "voice"
+            ? '<strong>Voice note</strong><audio class="journal-audio" controls preload="metadata" src="' + escapeProjectText(item.url || "") + '"></audio>'
+            : '<strong>Note</strong><p class="journal-artifact-copy">' + escapeProjectText(item.text || "") + '</p>';
+          entries.push({time:date.getTime() || 0, html:'<article class="journal-moment"><span class="journal-moment-marker" aria-hidden="true">' + (item.type === "voice" ? '♫' : '≡') + '</span><div class="journal-moment-card"><p class="journal-moment-meta">' + (item.type === "voice" ? 'Voice note' : 'Project note') + (timestamp ? ' · ' + escapeProjectText(timestamp) : '') + ' · Stage · ' + escapeProjectText(stageName) + '</p>' + body + '</div></article>'});
+        });
+        entries.sort(function(a,b) { return a.time - b.time; });
+        const dates = (Array.isArray(project.stageDates) ? project.stageDates[stageIndex] : null) || {};
+        const dateRange = formatProjectMilestoneDate(dates.start) + ' – ' + formatProjectMilestoneDate(dates.end);
+        return {index:stageIndex, count:entries.length, html:'<details class="journal-stage" data-journal-stage-index="' + stageIndex + '"' + (expandedStage === stageIndex ? ' open' : '') + '><summary><span class="journal-stage-title"><strong>' + escapeProjectText(stageName) + (stageIndex === currentStage ? ' · Current' : '') + '</strong><small>' + dateRange + '</small></span><span class="journal-stage-count">' + entries.length + ' ' + (entries.length === 1 ? 'moment' : 'moments') + '</span><span class="journal-stage-chevron" aria-hidden="true">⌄</span></summary><div class="journal-stage-body">' + (entries.length ? entries.map(function(entry) { return entry.html; }).join('') : '<div class="journal-empty">No moments in this stage yet.</div>') + '</div></details>'};
+      });
+      return '<section class="project-journal"><div class="project-journal-intro"><p class="eyebrow">The story so far</p><h3>Journal</h3><p>Keep all the little updates in one place.</p></div><div class="journal-stage-list">' + stageEntries.map(function(stage) { return stage.html; }).join('') + '</div></section>';
+    }
     let activeProjectMilestoneId = "";
     let projectMilestoneDraft = null;
     function renderProjectMilestoneEditorRows() {
@@ -876,6 +928,7 @@ function loadDemoProjectState() {
       project.stageDates = projectMilestoneDraft.dates.slice(0,names.length);
       project.stage = Math.max(0,Math.min(names.length-1,Number(projectMilestoneDraft.currentStage)||0));
       project.selectedStage = project.stage;
+      project.journalExpandedStage = project.stage;
       saveProjectCardRecord(activeProjectMilestoneId);
       closeProjectMilestones();
       refreshProjectCards();
@@ -950,6 +1003,7 @@ function loadDemoProjectState() {
         '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
         renderProjectAlbums(projectId) +
         renderProjectStageControls(projectId, project) +
+        renderProjectJournal(projectId, project) +
         renderProjectOverallNotes(projectId, project) +
         (isDemo && notes ? '<details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + spent.toLocaleString("en-MY") + '</p></details>' : "") +
         renderAddArtifactControls(projectId) + (!isDemo ? '<button class="archive-project-button" type="button" data-archive-project="' + safeId + '">Archive project…</button>' : '') + '</div></article>';
@@ -1292,10 +1346,14 @@ function loadDemoProjectState() {
       if (!artifactList) return false;
       artifact.id = "artifact-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
       artifact.createdAt = new Date().toISOString();
+      artifact.stage = stageForProject(projectId);
       if (artifact.type === "voice" && activeVoiceAlbumId) {
         artifact.albumId = activeVoiceAlbumId;
         const album = projectAlbumRecords(projectId).find(function(item) { return String(item.id) === String(activeVoiceAlbumId); });
-        if (album && album.voiceNotes.indexOf(artifact.id) < 0) album.voiceNotes.push(artifact.id);
+        if (album) {
+          artifact.stage = Number(album.stage) || 0;
+          if (album.voiceNotes.indexOf(artifact.id) < 0) album.voiceNotes.push(artifact.id);
+        }
       }
       artifactList.unshift(artifact);
       saveProjectArtifactData(projectId);
@@ -1434,6 +1492,22 @@ function loadDemoProjectState() {
     function saveProjectTracking(){if(!saveProjectCardRecord(activeProjectTrackingId)){toast("Could not save project changes on this device.");return false;}refreshProjectCards();return true;}
     function wireProjectCardControls() {
       let longPressTimer = 0, longPressCard = null, longPressStart = null;
+      document.addEventListener("toggle", function(event) {
+        const details = event.target.closest && event.target.closest(".journal-stage[data-journal-stage-index]");
+        if (!details) return;
+        const card = details.closest("[data-project-card]");
+        if (!card) return;
+        const projectId = card.dataset.projectCard;
+        const project = getProjectCardRecord(projectId);
+        if (!project) return;
+        if (details.open) {
+          card.querySelectorAll(".journal-stage[open]").forEach(function(other) { if (other !== details) other.open = false; });
+          project.journalExpandedStage = Number(details.dataset.journalStageIndex) || 0;
+        } else if (!card.querySelector(".journal-stage[open]")) {
+          project.journalExpandedStage = null;
+        }
+        saveProjectCardRecord(projectId);
+      }, true);
       document.addEventListener("pointerdown", function(event) {
         const card = event.target.closest("[data-project-card]");
         if (!card || event.target.closest("button,input,textarea,select,label,a,summary")) return;
@@ -1500,16 +1574,32 @@ function loadDemoProjectState() {
           const stageIndex = Number(stageButton.dataset.stageIndex) || 0;
           project.selectedStage = stageIndex;
           project.albumStageFilter = stageIndex;
+          project.journalExpandedStage = stageIndex;
           saveProjectCardRecord(projectId);
           refreshProjectCards();
           requestAnimationFrame(function() {
             const card = Array.from(document.querySelectorAll("[data-project-card]")).find(function(item) {
               return item.dataset.projectCard === projectId && item.getClientRects().length > 0;
             });
-            const albumStage = card && card.querySelector('[data-project-album-stage-index="' + stageIndex + '"]');
-            if (albumStage) albumStage.scrollIntoView({behavior:"smooth",block:"center"});
-            else toast("No albums in this stage yet.");
+            const journalStage = card && card.querySelector('[data-journal-stage-index="' + stageIndex + '"]');
+            if (journalStage) journalStage.scrollIntoView({behavior:"smooth",block:"center"});
           });
+          return;
+        }
+        const saveJournalComment = event.target.closest("[data-save-journal-comment]");
+        if (saveJournalComment) {
+          const projectId = saveJournalComment.dataset.saveJournalComment;
+          const albumId = saveJournalComment.dataset.albumId;
+          const project = getProjectCardRecord(projectId);
+          const card = saveJournalComment.closest("[data-project-card]");
+          const comment = card && card.querySelector('[data-journal-comment-text="' + albumId + '"]');
+          const album = project && projectAlbumRecords(projectId).find(function(item) { return String(item.id) === String(albumId); });
+          if (!album || !comment) return;
+          album.note = comment.value.trim();
+          album.noteUpdatedAt = Date.now();
+          saveProjectArtifactData(projectId);
+          refreshProjectCards();
+          toast("Album comment saved.");
           return;
         }
         const saveNotes = event.target.closest("[data-save-project-notes]");
