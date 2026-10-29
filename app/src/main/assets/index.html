@@ -1065,6 +1065,7 @@ function loadDemoProjectState() {
         renderProjectTrackingInline(projectId, project) +
         '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
         renderProjectAlbums(projectId) +
+        renderAddArtifactControls(projectId) +
         renderProjectStageControls(projectId, project) +
         (showJournal ? renderProjectJournal(projectId, project) : "") +
         renderProjectOverallNotes(projectId, project) +
