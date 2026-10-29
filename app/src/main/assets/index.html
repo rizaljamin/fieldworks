@@ -966,7 +966,7 @@ function loadDemoProjectState() {
       const countLabel = allPhotoCount ? "Progress · " + allPhotoCount + " photos" : "Project journal";
       return '<div class="demo-project-media"><div class="' + collageClass + '">' + lead + '<div class="project-collage-secondary">' + secondary + '</div></div><span class="demo-photo-label">' + countLabel + '</span></div>';
     }
-    function renderUnifiedProjectCard(project, isDemo) {
+    function renderUnifiedProjectCard(project, isDemo, showJournal) {
       const projectId = isDemo ? "demo-mini-renovation" : project.id;
       if (isDemo) loadDemoProjectState();
       const safeId = escapeProjectText(projectId);
@@ -997,9 +997,9 @@ function loadDemoProjectState() {
         '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
         renderProjectAlbums(projectId) +
         renderProjectStageControls(projectId, project) +
-        renderProjectJournal(projectId, project) +
+        (showJournal ? renderProjectJournal(projectId, project) : "") +
         renderProjectOverallNotes(projectId, project) +
-        (isDemo && notes ? '<details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + spent.toLocaleString("en-MY") + '</p></details>' : "") +
+        (showJournal && isDemo && notes ? '<details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + spent.toLocaleString("en-MY") + '</p></details>' : "") +
         renderAddArtifactControls(projectId) + (!isDemo ? '<button class="archive-project-button" type="button" data-archive-project="' + safeId + '">Archive project…</button>' : '') + '</div></article>';
     }
     function miniRenovationCardMarkup() {
@@ -1551,7 +1551,7 @@ function loadDemoProjectState() {
         }
         if (event.target.id === "projectMilestonesOverlay") { closeProjectMilestones(); return; }
         const favoriteButton = event.target.closest("[data-favorite-project]");
-        if (favoriteButton) { toggleFavoriteProject(favoriteButton.dataset.favoriteProject); return; }
+        if (favoriteButton) { event.preventDefault(); event.stopPropagation(); toggleFavoriteProject(favoriteButton.dataset.favoriteProject); return; }
         const stageButton = event.target.closest("[data-project-stage-select][data-stage-index]");
         if (stageButton) {
           const projectId = stageButton.dataset.projectStageSelect;
@@ -1677,27 +1677,22 @@ function loadDemoProjectState() {
       catch (error) { return []; }
     }
     function isProjectFavorite(projectId) {
-      return readFavoriteProjectIds().indexOf(String(projectId)) >= 0 || readPinnedProjectIds().indexOf(String(projectId)) >= 0;
+      return readFavoriteProjectIds().indexOf(String(projectId)) >= 0;
     }
     function toggleFavoriteProject(projectId) {
       const id = String(projectId);
       const favorites = readFavoriteProjectIds();
-      const pins = readPinnedProjectIds();
-      const isOn = favorites.indexOf(id) >= 0 || pins.indexOf(id) >= 0;
-      if (isOn) {
-        const f = favorites.indexOf(id); if (f >= 0) favorites.splice(f,1);
-        const p = pins.indexOf(id); if (p >= 0) pins.splice(p,1);
-        try {
-          localStorage.setItem(FAVORITE_PROJECTS_KEY,JSON.stringify(favorites));
-          localStorage.setItem(PINNED_PROJECTS_KEY,JSON.stringify(pins));
-        } catch (error) {}
-        toast("Removed from Favourite Projects.");
-      } else {
-        favorites.unshift(id);
-        try { localStorage.setItem(FAVORITE_PROJECTS_KEY,JSON.stringify(favorites)); } catch (error) {}
-        toast("Added to Favourite Projects.");
+      const index = favorites.indexOf(id);
+      if (index >= 0) favorites.splice(index, 1);
+      else favorites.unshift(id);
+      try {
+        localStorage.setItem(FAVORITE_PROJECTS_KEY, JSON.stringify(favorites));
+      } catch (error) {
+        toast("Could not save favourite on this device.");
+        return;
       }
-      renderCreatedProjects();
+      refreshProjectCards();
+      toast(index >= 0 ? "Removed from Favourite Projects." : "Added to Favourite Projects.");
     }
     function readPinnedProjectIds() {
       try { const value = JSON.parse(localStorage.getItem(PINNED_PROJECTS_KEY) || "[]"); return Array.isArray(value) ? value.map(String) : []; }
@@ -1945,9 +1940,9 @@ function loadDemoProjectState() {
         if (bFav >= 0) return 1;
         return a === MINI_RENOVATION_DEMO ? -1 : b === MINI_RENOVATION_DEMO ? 1 : 0;
       });
-      function cardsFor(items) {
+      function cardsFor(items, showJournal) {
         return items.map(function(project) {
-          return renderUnifiedProjectCard(project, project === MINI_RENOVATION_DEMO);
+          return renderUnifiedProjectCard(project, project === MINI_RENOVATION_DEMO, showJournal);
         }).join("");
       }
       function isInFavorites(project) {
@@ -1961,9 +1956,9 @@ function loadDemoProjectState() {
       const list = document.getElementById("projectsCreatedProjects");
       const favoriteEmpty = '<div class="empty">No favourite projects yet. Tap the star on a project to add it here.</div>';
       const projectEmpty = '<div class="empty">Projects you create will appear here.</div>';
-      if (favoriteSlot) favoriteSlot.innerHTML = cardsFor(favourites) || favoriteEmpty;
-      if (home) home.innerHTML = cardsFor(otherProjects) || projectEmpty;
-      if (list) list.innerHTML = cardsFor(projects) || projectEmpty;
+      if (favoriteSlot) favoriteSlot.innerHTML = cardsFor(favourites, false) || favoriteEmpty;
+      if (home) home.innerHTML = cardsFor(otherProjects, false) || projectEmpty;
+      if (list) list.innerHTML = cardsFor(projects, true) || projectEmpty;
       const demoProjects = document.getElementById("projectsMiniRenovation");
       if (demoProjects) demoProjects.innerHTML = "";
     }
