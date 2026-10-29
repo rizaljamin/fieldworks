@@ -395,7 +395,7 @@
           <div class="sectionhead"><div><div class="eyebrow">Latest activity first</div><h2>My Projects</h2><p>Projects you create appear here.</p></div></div>
           <div id="homeCreatedProjects" class="created-project-list"></div>
           <div class="sectionhead"><div><div class="eyebrow">Ready to start</div><h2>My Templates</h2><p>Choose a template to start a project.</p></div></div>
-          <div class="placeholder-card" aria-label="Templates placeholder"></div>
+          <div class="template-grid" id="homeTemplates"></div>
           <div class="sectionhead"><div><div class="eyebrow">A little of everything</div><h2>Recent moments</h2><p>Your latest photos, thoughts and voice notes.</p></div></div>
           <div class="placeholder-card" aria-label="Recent moments placeholder"></div>
         </section>
@@ -1145,8 +1145,11 @@
       return '<article class="template-card"><div class="template-art" aria-hidden="true">' + escapeProjectText(template.icon) + '</div><h3>' + escapeProjectText(template.name) + '</h3><p>' + escapeProjectText(template.description) + '</p><small class="template-stage-preview">' + stages + '</small><button class="button-primary" type="button" data-use-template="' + escapeProjectText(template.id) + '">Use template</button></article>';
     }
     function renderTemplates() {
-      const grid = document.getElementById("templateGrid");
-      if (grid) grid.innerHTML = FIELDWORKS_TEMPLATES.map(renderTemplateCard).join("");
+      const cards = FIELDWORKS_TEMPLATES.map(renderTemplateCard).join("");
+      ["templateGrid", "homeTemplates"].forEach(function(id) {
+        const grid = document.getElementById(id);
+        if (grid) grid.innerHTML = cards;
+      });
     }
     function openCreateProjectCard(templateId) {
       loadCreatedProjects();
@@ -1176,7 +1179,7 @@
       document.getElementById("newProjectDescription").placeholder = "What are you working on?";
       document.getElementById("projectTemplateStages").hidden = true;
     }
-    function createProjectFromCard(event) {    function createProjectFromCard(event) {
+    function createProjectFromCard(event) {
       event.preventDefault();
       const name = document.getElementById("newProjectName").value.trim();
       if (!name) { document.getElementById("newProjectName").focus(); return; }
@@ -1209,9 +1212,13 @@
         if (event.target.id === "createProjectOverlay") closeCreateProjectCard();
       });
       document.getElementById("createProjectForm").addEventListener("submit", createProjectFromCard);
-      document.getElementById("templateGrid").addEventListener("click", function(event) {
-        const button = event.target.closest("[data-use-template]");
-        if (button) openCreateProjectCard(button.dataset.useTemplate);
+      ["templateGrid", "homeTemplates"].forEach(function(id) {
+        const grid = document.getElementById(id);
+        if (!grid) return;
+        grid.addEventListener("click", function(event) {
+          const button = event.target.closest("[data-use-template]");
+          if (button) openCreateProjectCard(button.dataset.useTemplate);
+        });
       });
       document.addEventListener("keydown", function(event) {
         if (event.key === "Escape" && !document.getElementById("createProjectOverlay").hidden) closeCreateProjectCard();
@@ -1222,6 +1229,7 @@
       document.getElementById("dashboard").hidden = false;
       try { updateAuthUI(window.FieldWorksAuth ? window.FieldWorksAuth.currentEmail() : ""); } catch (error) { updateAuthUI(""); }
       renderCreatedProjects();
+      renderTemplates();
       showFieldWorksPage("home");
     }
 
