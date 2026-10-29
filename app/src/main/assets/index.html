@@ -440,9 +440,13 @@
     .project-albums-heading>small{display:flex;align-items:center;gap:8px}
     .project-albums-show-all{padding:3px 8px;border:1px solid #c9ddd4;border-radius:8px;background:#f4faf6;color:#176d70;font:inherit;font-size:8px;font-weight:750}
     @media(max-width:480px){.project-milestone-edit-title{grid-template-columns:1fr;align-items:start}.project-milestone-current-radio{padding-left:2px}}
-      .demo-project-media{align-self:start;width:100%;aspect-ratio:1/1;max-height:480px;min-height:0;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));overflow:hidden}
-    .demo-project-media .demo-photo{grid-row:auto;min-width:0;min-height:0;overflow:hidden}
-    .demo-project-media .demo-photo img{display:block;width:100%;height:100%;object-fit:cover}
+      .demo-project-media{align-self:start;width:100%;aspect-ratio:1/1;max-height:480px;min-height:0;display:block;overflow:hidden;padding:12px;background:linear-gradient(145deg,#e7eeea,#dce9e2)}
+    .project-photo-stack{position:relative;display:block;width:100%;height:100%;padding:0;border:0;background:transparent;overflow:visible;touch-action:manipulation}
+    .project-photo-card{position:absolute;inset:4px 16px 14px 4px;display:grid;place-items:center;overflow:hidden;border:1px solid #d8dfd8;border-radius:13px;background:#fff;box-shadow:0 5px 16px #1837471c;transform:translate(calc(var(--stack-depth)*3px),calc(var(--stack-depth)*4px)) rotate(calc(var(--stack-depth)*.8deg));transform-origin:center;transition:transform .22s ease,box-shadow .22s ease;z-index:calc(10 - var(--stack-depth))}
+    .project-photo-card.is-front{transform:translate(0,0) rotate(0);box-shadow:0 9px 22px #1837472a}
+    .project-photo-card img{display:block;width:100%;height:100%;object-fit:cover}
+    .project-photo-card .project-media-placeholder{width:100%;height:100%;min-height:0}
+    .project-photo-stack .demo-photo-label{left:12px;bottom:12px;z-index:20;pointer-events:none}
     @media(max-width:850px){.demo-project-media{aspect-ratio:1/1;max-height:440px;min-height:0}}
   </style>
 </head>
@@ -828,29 +832,30 @@ function loadDemoProjectState() {
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       });
       albums.forEach(function(album) {
-        const items = albumMediaItems(projectId, album);
-        allPhotoCount += items.filter(function(item) { return item.type === "photo"; }).length;
-        items.forEach(function(item) { if (media.length < 4) media.push(item); });
+        const items = albumMediaItems(projectId, album).filter(function(item) { return item.type === "photo" && item.url; });
+        allPhotoCount += items.length;
+        items.forEach(function(item) { if (media.length < 5) media.push(item); });
       });
       if (isDemo) {
         (project.photos || []).forEach(function(item) {
-          if (media.length < 4) media.push({ type:"photo", url:item.src, alt:item.alt });
+          if (media.length < 5) media.push({ type:"photo", url:item.src, alt:item.alt });
         });
         if (!allPhotoCount) allPhotoCount = (project.photos || []).length;
       }
       const icon = project.type === "Garden Works" || project.type === "Farms & Agriculture" ? "🌱" :
         project.type === "Catering" || project.type === "Birthday Party" ? "✿" :
         project.type === "Field Trips" ? "⌁" : "⌂";
-      const slots = [0, 1, 2, 3].map(function(index) {
-        const item = media[index];
-        let content = "";
-        if (item && item.type === "photo" && item.url) content = '<img src="' + escapeProjectText(item.url) + '" alt="' + escapeProjectText(item.alt || "Project progress photo") + '">';
-        else if (item && item.type === "video") content = '<span class="project-media-video">▶ Video</span>';
-        else content = '<span class="project-media-placeholder" aria-hidden="true">' + icon + '</span>';
-        return '<div class="demo-photo">' + content + '</div>';
+      if (!media.length) media.push({type:"placeholder"});
+      const cards = media.map(function(item, index) {
+        const content = item.type === "photo" && item.url
+          ? '<img src="' + escapeProjectText(item.url) + '" alt="' + escapeProjectText(item.alt || "Project progress photo") + '">'
+          : '<span class="project-media-placeholder" aria-hidden="true">' + icon + '</span>';
+        return '<span class="project-photo-card' + (index === 0 ? ' is-front' : '') + '" data-photo-index="' + index + '" style="--stack-depth:' + index + '">' + content + '</span>';
       }).join("");
-      const countLabel = allPhotoCount ? "Progress · " + allPhotoCount + " photo" + (allPhotoCount === 1 ? "" : "s") + " in albums" : "Project journal";
-      return '<div class="demo-project-media">' + slots + '<span class="demo-photo-label">' + countLabel + '</span></div>';
+      const countLabel = allPhotoCount
+        ? "Tap to flip · " + allPhotoCount + " photo" + (allPhotoCount === 1 ? "" : "s")
+        : "Project journal";
+      return '<div class="demo-project-media"><button type="button" class="project-photo-stack" data-photo-stack="' + escapeProjectText(projectId) + '" aria-label="Project photos. Tap to flip through ' + media.length + ' images.">' + cards + '<span class="demo-photo-label">' + countLabel + '</span></button></div>';
     }
     function renderUnifiedProjectCard(project, isDemo) {
       const projectId = isDemo ? "demo-mini-renovation" : project.id;
@@ -1339,6 +1344,21 @@ function loadDemoProjectState() {
         document.addEventListener(type, function() { clearTimeout(longPressTimer); longPressCard=null; longPressTimer=0; });
       });
       document.addEventListener("click", function(event) {
+        const photoStack = event.target.closest("[data-photo-stack]");
+        if (photoStack) {
+          const cards = Array.from(photoStack.querySelectorAll(".project-photo-card"));
+          if (cards.length > 1) {
+            const current = Number(photoStack.dataset.frontIndex) || 0;
+            const next = (current + 1) % cards.length;
+            photoStack.dataset.frontIndex = String(next);
+            cards.forEach(function(card, index) {
+              const depth = (index - next + cards.length) % cards.length;
+              card.style.setProperty("--stack-depth", String(depth));
+              card.classList.toggle("is-front", depth === 0);
+            });
+          }
+          return;
+        }
         const openMilestones = event.target.closest("[data-open-project-milestones]");
         if (openMilestones) { openProjectMilestones(openMilestones.dataset.openProjectMilestones); return; }
         if (event.target.closest("[data-close-project-milestones]")) { closeProjectMilestones(); return; }
