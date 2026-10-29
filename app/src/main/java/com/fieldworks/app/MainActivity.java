@@ -946,6 +946,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Android 15+ enforces edge-to-edge for this target SDK; fit the WebView
+        // inside the status, navigation, and tablet taskbar system bars.
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         webView = new WebView(this);
         webView.setWebViewClient(new WebViewClient());
         webView.setVerticalScrollBarEnabled(false);
