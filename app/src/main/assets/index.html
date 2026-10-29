@@ -309,10 +309,15 @@
     .project-media-video{background:#e7eef3;color:#62788d;font-size:14px;font-weight:700}
     .project-stage-controls{margin:2px 0 12px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
     .project-journey-track{display:flex;gap:5px;margin:8px 0}
-    .project-stage-step{position:relative;flex:1;min-width:14px;height:20px;padding:0;border:0;border-radius:8px;background:#e7e8e5;color:#66787a}
-    .project-stage-step.selected{background:#65bcb5;color:#fff}
-    .project-stage-step.selected:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border-width:5px 5px 0;border-style:solid;border-color:#287f80 transparent transparent}
-    .project-stage-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+    .project-stage-step{position:relative;flex:1;min-width:14px;height:22px;padding:0;border:0;border-radius:9px;background:transparent}
+    .project-stage-step:before{content:"";position:absolute;left:0;right:0;top:8px;height:6px;border-radius:9px;background:#ebe9e0}
+    .project-stage-step.current:before{background:#f5a11a}
+    .project-stage-step.current:after{content:"";position:absolute;left:50%;top:1px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #f5a11a;z-index:1}
+    .project-stage-labels{display:grid;gap:3px;margin-top:4px}
+    .project-stage-label{min-width:0;min-height:32px;padding:3px 2px;border:0;border-radius:6px;background:transparent;color:#879294;text-align:center;font-size:8px;line-height:1.2}
+    .project-stage-label.selected{background:#e4f3f1;color:#087d84;font-weight:800}
+    .project-current-stage{margin-top:8px}
+    .project-stage-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
     .project-stage-date-panel{display:grid;gap:4px;min-width:0;padding:8px;border:1px solid var(--line);border-radius:9px;background:#fffefa;color:#718587;font-size:9px;font-weight:700;cursor:pointer}
     .project-stage-date-panel:focus-within,.project-stage-date-panel:hover{border-color:#82bdb4;background:#f8fcf8}
     .project-stage-date-panel input{width:100%;min-width:0;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:11px;cursor:pointer}
@@ -322,6 +327,7 @@
     .project-overall-notes textarea{display:block;width:100%;min-height:58px;padding:8px;border:1px solid #e8e4d9;border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:10px;resize:vertical}
     .project-overall-notes-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;color:#819092;font-size:8px}
     .project-overall-notes-actions button{padding:5px 9px;border:1px solid #c9ddd4;border-radius:7px;background:#f4faf6;color:#176d70;font-size:9px;font-weight:750}
+    .pinned-project-icon{width:16px;height:19px;vertical-align:-5px;margin-left:5px;flex:none}
     .shared-project-card{touch-action:pan-y}
     .shared-project-card.is-pinned{border-color:#78b9ae;box-shadow:0 0 0 2px #d6eee6,var(--shadow)}
     .demo-project-copy h3[title]{cursor:help}
@@ -329,9 +335,9 @@
     .project-album-stage-head strong{font-size:9px}
     .mini-album{display:grid;gap:5px}
     .mini-album-open{display:grid;gap:4px;width:100%;padding:0;border:0;background:transparent;text-align:left;color:var(--ink)}
-    .mini-album-move-label{display:grid;gap:3px;padding-top:5px;border-top:1px solid #ecefe9;color:#718587;font-size:8px;font-weight:650}
+    .mini-album-move-label{display:grid;grid-template-columns:auto 13px minmax(0,1fr);align-items:center;gap:4px;padding-top:5px;border-top:1px solid #ecefe9;color:#718587;font-size:8px;font-weight:650}.mini-album-move-arrow{color:#138c92;font-size:15px;font-weight:800;text-align:center}
     .mini-album-move-label select{width:100%;min-width:0;height:28px;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:#fffefa;color:var(--ink);font-size:9px}
-    @media(max-width:480px){.project-stage-date-fields{grid-template-columns:1fr 1fr}.project-stage-save{grid-column:1/-1}}
+    @media(max-width:480px){.project-stage-label{font-size:7px;overflow-wrap:anywhere}.project-stage-date-fields{grid-template-columns:1fr 1fr}.project-stage-save{grid-column:1/-1}}
     .demo-photo{min-width:0;min-height:0;overflow:hidden}.demo-photo img{display:block;width:100%;height:100%;object-fit:cover}.demo-photo-main,.demo-photo-secondary{grid-row:span 2}.demo-photo-label{position:absolute;left:12px;bottom:12px;padding:6px 9px;border-radius:20px;background:#143f4be0;color:#fff;font-size:9px;font-weight:700}
     .demo-project-copy{display:flex;flex-direction:column;padding:22px;min-width:0}.demo-project-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}.demo-project-tag{padding:6px 10px;border-radius:20px;background:#e7f3ed;color:#507569;font-size:9px}.demo-project-favorite{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff1cf;color:#a56e15;font-size:17px}.demo-project-copy h3{margin:12px 0 5px;color:var(--navy);font-family:Georgia,serif;font-size:23px;font-weight:600;line-height:1.2}.demo-project-description{margin:0;color:#748286;font-size:11px}.demo-project-stats{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-project-stats span{padding:4px 8px;border:1px solid #b7d1ca;border-radius:20px;color:#49656a;font-size:9px}.demo-project-stats b{color:var(--navy)}.demo-project-last{display:grid;gap:3px;margin:0 0 14px;color:#66797d;font-size:10px}.demo-project-last strong{color:#455e63}.demo-stage-head{display:flex;justify-content:space-between;gap:10px;color:#75858a;font-size:9px}.demo-stage-head b{color:#a17125}.demo-stage-track{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:9px 0 14px}.demo-stage-track span{height:6px;border-radius:10px;background:#e8e6dc}.demo-stage-track span.done,.demo-stage-track span.current{background:#f0a52a}.demo-journal{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;color:#60777a;font-size:10px}.demo-journal summary{cursor:pointer;color:#176d70;font-weight:750}.demo-journal ul{display:grid;gap:8px;margin:10px 0 0;padding-left:18px}.demo-journal li strong{display:block;color:var(--navy)}
     @media(max-width:850px){.demo-project-card{grid-template-columns:1fr}.demo-project-media{min-height:260px}.demo-project-copy{padding:17px}}
@@ -418,7 +424,7 @@
             <span class="home-create-arrow" aria-hidden="true">→</span>
           </button>
           <div class="sectionhead"><div><div class="eyebrow">Ready when you are</div><h2>Favourite Projects</h2><p>Your quick notes and photos will go here.</p></div></div>
-          <div id="homeMiniRenovation"></div>
+          <div id="homeMiniRenovation" class="created-project-list"></div>
           <div class="sectionhead"><div><div class="eyebrow">Latest activity first</div><h2>My Projects</h2><p>Projects you create appear here.</p></div></div>
           <div id="homeCreatedProjects" class="created-project-list"></div>
           <div class="sectionhead"><div><div class="eyebrow">Ready to start</div><h2>My Templates</h2><p>Choose a template to start a project.</p></div></div>
@@ -626,8 +632,14 @@ function loadDemoProjectState() {
       else saveCreatedProjects();
     }
     function projectCardStageNames(project, projectId) {
-      const values = projectId === "demo-mini-renovation" ? project.stages : project.stageNames;
-      return Array.isArray(values) && values.length ? values : ["Planning", "In progress", "Complete"];
+      if (projectId === "demo-mini-renovation" && Array.isArray(project.stages) && project.stages.length) return project.stages;
+      const byId = FIELDWORKS_TEMPLATES.find(function(template) { return template.id === project.templateId; });
+      const byType = FIELDWORKS_TEMPLATES.find(function(template) { return template.type === project.type; });
+      const template = byId || byType;
+      if (template && Array.isArray(template.stages) && template.stages.length) return template.stages;
+      return Array.isArray(project.stageNames) && project.stageNames.length
+        ? project.stageNames
+        : FIELDWORKS_TEMPLATES[0].stages;
     }
     function renderProjectStageControls(projectId, project) {
       const safeId = escapeProjectText(projectId);
@@ -636,9 +648,14 @@ function loadDemoProjectState() {
       const selectedDates = (Array.isArray(project.stageDates) ? project.stageDates[currentStage] : null) || {};
       const track = stages.map(function(stage, index) {
         const selected = index === currentStage;
-        return '<button type="button" class="project-stage-step' + (selected ? ' selected' : '') + '" data-project-stage="' + safeId + '" data-stage-index="' + index + '" aria-label="Set ' + escapeProjectText(stage) + ' as the current stage" aria-pressed="' + selected + '" title="' + escapeProjectText(stage) + '"></button>';
+        const state = selected ? "current" : "";
+        return '<button type="button" class="project-stage-step ' + state + '" data-project-stage="' + safeId + '" data-stage-index="' + index + '" aria-label="Set ' + escapeProjectText(stage) + ' as the current stage" aria-pressed="' + selected + '" title="' + escapeProjectText(stage) + '"></button>';
       }).join("");
-      return '<section class="project-stage-controls"><div class="demo-stage-head"><span>Project journey · ' + escapeProjectText(stages[currentStage]) + '</span><b>Stage ' + (currentStage + 1) + ' of ' + stages.length + '</b></div><div class="project-journey-track" aria-label="Project journey">' + track + '</div><div class="project-stage-date-fields" data-stage-date-panel="' + safeId + '" data-stage-index="' + currentStage + '"><label class="project-stage-date-panel">Start date<input type="date" data-project-stage-date="start" value="' + escapeProjectText(selectedDates.start || "") + '"></label><label class="project-stage-date-panel">End date<input type="date" data-project-stage-date="end" value="' + escapeProjectText(selectedDates.end || "") + '"></label><button type="button" class="project-stage-save" data-save-project-stage-dates="' + safeId + '">Save dates for ' + escapeProjectText(stages[currentStage]) + '</button></div></section>';
+      const labels = stages.map(function(stage, index) {
+        const selected = index === currentStage;
+        return '<button type="button" class="project-stage-label' + (selected ? ' selected' : '') + '" data-project-stage="' + safeId + '" data-stage-index="' + index + '" aria-pressed="' + selected + '">' + escapeProjectText(stage) + '</button>';
+      }).join("");
+      return '<section class="project-stage-controls"><div class="demo-stage-head"><span>Project journey</span><b>Stage ' + (currentStage + 1) + ' of ' + stages.length + '</b></div><div class="project-journey-track" aria-label="Project journey">' + track + '</div><div class="project-stage-labels" style="grid-template-columns:repeat(' + stages.length + ',minmax(0,1fr))">' + labels + '</div><div class="demo-stage-head project-current-stage"><span>Current milestone</span><b>' + escapeProjectText(stages[currentStage]) + '</b></div><div class="project-stage-date-fields" data-stage-date-panel="' + safeId + '" data-stage-index="' + currentStage + '"><label class="project-stage-date-panel">Start date<input type="date" data-project-stage-date="start" value="' + escapeProjectText(selectedDates.start || "") + '"></label><label class="project-stage-date-panel">End date<input type="date" data-project-stage-date="end" value="' + escapeProjectText(selectedDates.end || "") + '"></label><button type="button" class="project-stage-save" data-save-project-stage-dates="' + safeId + '">Save dates for ' + escapeProjectText(stages[currentStage]) + '</button></div></section>';
     }
     function renderProjectOverallNotes(projectId, project) {
       const safeId = escapeProjectText(projectId);
@@ -699,7 +716,7 @@ function loadDemoProjectState() {
       return '<article class="demo-project-card shared-project-card' + (readPinnedProjectIds().indexOf(projectId) >= 0 ? ' is-pinned' : '') + '" data-project-card="' + safeId + '">' +
         projectCardMediaMarkup(project, projectId, isDemo) +
         '<div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + type + '</span><span class="demo-project-favorite" aria-hidden="true">★</span></div>' +
-        '<h3 title="Long-press this project to pin it to the top." aria-label="' + name + '. Long-press to pin this project to the top.">' + name + '</h3><p class="demo-project-description">' + description + '</p>' +
+        '<h3 class="project-title-line" title="Long-press to pin or unpin this project." aria-label="' + name + '. Long-press to pin or unpin this project."><span class="project-title-copy">' + name + (readPinnedProjectIds().indexOf(projectId) >= 0 ? '<svg class="pinned-project-icon" viewBox="0 0 24 32" role="img" aria-label="Pinned project" title="Pinned project"><ellipse cx="12" cy="30.4" rx="5.1" ry="1.35" fill="#111"/><path d="M9.6 13.1 13.1 14.2 7 29.9 5.8 29.6z" fill="#85898d"/><path d="m12.8 14.1 2.3 1-7.9 14.7-1.1-.2z" fill="#b7babd"/><path d="m12.1 13.3 2.4.8-1.5 2-2.8-1z" fill="#666a6e"/><circle cx="12" cy="8" r="7.1" fill="#ed1016"/><path d="M5.1 9.1a7.1 7.1 0 0 0 13.8 0 7.1 7.1 0 0 1-13.8 0" fill="#c90008"/><circle cx="12" cy="5.3" r="1.25" fill="#fff"/></svg>' : '') + '</span></h3><p class="demo-project-description">' + description + '</p>' +
         '<div class="demo-project-stats"><span>Issues <b>' + issues + '</b></span><span>Reminders <b>' + reminders + '</b></span><span>Spent <b>RM ' + spent.toLocaleString("en-MY") + '</b></span></div>' +
         '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
         renderProjectStageControls(projectId, project) +
@@ -710,13 +727,7 @@ function loadDemoProjectState() {
     function miniRenovationCardMarkup() {
       return renderUnifiedProjectCard(MINI_RENOVATION_DEMO, true);
     }
-    function renderMiniRenovationDemo() {
-      const home = document.getElementById("homeMiniRenovation");
-      const projects = document.getElementById("projectsMiniRenovation");
-      if (home) home.innerHTML = "";
-      if (projects) projects.innerHTML = "";
-      renderCreatedProjects();
-    }
+    function renderMiniRenovationDemo() { renderCreatedProjects(); }
 
 
     let createdProjects = [];
@@ -972,7 +983,7 @@ function loadDemoProjectState() {
               const moveOptions = stageNames.map(function(name,index) {
                 return '<option value="' + index + '"' + (index === stage ? " selected" : "") + '>' + escapeProjectText(name) + '</option>';
               }).join("");
-              return '<article class="mini-album"><button class="mini-album-open" type="button" data-open-album="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '"><span class="mini-album-grid">' + preview + '</span><span class="mini-album-title">' + title + '</span><span class="mini-album-meta">' + items.length + ' ' + (items.length === 1 ? 'item' : 'items') + (notes ? ' · ' + notes + ' ' + (notes === 1 ? 'note' : 'notes') : '') + ' · open album</span></button><label class="mini-album-move-label">Move album to<select data-move-album-project="' + safeId + '" data-move-album-id="' + escapeProjectText(album.id) + '">' + moveOptions + '</select></label></article>';
+              return '<article class="mini-album"><button class="mini-album-open" type="button" data-open-album="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '"><span class="mini-album-grid">' + preview + '</span><span class="mini-album-title">' + title + '</span><span class="mini-album-meta">' + items.length + ' ' + (items.length === 1 ? 'item' : 'items') + (notes ? ' · ' + notes + ' ' + (notes === 1 ? 'note' : 'notes') : '') + ' · open album</span></button><label class="mini-album-move-label"><span>Move album</span><span class="mini-album-move-arrow" aria-hidden="true">→</span><select aria-label="Move album to another stage" data-move-album-project="' + safeId + '" data-move-album-id="' + escapeProjectText(album.id) + '">' + moveOptions + '</select></label></article>';
             }).join("");
             return '<section class="project-album-stage"><div class="project-album-stage-head"><strong>' + escapeProjectText(stageName) + '</strong><small>' + grouped[stage].length + ' ' + (grouped[stage].length === 1 ? 'album' : 'albums') + '</small></div><div class="mini-albums">' + cards + '</div></section>';
           }).join("") + '</div>'
@@ -1373,25 +1384,39 @@ function loadDemoProjectState() {
     }
     function renderCreatedProjects() {
       loadCreatedProjects();
-      const pinned = readPinnedProjectIds();
+      const pinnedIds = readPinnedProjectIds();
       const projects = [MINI_RENOVATION_DEMO].concat(createdProjects).sort(function(a,b) {
-        const aId = a === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : a.id;
-        const bId = b === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : b.id;
-        const aRank = pinned.indexOf(String(aId));
-        const bRank = pinned.indexOf(String(bId));
+        const aId = String(a === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : a.id);
+        const bId = String(b === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : b.id);
+        const aRank = pinnedIds.indexOf(aId), bRank = pinnedIds.indexOf(bId);
         if (aRank >= 0 && bRank >= 0) return aRank - bRank;
         if (aRank >= 0) return -1;
         if (bRank >= 0) return 1;
         return a === MINI_RENOVATION_DEMO ? -1 : b === MINI_RENOVATION_DEMO ? 1 : 0;
       });
-      const cards = projects.map(function(project) {
-        return renderUnifiedProjectCard(project, project === MINI_RENOVATION_DEMO);
-      }).join("");
-      const empty = '<div class="empty">Projects you create will appear here.</div>';
+      function cardsFor(items) {
+        return items.map(function(project) {
+          return renderUnifiedProjectCard(project, project === MINI_RENOVATION_DEMO);
+        }).join("");
+      }
+      const favourites = projects.filter(function(project) {
+        const id = project === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : String(project.id);
+        return pinnedIds.indexOf(id) >= 0;
+      });
+      const unpinned = projects.filter(function(project) {
+        const id = project === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : String(project.id);
+        return pinnedIds.indexOf(id) < 0;
+      });
+      const favoriteSlot = document.getElementById("homeMiniRenovation");
       const home = document.getElementById("homeCreatedProjects");
       const list = document.getElementById("projectsCreatedProjects");
-      if (home) home.innerHTML = cards || empty;
-      if (list) list.innerHTML = cards || empty;
+      const favoriteEmpty = '<div class="empty">Favourite projects will appear here. Long-press a project card to pin it.</div>';
+      const projectEmpty = '<div class="empty">Projects you create will appear here.</div>';
+      if (favoriteSlot) favoriteSlot.innerHTML = cardsFor(favourites) || favoriteEmpty;
+      if (home) home.innerHTML = cardsFor(unpinned) || projectEmpty;
+      if (list) list.innerHTML = cardsFor(projects) || projectEmpty;
+      const demoProjects = document.getElementById("projectsMiniRenovation");
+      if (demoProjects) demoProjects.innerHTML = "";
     }
     function renderTemplateCard(template) {
       const stages = escapeProjectText((template.stages || []).join(" · "));
