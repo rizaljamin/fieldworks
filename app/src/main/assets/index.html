@@ -18,15 +18,15 @@
       --line: #e8e4d9;
       --tint: #e7f5f4;
       --shadow: 0 14px 45px #17394c0b;
-      font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-family: ui-rounded, "SF Pro Rounded", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
       color: var(--ink);
       background: var(--canvas);
     }
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
     html, body { min-height: 100%; margin: 0; }
-    body { min-height: 100vh; background: var(--canvas); color: var(--ink); font: 15px/1.5 ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, -apple-system, "Segoe UI", sans-serif; }
-    body, button, input, textarea, select { font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    body { min-height: 100vh; background: var(--canvas); color: var(--ink); font: 15px/1.5 ui-rounded, "SF Pro Rounded", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    body, button, input, textarea, select { font-family: ui-rounded, "SF Pro Rounded", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
     button { font: inherit; cursor: pointer; }
     button:focus-visible { outline: 3px solid #8bd5d2; outline-offset: 2px; }
 
@@ -188,6 +188,16 @@
     .home-create-copy strong { font-size: 13px; }
     .home-create-copy small { color: #d6ecea; font-size: 10px; }
     .home-create-arrow { margin-left: auto; font-size: 18px; color: #d8eeec; }
+    .home-hero { display: grid; grid-template-columns: 1.15fr .85fr; gap: 22px; align-items: stretch; margin: 10px 0 28px; }
+    .home-hero-copy { padding: 20px 4px 8px; }
+    .home-hero-copy h1 { margin: 10px 0 12px; max-width: 580px; color: var(--navy); font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 4vw, 45px); font-weight: 500; letter-spacing: -1.5px; line-height: 1.04; }
+    .home-hero-copy p { max-width: 430px; margin: 0; color: #738286; font-size: 13px; }
+    .home-hero-art { position: relative; min-height: 190px; overflow: hidden; border-radius: 23px; background: linear-gradient(140deg, #d5ece8 0%, #b8dedb 44%, #f0d5aa 100%); box-shadow: var(--shadow); }
+    .home-hero-art::before { position: absolute; inset: auto -2% 0; height: 54%; background: linear-gradient(170deg, transparent 0 21%, #8eb8a1 22% 31%, #6f9b83 32% 100%); clip-path: polygon(0 54%,27% 14%,51% 50%,69% 12%,100% 47%,100% 100%,0 100%); content: ""; }
+    .home-hero-art::after { position: absolute; right: 10%; bottom: 0; left: 10%; height: 42%; background: repeating-linear-gradient(90deg,transparent 0 18px,#f6edda 19px 24px,transparent 25px 39px); opacity: .55; clip-path: polygon(13% 0,91% 0,100% 100%,0 100%); content: ""; }
+    .home-hero-sun { position: absolute; top: 15%; right: 19%; width: 37px; height: 37px; border-radius: 50%; background: #f6bb56; box-shadow: 0 0 35px #f7c46d88; }
+    .home-hero-sticker { position: absolute; z-index: 2; bottom: 17px; left: 18px; padding: 8px 12px; transform: rotate(-2deg); border-radius: 12px; background: #fffefaed; color: #405f5d; font-size: 11px; }
+    .home-hero-sticker b { color: var(--navy); }
     .sectionhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 21px 0 11px; }
     .eyebrow { color: var(--teal); font-size: 9px; font-weight: 750; letter-spacing: 1.5px; text-transform: uppercase; }
     .sectionhead h2 { margin: 4px 0; color: var(--navy); font-family: Georgia, serif; font-size: 23px; font-weight: 500; }
@@ -210,6 +220,12 @@
       .shell { margin-left: 218px; padding-left: 23px; padding-right: 23px; }
     }
     @media (max-width: 700px) {
+      .home-hero { grid-template-columns: 1fr; gap: 12px; margin: 7px 0 20px; }
+      .home-hero-copy { padding: 9px 1px 0; }
+      .home-hero-copy h1 { max-width: 360px; margin: 8px 0; font-size: 34px; }
+      .home-hero-copy p { font-size: 11px; }
+      .home-hero-art { min-height: 140px; }
+      .home-hero-sticker { bottom: 12px; left: 12px; font-size: 9px; }
       .sidebar { display: none; }
       .shell { margin: 0; padding: 0 14px 90px; }
       .top { height: 58px; margin-bottom: 8px; }
@@ -536,6 +552,17 @@
           </button>
           <div class="sectionhead"><div><div class="eyebrow">Ready when you are</div><h2>Favourite Projects</h2><p>Your quick notes and photos will go here.</p></div></div>
           <div id="homeMiniRenovation" class="created-project-list"></div>
+          <section class="home-hero" aria-label="About FieldWorks">
+            <div class="home-hero-copy">
+              <div class="eyebrow">Your project, your pace</div>
+              <h1>Simplify your projects with FieldWorks.</h1>
+              <p>Keep photos, videos and notes together as your project moves along.</p>
+            </div>
+            <div class="home-hero-art" role="img" aria-label="A field landscape at sunrise">
+              <span class="home-hero-sun" aria-hidden="true"></span>
+              <div class="home-hero-sticker"><b>Out in the field?</b><br>Keep a little record.</div>
+            </div>
+          </section>
           <div class="sectionhead"><div><div class="eyebrow">Latest activity first</div><h2>My Projects</h2><p>Projects you create appear here.</p></div></div>
           <div id="homeCreatedProjects" class="created-project-list"></div>
           <div class="sectionhead"><div><div class="eyebrow">Ready to start</div><h2>My Templates</h2><p>Choose a template to start a project.</p></div></div>
