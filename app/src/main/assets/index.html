@@ -440,6 +440,10 @@
     .project-albums-heading>small{display:flex;align-items:center;gap:8px}
     .project-albums-show-all{padding:3px 8px;border:1px solid #c9ddd4;border-radius:8px;background:#f4faf6;color:#176d70;font:inherit;font-size:8px;font-weight:750}
     @media(max-width:480px){.project-milestone-edit-title{grid-template-columns:1fr;align-items:start}.project-milestone-current-radio{padding-left:2px}}
+      .demo-project-media{align-self:start;width:100%;aspect-ratio:1/1;max-height:480px;min-height:0;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));overflow:hidden}
+    .demo-project-media .demo-photo{grid-row:auto;min-width:0;min-height:0;overflow:hidden}
+    .demo-project-media .demo-photo img{display:block;width:100%;height:100%;object-fit:cover}
+    @media(max-width:850px){.demo-project-media{aspect-ratio:1/1;max-height:440px;min-height:0}}
   </style>
 </head>
 <body>
@@ -820,29 +824,30 @@ function loadDemoProjectState() {
     function projectCardMediaMarkup(project, projectId, isDemo) {
       let media = [];
       let allPhotoCount = 0;
+      const albums = projectAlbumRecords(projectId).slice().sort(function(a, b) {
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      });
+      albums.forEach(function(album) {
+        const items = albumMediaItems(projectId, album);
+        allPhotoCount += items.filter(function(item) { return item.type === "photo"; }).length;
+        items.forEach(function(item) { if (media.length < 4) media.push(item); });
+      });
       if (isDemo) {
-        media = (project.photos || []).slice(0, 2).map(function(item) { return { type: "photo", url: item.src, alt: item.alt }; });
-        allPhotoCount = media.length;
-      } else {
-        const albums = projectAlbumRecords(projectId).slice().sort(function(a, b) {
-          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        (project.photos || []).forEach(function(item) {
+          if (media.length < 4) media.push({ type:"photo", url:item.src, alt:item.alt });
         });
-        albums.forEach(function(album) {
-          const items = albumMediaItems(projectId, album);
-          allPhotoCount += items.filter(function(item) { return item.type === "photo"; }).length;
-          items.forEach(function(item) { if (media.length < 2) media.push(item); });
-        });
+        if (!allPhotoCount) allPhotoCount = (project.photos || []).length;
       }
       const icon = project.type === "Garden Works" || project.type === "Farms & Agriculture" ? "🌱" :
         project.type === "Catering" || project.type === "Birthday Party" ? "✿" :
         project.type === "Field Trips" ? "⌁" : "⌂";
-      const slots = [0, 1].map(function(index) {
+      const slots = [0, 1, 2, 3].map(function(index) {
         const item = media[index];
         let content = "";
         if (item && item.type === "photo" && item.url) content = '<img src="' + escapeProjectText(item.url) + '" alt="' + escapeProjectText(item.alt || "Project progress photo") + '">';
         else if (item && item.type === "video") content = '<span class="project-media-video">▶ Video</span>';
         else content = '<span class="project-media-placeholder" aria-hidden="true">' + icon + '</span>';
-        return '<div class="demo-photo ' + (index === 0 ? "demo-photo-main" : "demo-photo-secondary") + '">' + content + '</div>';
+        return '<div class="demo-photo">' + content + '</div>';
       }).join("");
       const countLabel = allPhotoCount ? "Progress · " + allPhotoCount + " photo" + (allPhotoCount === 1 ? "" : "s") + " in albums" : "Project journal";
       return '<div class="demo-project-media">' + slots + '<span class="demo-photo-label">' + countLabel + '</span></div>';
