@@ -434,7 +434,13 @@
       .project-milestones-footer{padding-left:20px;padding-right:20px}
     }
     .project-stage-label.current strong{color:#9a6b22;font-weight:800}
-</style>
+    .project-milestone-edit-title{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px}
+    .project-milestone-current-radio{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:#547276;font-size:9px;font-weight:750;cursor:pointer}
+    .project-milestone-current-radio input{width:17px;height:17px;margin:0;accent-color:#138c92}
+    .project-albums-heading>small{display:flex;align-items:center;gap:8px}
+    .project-albums-show-all{padding:3px 8px;border:1px solid #c9ddd4;border-radius:8px;background:#f4faf6;color:#176d70;font:inherit;font-size:8px;font-weight:750}
+    @media(max-width:480px){.project-milestone-edit-title{grid-template-columns:1fr;align-items:start}.project-milestone-current-radio{padding-left:2px}}
+  </style>
 </head>
 <body>
   
@@ -699,6 +705,7 @@ function loadDemoProjectState() {
         if (Number.isInteger(saved.stage)) MINI_RENOVATION_DEMO.stage = Math.max(0, Math.min(demoStageCount - 1, saved.stage));
         if (Array.isArray(saved.stageDates)) MINI_RENOVATION_DEMO.stageDates = saved.stageDates;
         if (Number.isInteger(saved.selectedStage)) MINI_RENOVATION_DEMO.selectedStage = Math.max(0, Math.min(demoStageCount - 1, saved.selectedStage));
+        if (Number.isInteger(saved.albumStageFilter)) MINI_RENOVATION_DEMO.albumStageFilter = Math.max(0, Math.min(demoStageCount - 1, saved.albumStageFilter));
         if (typeof saved.comments === "string") MINI_RENOVATION_DEMO.comments = saved.comments;
       } catch (error) {}
     }
@@ -707,6 +714,7 @@ function loadDemoProjectState() {
         localStorage.setItem(DEMO_PROJECT_STATE_KEY, JSON.stringify({
           stage: MINI_RENOVATION_DEMO.stage,
           selectedStage: MINI_RENOVATION_DEMO.selectedStage,
+          albumStageFilter: Number.isInteger(MINI_RENOVATION_DEMO.albumStageFilter) ? MINI_RENOVATION_DEMO.albumStageFilter : null,
           stageDates: MINI_RENOVATION_DEMO.stageDates || [],
           stageNames: MINI_RENOVATION_DEMO.stageNames || [],
           comments: MINI_RENOVATION_DEMO.comments || ""
@@ -763,7 +771,8 @@ function loadDemoProjectState() {
       }).join("");
       list.innerHTML = projectMilestoneDraft.names.map(function(name,index) {
         const date = projectMilestoneDraft.dates[index] || {};
-        return '<article class="project-milestone-edit-card"><input class="project-milestone-name" type="text" maxlength="80" data-milestone-name="' + index + '" value="' + escapeProjectText(name) + '" aria-label="Stage ' + (index + 1) + ' name"><div class="project-milestone-date-grid"><label>Start date<input type="date" data-milestone-start="' + index + '" value="' + escapeProjectText(date.start || "") + '"></label><label>End date<input type="date" data-milestone-end="' + index + '" value="' + escapeProjectText(date.end || "") + '"></label></div></article>';
+        const isCurrent = index === projectMilestoneDraft.currentStage;
+        return '<article class="project-milestone-edit-card"><div class="project-milestone-edit-title"><input class="project-milestone-name" type="text" maxlength="80" data-milestone-name="' + index + '" value="' + escapeProjectText(name) + '" aria-label="Stage ' + (index + 1) + ' name"><label class="project-milestone-current-radio"><input type="radio" name="projectMilestoneCurrentStage" value="' + index + '" data-milestone-current="' + index + '"' + (isCurrent ? ' checked' : '') + '><span>Current stage</span></label></div><div class="project-milestone-date-grid"><label>Start date<input type="date" data-milestone-start="' + index + '" value="' + escapeProjectText(date.start || "") + '"></label><label>End date<input type="date" data-milestone-end="' + index + '" value="' + escapeProjectText(date.end || "") + '"></label></div></article>';
       }).join("");
     }
     function openProjectMilestones(projectId) {
@@ -1108,35 +1117,46 @@ function loadDemoProjectState() {
         ? MINI_RENOVATION_DEMO
         : createdProjects.find(function(item) { return String(item.id) === String(projectId); });
       const stageNames = projectCardStageNames(project || {}, projectId);
+      const filterIndex = project && Number.isInteger(Number(project.albumStageFilter)) && project.albumStageFilter !== null
+        ? Math.max(0, Math.min(stageNames.length - 1, Number(project.albumStageFilter)))
+        : null;
       const grouped = {};
       albums.forEach(function(album) {
         if (!albumMediaItems(projectId, album).length) return;
         const stage = Math.max(0, Math.min(stageNames.length - 1, Number(album.stage) || 0));
+        if (filterIndex !== null && stage !== filterIndex) return;
         (grouped[stage] || (grouped[stage] = [])).push(album);
       });
-      const albumCount = Object.keys(grouped).reduce(function(sum, stage) { return sum + grouped[stage].length; }, 0);
-      const albumMarkup = albumCount
-        ? '<div class="project-albums"><div class="project-albums-heading"><strong>Project albums</strong><small>' + albumCount + ' ' + (albumCount === 1 ? 'album' : 'albums') + ' · grouped by stage</small></div>' +
-          Object.keys(grouped).sort(function(a,b) { return Number(a)-Number(b); }).map(function(stageValue) {
-            const stage = Number(stageValue);
-            const stageName = stageNames[stage] || ("Stage " + (stage + 1));
-            const cards = grouped[stage].sort(function(a,b) { return new Date(b.createdAt || 0).getTime()-new Date(a.createdAt || 0).getTime(); }).map(function(album) {
-              const items = albumMediaItems(projectId, album);
-              const preview = items.slice(0,4).map(function(item) {
-                return item.type === "video" ? '<span class="mini-album-video">▶</span>' : '<img src="' + escapeProjectText(item.url) + '" alt="">';
-              }).join("");
-              const date = new Date(album.createdAt || Date.now());
-              const title = escapeProjectText(album.title || (Number.isNaN(date.getTime()) ? "Project album" : date.toLocaleString("en-MY", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})));
-              const notes = (album.note ? 1 : 0) + (album.voiceNotes || []).length;
-              const moveOptions = stageNames.map(function(name,index) {
-                return '<option value="' + index + '"' + (index === stage ? " selected" : "") + '>' + escapeProjectText(name) + '</option>';
-              }).join("");
-              return '<article class="mini-album"><button class="mini-album-open" type="button" data-open-album="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '"><span class="mini-album-grid">' + preview + '</span><span class="mini-album-title">' + title + '</span><span class="mini-album-meta">' + items.length + ' ' + (items.length === 1 ? 'item' : 'items') + (notes ? ' · ' + notes + ' ' + (notes === 1 ? 'note' : 'notes') : '') + ' · open album</span></button><label class="mini-album-move-label"><span>Move album</span><span class="mini-album-move-arrow" aria-hidden="true">→</span><select aria-label="Move album to another stage" data-move-album-project="' + safeId + '" data-move-album-id="' + escapeProjectText(album.id) + '">' + moveOptions + '</select></label></article>';
-            }).join("");
-            return '<section class="project-album-stage" data-project-album-stage-index="' + stage + '"><div class="project-album-stage-head"><strong>' + escapeProjectText(stageName) + '</strong><small>' + grouped[stage].length + ' ' + (grouped[stage].length === 1 ? 'album' : 'albums') + '</small></div><div class="mini-albums">' + cards + '</div></section>';
-          }).join("") + '</div>'
-        : '<div class="project-albums"><div class="project-albums-heading"><strong>Project albums</strong><small>Grouped by stage</small></div><div class="project-album-empty">Photos and videos added to this project will appear here.</div></div>';
-      return albumMarkup;
+      const visibleStageIndexes = Object.keys(grouped).sort(function(a,b) { return Number(a)-Number(b); });
+      const albumCount = visibleStageIndexes.reduce(function(sum, stage) { return sum + grouped[stage].length; }, 0);
+      const heading = '<div class="project-albums-heading"><strong>Project albums</strong><small>' +
+        (filterIndex === null
+          ? (albumCount ? albumCount + ' ' + (albumCount === 1 ? 'album' : 'albums') + ' · grouped by stage' : 'Grouped by stage')
+          : escapeProjectText(stageNames[filterIndex] || ("Stage " + (filterIndex + 1))) + ' · ' + albumCount + ' ' + (albumCount === 1 ? 'album' : 'albums')) +
+        (filterIndex === null ? '' : '<button type="button" class="project-albums-show-all" data-clear-album-stage-filter="' + safeId + '">Show all</button>') +
+        '</small></div>';
+      const groupsMarkup = visibleStageIndexes.map(function(stageValue) {
+        const stage = Number(stageValue);
+        const stageName = stageNames[stage] || ("Stage " + (stage + 1));
+        const cards = grouped[stage].sort(function(a,b) { return new Date(b.createdAt || 0).getTime()-new Date(a.createdAt || 0).getTime(); }).map(function(album) {
+          const items = albumMediaItems(projectId, album);
+          const preview = items.slice(0,4).map(function(item) {
+            return item.type === "video" ? '<span class="mini-album-video">▶</span>' : '<img src="' + escapeProjectText(item.url) + '" alt="">';
+          }).join("");
+          const date = new Date(album.createdAt || Date.now());
+          const title = escapeProjectText(album.title || (Number.isNaN(date.getTime()) ? "Project album" : date.toLocaleString("en-MY", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})));
+          const notes = (album.note ? 1 : 0) + (album.voiceNotes || []).length;
+          const moveOptions = stageNames.map(function(name,index) {
+            return '<option value="' + index + '"' + (index === stage ? " selected" : "") + '>' + escapeProjectText(name) + '</option>';
+          }).join("");
+          return '<article class="mini-album"><button class="mini-album-open" type="button" data-open-album="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '"><span class="mini-album-grid">' + preview + '</span><span class="mini-album-title">' + title + '</span><span class="mini-album-meta">' + items.length + ' ' + (items.length === 1 ? 'item' : 'items') + (notes ? ' · ' + notes + ' ' + (notes === 1 ? 'note' : 'notes') : '') + ' · open album</span></button><label class="mini-album-move-label"><span>Move album</span><span class="mini-album-move-arrow" aria-hidden="true">→</span><select aria-label="Move album to another stage" data-move-album-project="' + safeId + '" data-move-album-id="' + escapeProjectText(album.id) + '">' + moveOptions + '</select></label></article>';
+        }).join("");
+        return '<section class="project-album-stage" data-project-album-stage-index="' + stage + '"><div class="project-album-stage-head"><strong>' + escapeProjectText(stageName) + '</strong><small>' + grouped[stage].length + ' ' + (grouped[stage].length === 1 ? 'album' : 'albums') + '</small></div><div class="mini-albums">' + cards + '</div></section>';
+      }).join("");
+      const emptyMessage = filterIndex === null
+        ? 'Photos and videos added to this project will appear here.'
+        : 'No albums in ' + escapeProjectText(stageNames[filterIndex] || ("Stage " + (filterIndex + 1))) + ' yet.';
+      return '<div class="project-albums">' + heading + (albumCount ? groupsMarkup : '<div class="project-album-empty">' + emptyMessage + '</div>') + '</div>';
     }
     function renderAddArtifactControls(projectId) {
       const safeId = escapeProjectText(projectId);
@@ -1320,6 +1340,16 @@ function loadDemoProjectState() {
           return;
         }
         if (event.target.closest("[data-save-project-milestones]")) { saveProjectMilestones(); return; }
+        const clearAlbumFilter = event.target.closest("[data-clear-album-stage-filter]");
+        if (clearAlbumFilter) {
+          const projectId = clearAlbumFilter.dataset.clearAlbumStageFilter;
+          const project = getProjectCardRecord(projectId);
+          if (!project) return;
+          delete project.albumStageFilter;
+          saveProjectCardRecord(projectId);
+          refreshProjectCards();
+          return;
+        }
         if (event.target.id === "projectMilestonesOverlay") { closeProjectMilestones(); return; }
         const favoriteButton = event.target.closest("[data-favorite-project]");
         if (favoriteButton) { toggleFavoriteProject(favoriteButton.dataset.favoriteProject); return; }
@@ -1330,6 +1360,7 @@ function loadDemoProjectState() {
           if (!project) return;
           const stageIndex = Number(stageButton.dataset.stageIndex) || 0;
           project.selectedStage = stageIndex;
+          project.albumStageFilter = stageIndex;
           saveProjectCardRecord(projectId);
           refreshProjectCards();
           requestAnimationFrame(function() {
@@ -1364,6 +1395,14 @@ function loadDemoProjectState() {
       document.addEventListener("change", function(event) {
         if (event.target.id === "projectMilestonesCurrentStage" && projectMilestoneDraft) {
           projectMilestoneDraft.currentStage = Number(event.target.value) || 0;
+          renderProjectMilestoneEditorRows();
+          return;
+        }
+        const currentRadio = event.target.closest("[data-milestone-current]");
+        if (currentRadio && projectMilestoneDraft) {
+          projectMilestoneDraft.currentStage = Number(currentRadio.dataset.milestoneCurrent) || 0;
+          document.getElementById("projectMilestonesCurrentStage").value = String(projectMilestoneDraft.currentStage);
+          renderProjectMilestoneEditorRows();
           return;
         }
         const startDate = event.target.closest("[data-milestone-start]");
