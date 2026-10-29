@@ -309,19 +309,29 @@
     .project-media-video{background:#e7eef3;color:#62788d;font-size:14px;font-weight:700}
     .project-stage-controls{margin:2px 0 12px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
     .project-journey-track{display:flex;gap:5px;margin:8px 0}
-    .project-stage-step{position:relative;flex:1;min-width:14px;height:20px;padding:0;border:0;border-radius:8px;background:#e8e6dc}
-    .project-stage-step.done,.project-stage-step.current{background:#f0a52a}
-    .project-stage-step.current:after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border-width:4px 4px 0;border-style:solid;border-color:#c9891d transparent transparent}
-    .project-stage-date-fields{display:grid;grid-template-columns:minmax(100px,1.2fr) minmax(80px,1fr) minmax(80px,1fr) auto;align-items:end;gap:6px;margin-top:8px}
-    .project-stage-date-fields label{display:grid;gap:3px;color:#718587;font-size:8px;font-weight:650}
-    .project-stage-date-fields select,.project-stage-date-fields input{width:100%;min-width:0;height:30px;padding:4px 5px;border:1px solid var(--line);border-radius:7px;background:#fffefa;color:var(--ink);font:inherit;font-size:9px}
-    .project-stage-save{height:30px;padding:0 8px;border:1px solid #c9ddd4;border-radius:7px;background:#f4faf6;color:#176d70;font-size:8px;font-weight:750}
+    .project-stage-step{position:relative;flex:1;min-width:14px;height:20px;padding:0;border:0;border-radius:8px;background:#e7e8e5;color:#66787a}
+    .project-stage-step.selected{background:#65bcb5;color:#fff}
+    .project-stage-step.selected:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border-width:5px 5px 0;border-style:solid;border-color:#287f80 transparent transparent}
+    .project-stage-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+    .project-stage-date-panel{display:grid;gap:4px;min-width:0;padding:8px;border:1px solid var(--line);border-radius:9px;background:#fffefa;color:#718587;font-size:9px;font-weight:700;cursor:pointer}
+    .project-stage-date-panel:focus-within,.project-stage-date-panel:hover{border-color:#82bdb4;background:#f8fcf8}
+    .project-stage-date-panel input{width:100%;min-width:0;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:11px;cursor:pointer}
+    .project-stage-save{grid-column:1/-1;min-height:32px;padding:0 10px;border:1px solid #c9ddd4;border-radius:8px;background:#f4faf6;color:#176d70;font-size:9px;font-weight:750}
+    .project-overall-notes{margin:11px 0;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fffefa}
+    .project-overall-notes label{display:block;margin-bottom:5px;color:#526b70;font-size:10px;font-weight:750}
+    .project-overall-notes textarea{display:block;width:100%;min-height:58px;padding:8px;border:1px solid #e8e4d9;border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:10px;resize:vertical}
+    .project-overall-notes-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;color:#819092;font-size:8px}
+    .project-overall-notes-actions button{padding:5px 9px;border:1px solid #c9ddd4;border-radius:7px;background:#f4faf6;color:#176d70;font-size:9px;font-weight:750}
+    .shared-project-card{touch-action:pan-y}
+    .shared-project-card.is-pinned{border-color:#78b9ae;box-shadow:0 0 0 2px #d6eee6,var(--shadow)}
+    .demo-project-copy h3[title]{cursor:help}
+    @media(max-width:480px){.project-stage-save{grid-column:1/-1}}
     .project-album-stage-head strong{font-size:9px}
     .mini-album{display:grid;gap:5px}
     .mini-album-open{display:grid;gap:4px;width:100%;padding:0;border:0;background:transparent;text-align:left;color:var(--ink)}
     .mini-album-move-label{display:grid;gap:3px;padding-top:5px;border-top:1px solid #ecefe9;color:#718587;font-size:8px;font-weight:650}
     .mini-album-move-label select{width:100%;min-width:0;height:28px;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:#fffefa;color:var(--ink);font-size:9px}
-    @media(max-width:480px){.project-stage-date-fields{grid-template-columns:1fr 1fr}.project-stage-date-fields label:first-child{grid-column:1/-1}.project-stage-save{grid-column:1/-1}}
+    @media(max-width:480px){.project-stage-date-fields{grid-template-columns:1fr 1fr}.project-stage-save{grid-column:1/-1}}
     .demo-photo{min-width:0;min-height:0;overflow:hidden}.demo-photo img{display:block;width:100%;height:100%;object-fit:cover}.demo-photo-main,.demo-photo-secondary{grid-row:span 2}.demo-photo-label{position:absolute;left:12px;bottom:12px;padding:6px 9px;border-radius:20px;background:#143f4be0;color:#fff;font-size:9px;font-weight:700}
     .demo-project-copy{display:flex;flex-direction:column;padding:22px;min-width:0}.demo-project-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}.demo-project-tag{padding:6px 10px;border-radius:20px;background:#e7f3ed;color:#507569;font-size:9px}.demo-project-favorite{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff1cf;color:#a56e15;font-size:17px}.demo-project-copy h3{margin:12px 0 5px;color:var(--navy);font-family:Georgia,serif;font-size:23px;font-weight:600;line-height:1.2}.demo-project-description{margin:0;color:#748286;font-size:11px}.demo-project-stats{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-project-stats span{padding:4px 8px;border:1px solid #b7d1ca;border-radius:20px;color:#49656a;font-size:9px}.demo-project-stats b{color:var(--navy)}.demo-project-last{display:grid;gap:3px;margin:0 0 14px;color:#66797d;font-size:10px}.demo-project-last strong{color:#455e63}.demo-stage-head{display:flex;justify-content:space-between;gap:10px;color:#75858a;font-size:9px}.demo-stage-head b{color:#a17125}.demo-stage-track{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:9px 0 14px}.demo-stage-track span{height:6px;border-radius:10px;background:#e8e6dc}.demo-stage-track span.done,.demo-stage-track span.current{background:#f0a52a}.demo-journal{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;color:#60777a;font-size:10px}.demo-journal summary{cursor:pointer;color:#176d70;font-weight:750}.demo-journal ul{display:grid;gap:8px;margin:10px 0 0;padding-left:18px}.demo-journal li strong{display:block;color:var(--navy)}
     @media(max-width:850px){.demo-project-card{grid-template-columns:1fr}.demo-project-media{min-height:260px}.demo-project-copy{padding:17px}}
@@ -594,13 +604,15 @@ function loadDemoProjectState() {
         const saved = JSON.parse(localStorage.getItem(DEMO_PROJECT_STATE_KEY) || "{}");
         if (Number.isInteger(saved.stage)) MINI_RENOVATION_DEMO.stage = Math.max(0, Math.min(MINI_RENOVATION_DEMO.stages.length - 1, saved.stage));
         if (Array.isArray(saved.stageDates)) MINI_RENOVATION_DEMO.stageDates = saved.stageDates;
+        if (typeof saved.comments === "string") MINI_RENOVATION_DEMO.comments = saved.comments;
       } catch (error) {}
     }
     function saveDemoProjectState() {
       try {
         localStorage.setItem(DEMO_PROJECT_STATE_KEY, JSON.stringify({
           stage: MINI_RENOVATION_DEMO.stage,
-          stageDates: MINI_RENOVATION_DEMO.stageDates || []
+          stageDates: MINI_RENOVATION_DEMO.stageDates || [],
+          comments: MINI_RENOVATION_DEMO.comments || ""
         }));
       } catch (error) {}
     }
@@ -621,16 +633,16 @@ function loadDemoProjectState() {
       const safeId = escapeProjectText(projectId);
       const stages = projectCardStageNames(project, projectId);
       const currentStage = Math.max(0, Math.min(stages.length - 1, Number(project.stage) || 0));
-      const dates = Array.isArray(project.stageDates) ? project.stageDates : [];
-      const selectedDates = dates[currentStage] || {};
+      const selectedDates = (Array.isArray(project.stageDates) ? project.stageDates[currentStage] : null) || {};
       const track = stages.map(function(stage, index) {
-        const state = index < currentStage ? "done" : index === currentStage ? "current" : "";
-        return '<button type="button" class="project-stage-step ' + state + '" data-project-stage="' + safeId + '" data-stage-index="' + index + '" aria-label="Set ' + escapeProjectText(stage) + ' as the current stage" aria-pressed="' + (index === currentStage) + '" title="' + escapeProjectText(stage) + '"></button>';
+        const selected = index === currentStage;
+        return '<button type="button" class="project-stage-step' + (selected ? ' selected' : '') + '" data-project-stage="' + safeId + '" data-stage-index="' + index + '" aria-label="Set ' + escapeProjectText(stage) + ' as the current stage" aria-pressed="' + selected + '" title="' + escapeProjectText(stage) + '"></button>';
       }).join("");
-      const options = stages.map(function(stage, index) {
-        return '<option value="' + index + '"' + (index === currentStage ? " selected" : "") + '>' + escapeProjectText(stage) + '</option>';
-      }).join("");
-      return '<section class="project-stage-controls"><div class="demo-stage-head"><span>Project journey · ' + escapeProjectText(stages[currentStage]) + '</span><b>Stage ' + (currentStage + 1) + ' of ' + stages.length + '</b></div><div class="project-journey-track" aria-label="Project journey">' + track + '</div><div class="project-stage-date-fields"><label>Stage dates<select data-stage-date-select="' + safeId + '">' + options + '</select></label><label>Start date<input type="date" data-project-stage-date="start" value="' + escapeProjectText(selectedDates.start || "") + '"></label><label>End date<input type="date" data-project-stage-date="end" value="' + escapeProjectText(selectedDates.end || "") + '"></label><button type="button" class="project-stage-save" data-save-project-stage-dates="' + safeId + '">Save dates</button></div></section>';
+      return '<section class="project-stage-controls"><div class="demo-stage-head"><span>Project journey · ' + escapeProjectText(stages[currentStage]) + '</span><b>Stage ' + (currentStage + 1) + ' of ' + stages.length + '</b></div><div class="project-journey-track" aria-label="Project journey">' + track + '</div><div class="project-stage-date-fields" data-stage-date-panel="' + safeId + '" data-stage-index="' + currentStage + '"><label class="project-stage-date-panel">Start date<input type="date" data-project-stage-date="start" value="' + escapeProjectText(selectedDates.start || "") + '"></label><label class="project-stage-date-panel">End date<input type="date" data-project-stage-date="end" value="' + escapeProjectText(selectedDates.end || "") + '"></label><button type="button" class="project-stage-save" data-save-project-stage-dates="' + safeId + '">Save dates for ' + escapeProjectText(stages[currentStage]) + '</button></div></section>';
+    }
+    function renderProjectOverallNotes(projectId, project) {
+      const safeId = escapeProjectText(projectId);
+      return '<section class="project-overall-notes"><label>Overall project comments / notes<textarea data-project-overall-notes="' + safeId + '" placeholder="Add a note about the whole project…">' + escapeProjectText(project.comments || "") + '</textarea></label><div class="project-overall-notes-actions"><span>Project level · separate from album notes</span><button type="button" data-save-project-notes="' + safeId + '">Save notes</button></div></section>';
     }
     function projectCardMediaMarkup(project, projectId, isDemo) {
       let media = [];
@@ -684,13 +696,14 @@ function loadDemoProjectState() {
       const notes = isDemo ? (project.journal || []).map(function(note) {
         return '<li><strong>' + escapeProjectText(note.date) + '</strong>' + escapeProjectText(note.text) + '</li>';
       }).join("") : "";
-      return '<article class="demo-project-card shared-project-card" data-project-card="' + safeId + '">' +
+      return '<article class="demo-project-card shared-project-card' + (readPinnedProjectIds().indexOf(projectId) >= 0 ? ' is-pinned' : '') + '" data-project-card="' + safeId + '">' +
         projectCardMediaMarkup(project, projectId, isDemo) +
         '<div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + type + '</span><span class="demo-project-favorite" aria-hidden="true">★</span></div>' +
-        '<h3>' + name + '</h3><p class="demo-project-description">' + description + '</p>' +
+        '<h3 title="Long-press this project to pin it to the top." aria-label="' + name + '. Long-press to pin this project to the top.">' + name + '</h3><p class="demo-project-description">' + description + '</p>' +
         '<div class="demo-project-stats"><span>Issues <b>' + issues + '</b></span><span>Reminders <b>' + reminders + '</b></span><span>Spent <b>RM ' + spent.toLocaleString("en-MY") + '</b></span></div>' +
         '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
         renderProjectStageControls(projectId, project) +
+        renderProjectOverallNotes(projectId, project) +
         (isDemo && notes ? '<details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + spent.toLocaleString("en-MY") + '</p></details>' : "") +
         renderArtifactControls(projectId) + '</div></article>';
     }
@@ -698,11 +711,11 @@ function loadDemoProjectState() {
       return renderUnifiedProjectCard(MINI_RENOVATION_DEMO, true);
     }
     function renderMiniRenovationDemo() {
-      const card = miniRenovationCardMarkup();
       const home = document.getElementById("homeMiniRenovation");
       const projects = document.getElementById("projectsMiniRenovation");
-      if (home) home.innerHTML = card;
-      if (projects) projects.innerHTML = card;
+      if (home) home.innerHTML = "";
+      if (projects) projects.innerHTML = "";
+      renderCreatedProjects();
     }
 
 
@@ -1110,6 +1123,28 @@ function loadDemoProjectState() {
       }
     }
     function wireProjectCardControls() {
+      let longPressTimer = 0, longPressCard = null, longPressStart = null;
+      document.addEventListener("pointerdown", function(event) {
+        const card = event.target.closest("[data-project-card]");
+        if (!card || event.target.closest("button,input,textarea,select,label,a,summary")) return;
+        longPressCard = card;
+        longPressStart = {x:event.clientX,y:event.clientY};
+        clearTimeout(longPressTimer);
+        longPressTimer = window.setTimeout(function() {
+          if (!longPressCard) return;
+          togglePinnedProject(longPressCard.dataset.projectCard);
+          longPressCard = null; longPressTimer = 0;
+        }, 600);
+      });
+      document.addEventListener("pointermove", function(event) {
+        if (!longPressCard || !longPressStart) return;
+        if (Math.abs(event.clientX-longPressStart.x)>10 || Math.abs(event.clientY-longPressStart.y)>10) {
+          clearTimeout(longPressTimer); longPressCard=null; longPressTimer=0;
+        }
+      });
+      ["pointerup","pointercancel","pointerleave"].forEach(function(type) {
+        document.addEventListener(type, function() { clearTimeout(longPressTimer); longPressCard=null; longPressTimer=0; });
+      });
       document.addEventListener("click", function(event) {
         const stageButton = event.target.closest("[data-project-stage][data-stage-index]");
         if (stageButton) {
@@ -1127,29 +1162,41 @@ function loadDemoProjectState() {
           const card = saveDates.closest("[data-project-card]");
           const project = getProjectCardRecord(projectId);
           if (!project || !card) return;
-          const selector = card.querySelector("[data-stage-date-select]");
-          const index = selector ? Number(selector.value) || 0 : 0;
+          const panel = card.querySelector("[data-stage-date-panel]");
+          const index = panel ? Number(panel.dataset.stageIndex) || 0 : Number(project.stage) || 0;
           const start = card.querySelector('[data-project-stage-date="start"]').value;
           const end = card.querySelector('[data-project-stage-date="end"]').value;
           if (start && end && end < start) { toast("The end date must be after the start date."); return; }
           if (!Array.isArray(project.stageDates)) project.stageDates = [];
           project.stageDates[index] = { start: start, end: end };
           saveProjectCardRecord(projectId);
-          refreshProjectCards();
+          toast("Stage dates saved.");
           return;
+        }
+        const saveNotes = event.target.closest("[data-save-project-notes]");
+        if (saveNotes) {
+          const projectId = saveNotes.dataset.saveProjectNotes;
+          const project = getProjectCardRecord(projectId);
+          const card = saveNotes.closest("[data-project-card]");
+          if (!project || !card) return;
+          project.comments = card.querySelector("[data-project-overall-notes]").value.trim();
+          saveProjectCardRecord(projectId);
+          toast("Project notes saved.");
         }
       });
       document.addEventListener("change", function(event) {
-        const stageSelect = event.target.closest("[data-stage-date-select]");
-        if (stageSelect) {
-          const card = stageSelect.closest("[data-project-card]");
-          const project = getProjectCardRecord(stageSelect.dataset.stageDateSelect);
-          const index = Number(stageSelect.value) || 0;
-          const dates = project && Array.isArray(project.stageDates) ? project.stageDates[index] || {} : {};
-          if (card) {
-            card.querySelector('[data-project-stage-date="start"]').value = dates.start || "";
-            card.querySelector('[data-project-stage-date="end"]').value = dates.end || "";
-          }
+        const stageDate = event.target.closest("[data-project-stage-date]");
+        if (stageDate) {
+          const card = stageDate.closest("[data-project-card]");
+          const project = getProjectCardRecord(card && card.dataset.projectCard);
+          const panel = card && card.querySelector("[data-stage-date-panel]");
+          if (!project || !panel) return;
+          const index = Number(panel.dataset.stageIndex) || 0;
+          const current = (project.stageDates || [])[index] || {};
+          current[stageDate.dataset.projectStageDate] = stageDate.value;
+          if (!Array.isArray(project.stageDates)) project.stageDates = [];
+          project.stageDates[index] = current;
+          saveProjectCardRecord(card.dataset.projectCard);
           return;
         }
         const moveSelect = event.target.closest("[data-move-album-project]");
@@ -1163,6 +1210,19 @@ function loadDemoProjectState() {
           refreshProjectCards();
         }
       });
+    }
+    const PINNED_PROJECTS_KEY = "fieldworks.debug.pinned-projects.v1";
+    function readPinnedProjectIds() {
+      try { const value = JSON.parse(localStorage.getItem(PINNED_PROJECTS_KEY) || "[]"); return Array.isArray(value) ? value.map(String) : []; }
+      catch (error) { return []; }
+    }
+    function togglePinnedProject(projectId) {
+      const ids = readPinnedProjectIds();
+      const index = ids.indexOf(String(projectId));
+      if (index >= 0) ids.splice(index,1); else ids.unshift(String(projectId));
+      try { localStorage.setItem(PINNED_PROJECTS_KEY,JSON.stringify(ids)); } catch (error) {}
+      renderCreatedProjects();
+      toast(index >= 0 ? "Project unpinned." : "Project pinned to the top.");
     }
     function refreshProjectCards() {
       const top = window.scrollY;
@@ -1313,7 +1373,20 @@ function loadDemoProjectState() {
     }
     function renderCreatedProjects() {
       loadCreatedProjects();
-      const cards = createdProjects.map(renderCreatedProjectCard).join("");
+      const pinned = readPinnedProjectIds();
+      const projects = [MINI_RENOVATION_DEMO].concat(createdProjects).sort(function(a,b) {
+        const aId = a === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : a.id;
+        const bId = b === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : b.id;
+        const aRank = pinned.indexOf(String(aId));
+        const bRank = pinned.indexOf(String(bId));
+        if (aRank >= 0 && bRank >= 0) return aRank - bRank;
+        if (aRank >= 0) return -1;
+        if (bRank >= 0) return 1;
+        return a === MINI_RENOVATION_DEMO ? -1 : b === MINI_RENOVATION_DEMO ? 1 : 0;
+      });
+      const cards = projects.map(function(project) {
+        return renderUnifiedProjectCard(project, project === MINI_RENOVATION_DEMO);
+      }).join("");
       const empty = '<div class="empty">Projects you create will appear here.</div>';
       const home = document.getElementById("homeCreatedProjects");
       const list = document.getElementById("projectsCreatedProjects");
