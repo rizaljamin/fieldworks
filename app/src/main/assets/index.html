@@ -3,55 +3,2137 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f8f2">
-  <title>FieldWorks — Under Construction</title>
+  <meta name="theme-color" content="#082c50">
+  <title>FieldWorks</title>
   <style>
     :root {
-      color-scheme: light;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f6f8f2;
-      color: #23352a;
+      --navy: #082c50;
+      --teal: #138c92;
+      --aqua: #48c2c5;
+      --orange: #f5a11a;
+      --paper: #fffefa;
+      --canvas: #f7f4eb;
+      --ink: #16364c;
+      --muted: #75858a;
+      --line: #e8e4d9;
+      --tint: #e7f5f4;
+      --shadow: 0 14px 45px #17394c0b;
+      font-family: ui-rounded, "SF Pro Rounded", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--canvas);
     }
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     html, body { min-height: 100%; margin: 0; }
-    body {
-      min-height: 100vh;
+    body { min-height: 100vh; background: var(--canvas); color: var(--ink); font: 15px/1.5 ui-rounded, "SF Pro Rounded", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #8bd5d2; outline-offset: 2px; }
+
+    .sidebar {
+      position: fixed;
+      z-index: 8;
+      inset: 0 auto 0 0;
+      width: 242px;
+      display: flex;
+      flex-direction: column;
+      padding: 25px 17px;
+      background: var(--navy);
+      color: #f2f7f2;
+      box-shadow: 8px 0 30px #082c5008;
+    }
+    .side-brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 8px 31px;
+      font-size: 18px;
+      font-weight: 780;
+      letter-spacing: -.4px;
+    }
+    .mark {
       display: grid;
       place-items: center;
-      padding: 24px;
-    }
-    main {
-      width: min(100%, 420px);
-      display: grid;
-      justify-items: center;
-      gap: 20px;
-      padding: 40px 28px;
-      text-align: center;
+      flex: 0 0 48px;
+      width: 48px;
+      height: 48px;
+      overflow: hidden;
+      border: 2px solid #d9efeb;
+      border-radius: 14px;
       background: #fff;
-      border: 1px solid #e3e9df;
-      border-radius: 24px;
-      box-shadow: 0 12px 36px rgba(35, 53, 42, .08);
     }
-    img { display: block; width: 112px; height: 112px; object-fit: contain; }
-    h1 { margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -.03em; }
-    .status {
-      margin: 0;
-      padding: 9px 16px;
-      border-radius: 999px;
-      background: #edf4e8;
-      color: #385a35;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: .04em;
-      text-transform: uppercase;
+    .mark svg { width: 100%; height: 100%; padding: 2px; }
+    .side-brand-copy { min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+    .side-brand small {
+      display: block;
+      margin-top: 1px;
+      color: #a8c3c3;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .6px;
     }
-  </style>
+    .side-brand .app-version {
+      margin-top: 4px;
+      color: #83bfc0;
+      font-size: 9px;
+      font-weight: 650;
+      letter-spacing: .45px;
+    }
+    .side-label {
+      margin-top: 5px;
+      padding: 0 12px 8px;
+      color: #8daeb2;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+    }
+    .side-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      margin: 2px 0;
+      padding: 12px;
+      border: 0;
+      border-radius: 11px;
+      background: transparent;
+      color: #c5d5d4;
+      text-align: left;
+      font-size: 12px;
+    }
+    .side-link:hover, .side-link.active { background: #144b63; color: #fff; }
+    .side-link span { width: 19px; text-align: center; font-size: 16px; }
+    .side-spacer { flex: 1; }
+    .side-guest {
+      margin: 10px 2px 2px;
+      padding: 13px;
+      border: 1px solid #285b72;
+      border-radius: 13px;
+      background: #103f5a;
+    }
+    .side-guest small { display: block; color: #9ebfc0; font-size: 8px; letter-spacing: 1px; }
+    .side-guest b { display: block; margin-top: 3px; font-size: 13px; overflow-wrap: anywhere; }
+    .side-guest p { overflow-wrap: anywhere; }
+    .side-guest p { margin: 4px 0 0; color: #b5c8c8; font-size: 10px; }
+
+    .shell {
+      min-height: 100vh;
+      max-width: none;
+      margin-left: 242px;
+      padding: 20px 34px 105px;
+    }
+    .top {
+      height: 59px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 17px;
+      border-bottom: 1px solid #e3eae3;
+    }
+    .top-heading small { display: block; color: #768a8d; font-size: 8px; font-weight: 750; letter-spacing: 1.4px; }
+    .top-heading strong { display: block; color: var(--navy); font-family: Georgia, serif; font-size: 21px; font-weight: 500; }
+    .topright { display: flex; align-items: center; gap: 10px; }
+    .guestpill {
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: #fff;
+      color: #5e777c;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .guestpill b { color: var(--teal); }
+    .profile {
+      width: 33px;
+      height: 33px;
+      border: 0;
+      border-radius: 50%;
+      background: #e5f3eb;
+      color: #316749;
+      font-weight: 750;
+    }
+
+    .page { max-width: 1320px; margin: 0 auto; }
+    .home-create {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      width: 100%;
+      min-height: 72px;
+      margin: 0 0 18px;
+      padding: 12px 17px;
+      border: 0;
+      border-radius: 18px;
+      background: linear-gradient(105deg, #138c92, #176c7c);
+      color: #fff;
+      text-align: left;
+      box-shadow: 0 10px 28px #138c921c;
+    }
+    .home-create-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: #ffffff24;
+      color: #f5cb77;
+      font-size: 27px;
+      line-height: 1;
+    }
+    .home-create-icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .profile { display: grid; place-items: center; }
+    .profile-login-icon { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .home-create-copy { display: grid; gap: 2px; }
+    .home-create-copy strong { font-size: 13px; }
+    .home-create-copy small { color: #d6ecea; font-size: 10px; }
+    .home-create-arrow { margin-left: auto; font-size: 18px; color: #d8eeec; }
+    .sectionhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 21px 0 11px; }
+    .eyebrow { color: var(--teal); font-size: 9px; font-weight: 750; letter-spacing: 1.5px; text-transform: uppercase; }
+    .sectionhead h2 { margin: 4px 0; color: var(--navy); font-family: Georgia, serif; font-size: 23px; font-weight: 500; }
+    .sectionhead p { margin: 0; color: #77878b; font-size: 10px; }
+    .placeholder-card {
+      min-height: 190px;
+      margin-bottom: 20px;
+      border: 1px dashed #c7d8cf;
+      border-radius: 15px;
+      background: #fffefa;
+      box-shadow: var(--shadow);
+    }
+    .page-title { margin: 22px 0 12px; color: var(--navy); font-family: Georgia, serif; font-size: 23px; font-weight: 500; }
+    .tabs { display: none; }
+    .project-nav-icon { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+    .side-link .project-nav-icon { width: 17px; height: 17px; flex: 0 0 17px; vertical-align: middle; }
+
+    @media (max-width: 1050px) {
+      .sidebar { width: 218px; }
+      .shell { margin-left: 218px; padding-left: 23px; padding-right: 23px; }
+    }
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .shell { margin: 0; padding: 0 14px 90px; }
+      .top { height: 58px; margin-bottom: 8px; }
+      .top-heading small { font-size: 7px; }
+      .top-heading strong { font-size: 18px; }
+      .topright { gap: 6px; }
+      .guestpill { padding: 7px 9px; font-size: 9px; }
+      .profile { width: 31px; height: 31px; }
+      .tabs {
+        position: fixed;
+        z-index: 9;
+        inset: auto 0 0;
+        display: flex;
+        justify-content: space-around;
+        gap: 2px;
+        padding: 6px 8px max(8px, env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line);
+        background: #fff;
+      }
+      .tab {
+        display: flex;
+        flex: 1 1 0;
+        min-width: 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 4px 2px;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: #6c8185;
+        font-size: 14px;
+        line-height: 1.2;
+      }
+      .tab small { font-size: 7px; white-space: nowrap; }
+      .tab.active { background: #e6f4f2; color: #087d84; }
+      .home-create { min-height: 64px; padding: 10px 12px; }
+      .home-create-copy small { font-size: 9px; }
+      .sectionhead h2, .page-title { font-size: 21px; }
+      .sectionhead p { font-size: 9px; }
+      .placeholder-card { min-height: 155px; }
+    }
+    @media (max-width: 390px) {
+      .tabs { padding-left: 4px; padding-right: 4px; }
+      .tab small { font-size: 6px; }
+      .home-create-copy small { font-size: 8px; }
+    }
+  
+    .login-overlay {
+      position: fixed; inset: 0; z-index: 20; display: grid; place-items: center;
+      padding: 20px; background: rgba(8, 44, 80, .48); backdrop-filter: blur(3px);
+    }
+    .login-card {
+      width: min(100%, 430px); max-height: min(90vh, 760px); overflow: auto;
+      padding: 24px; border: 1px solid var(--line); border-radius: 20px;
+      background: var(--paper); box-shadow: 0 22px 70px #082c5040;
+    }
+    .login-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .login-head h2 { margin: 0; color: var(--navy); font: 500 24px/1.2 Georgia, serif; }
+    .login-head p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .login-close { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: #62777a; font-size: 20px; }
+    .login-form { display: grid; gap: 12px; margin-top: 20px; }
+    .login-field { display: grid; gap: 5px; }
+    .login-field label { color: #526b70; font-size: 11px; font-weight: 700; }
+    .login-field input { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit; }
+    .login-links { display: flex; justify-content: space-between; gap: 12px; }
+    .login-link { padding: 0; border: 0; background: transparent; color: var(--teal); font-size: 11px; font-weight: 700; }
+    .login-submit, .login-signout { width: 100%; padding: 12px; border: 0; border-radius: 11px; background: var(--teal); color: #fff; font-weight: 750; }
+    .login-submit:disabled { opacity: .6; cursor: wait; }
+    .login-status { min-height: 18px; margin: 0; color: #39734f; font-size: 11px; }
+    .login-status.error { color: #a23d3d; }
+    .login-account { display: grid; gap: 13px; margin-top: 18px; }
+    .login-account p { margin: 0; color: #61777a; font-size: 12px; overflow-wrap: anywhere; }
+    .login-guest { display: block; margin: 15px auto 0; padding: 6px; border: 0; background: transparent; color: #718286; font-size: 11px; }
+    .guestpill { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+    .login-socials[hidden], .login-divider[hidden] { display: none !important; }
+
+  
+    .login-socials { display: grid; gap: 8px; margin-top: 18px; }
+    .login-social { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 22px; background: #fff; color: #435f68; font-size: 11px; font-weight: 700; }
+    .login-social:hover { background: #f4f9f7; }
+    .login-social:disabled { opacity: .6; cursor: wait; }
+    .login-social svg { width: 20px; height: 20px; flex: 0 0 20px; }
+    .login-divider { display: flex; align-items: center; gap: 10px; margin: 15px 0 3px; color: #9ba5a4; font-size: 9px; }
+    .login-divider:before, .login-divider:after { content: ""; height: 1px; flex: 1; background: #ece9df; }
+
+  
+    .account-page-card,.subscription-card{margin-bottom:18px;padding:20px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}
+    .account-page-card{display:flex;align-items:center;gap:15px}
+    .account-page-avatar{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:50%;background:#e5f3eb;color:#316749;font-size:20px;font-weight:750}
+    .account-page-info{display:grid;gap:3px;min-width:0;flex:1}.account-page-info span,.plan-kicker{color:#768a8d;font-size:9px;font-weight:750;letter-spacing:1.1px;text-transform:uppercase}.account-page-info strong{overflow-wrap:anywhere;color:var(--navy);font-size:15px}.account-page-info p,.subscription-heading p{margin:0;color:#77878b;font-size:11px}
+    .account-page-actions{display:flex;gap:8px}.account-action,.plan-button{padding:9px 13px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:11px;font-weight:750}.restore-action{white-space:nowrap}
+    .subscription-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.subscription-heading h3{margin:3px 0;color:var(--navy);font-family:Georgia,serif;font-size:20px;font-weight:500}
+    .plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.plan-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}.plan-card.plan-featured{border-color:#74b7af;box-shadow:inset 0 0 0 1px #b8ddd4}.plan-card h4{margin:0;color:var(--navy);font-size:17px}.plan-price{color:var(--teal);font-size:16px;font-weight:800}.plan-card p{margin:0;color:#61777a;font-size:11px}.plan-card small{color:#829094;font-size:9px}.plan-button{width:100%;margin-top:auto;background:var(--teal);color:#fff}.plan-button:disabled{opacity:.6}.billing-status{margin:12px 0 0;color:#75858a;font-size:10px}.billing-status.error{color:#a23d3d}
+    @media(max-width:700px){.account-page-card{align-items:flex-start;flex-wrap:wrap;padding:15px}.account-page-actions{width:100%}.subscription-card{padding:15px}.plan-grid{grid-template-columns:1fr}.subscription-heading{align-items:flex-start;flex-direction:column}.restore-action{align-self:flex-start}}
+
+  
+    .demo-project-card{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(340px,.92fr);overflow:hidden;margin:14px 0 20px;border:1px solid var(--line);border-radius:20px;background:#fffefa;box-shadow:var(--shadow)}
+    .demo-project-media{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:3px;min-height:310px;background:#e7eeea}
+    .project-media-placeholder,.project-media-video{display:grid;place-items:center;width:100%;height:100%;min-height:120px;background:linear-gradient(145deg,#e5f0e9,#d4e8e0);color:#237d7c;font-size:40px}
+    .project-media-video{background:#e7eef3;color:#62788d;font-size:14px;font-weight:700}
+    .project-stage-controls{margin:2px 0 12px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .project-journey-track{display:flex;gap:5px;margin:8px 0}
+    .project-stage-step{position:relative;flex:1;min-width:14px;height:22px;padding:0;border:0;border-radius:9px;background:transparent}
+    .project-stage-step:before{content:"";position:absolute;left:0;right:0;top:8px;height:6px;border-radius:9px;background:#ebe9e0}
+    .project-stage-step.selected:not(.current):before{background:#65bcb5}
+    .project-stage-step.current:before{background:#f5a11a}
+    .project-stage-step.current:after{content:"";position:absolute;left:50%;top:1px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #f5a11a;z-index:1}
+    .project-stage-labels{display:grid;gap:3px;margin-top:4px}
+    .project-stage-label{min-width:0;min-height:32px;padding:3px 2px;border:0;border-radius:6px;background:transparent;color:#879294;text-align:center;font-size:8px;line-height:1.2}
+    .project-stage-label.selected{background:#e4f3f1;color:#087d84;font-weight:800}
+    .project-milestone-list{display:grid;gap:5px;margin-top:12px}
+    .project-milestone-list>strong,.project-stage-dates>strong{color:#526b70;font-size:9px}
+    .project-milestone-choice{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fffefa;color:#536a6e;font-size:9px}
+    .project-milestone-choice small{color:#879294;font-weight:650}
+    .project-milestone-radio{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#718587;font-size:8px}
+    .project-milestone-radio input{accent-color:#138c92}
+    .project-stage-dates{display:grid;gap:6px;margin-top:12px}
+    .project-stage-date-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(100px,.8fr) minmax(100px,.8fr);align-items:center;gap:6px;padding:7px;border:1px solid var(--line);border-radius:9px;background:#fffefa}
+    .project-stage-date-row>strong{color:#526b70;font-size:9px;line-height:1.25}
+    .project-stage-date-row label{display:grid;gap:3px;color:#819092;font-size:8px;font-weight:700;cursor:pointer}
+    .project-stage-date-row input{width:100%;min-width:0;height:30px;padding:4px 5px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:9px;cursor:pointer}
+    .project-current-stage{margin-top:8px}
+    .project-stage-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+    .project-stage-date-panel{display:grid;gap:4px;min-width:0;padding:8px;border:1px solid var(--line);border-radius:9px;background:#fffefa;color:#718587;font-size:9px;font-weight:700;cursor:pointer}
+    .project-stage-date-panel:focus-within,.project-stage-date-panel:hover{border-color:#82bdb4;background:#f8fcf8}
+    .project-stage-date-panel input{width:100%;min-width:0;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:11px;cursor:pointer}
+    .project-stage-save{grid-column:1/-1;min-height:32px;padding:0 10px;border:1px solid #c9ddd4;border-radius:8px;background:#f4faf6;color:#176d70;font-size:9px;font-weight:750}
+    .project-overall-notes{margin:11px 0;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fffefa}
+    .project-overall-notes label{display:block;margin-bottom:5px;color:#526b70;font-size:10px;font-weight:750}
+    .project-overall-notes textarea{display:block;width:100%;min-height:58px;padding:8px;border:1px solid #e8e4d9;border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:10px;resize:vertical}
+    .project-overall-notes-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;color:#819092;font-size:8px}
+    .project-overall-notes-actions button{padding:5px 9px;border:1px solid #c9ddd4;border-radius:7px;background:#f4faf6;color:#176d70;font-size:9px;font-weight:750}
+    .pinned-project-icon{width:16px;height:19px;vertical-align:-5px;margin-left:5px;flex:none}
+    .shared-project-card{touch-action:pan-y}
+    .shared-project-card.is-pinned{border-color:#78b9ae;box-shadow:0 0 0 2px #d6eee6,var(--shadow)}
+    .demo-project-copy h3[title]{cursor:help}
+    @media(max-width:480px){.project-stage-save{grid-column:1/-1}}
+    .project-album-stage-head strong{font-size:9px}
+    .mini-album{display:grid;gap:5px}
+    .mini-album-open{display:grid;gap:4px;width:100%;padding:0;border:0;background:transparent;text-align:left;color:var(--ink)}
+    .mini-album-move-label{display:grid;grid-template-columns:auto 13px minmax(0,1fr);align-items:center;gap:4px;padding-top:5px;border-top:1px solid #ecefe9;color:#718587;font-size:8px;font-weight:650}.mini-album-move-arrow{color:#138c92;font-size:15px;font-weight:800;text-align:center}
+    .mini-album-move-label select{width:100%;min-width:0;height:28px;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:#fffefa;color:var(--ink);font-size:9px}
+    @media(max-width:480px){.project-stage-label{font-size:7px;overflow-wrap:anywhere}.project-stage-date-row{grid-template-columns:minmax(80px,.8fr) minmax(92px,1fr) minmax(92px,1fr);gap:4px;padding:5px}.project-stage-date-row input{font-size:8px}.project-milestone-choice{padding:6px}.project-stage-save{grid-column:1/-1}}
+    .demo-photo{min-width:0;min-height:0;overflow:hidden}.demo-photo img{display:block;width:100%;height:100%;object-fit:cover}.demo-photo-main,.demo-photo-secondary{grid-row:span 2}.demo-photo-label{position:absolute;left:12px;bottom:12px;padding:6px 9px;border-radius:20px;background:#143f4be0;color:#fff;font-size:9px;font-weight:700}
+    .demo-project-copy{display:flex;flex-direction:column;padding:22px;min-width:0}.demo-project-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}.demo-project-tag{padding:6px 10px;border-radius:20px;background:#e7f3ed;color:#507569;font-size:9px}.demo-project-favorite{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;padding:0;border:1px solid #eadfc8;border-radius:50%;background:#fff9e9;color:#8b681f;font-size:17px;line-height:1;cursor:pointer}.demo-project-favorite[aria-pressed="true"]{background:#fff0cc;color:#9b6813;border-color:#f0d493}.demo-project-favorite:hover{transform:scale(1.06)}.demo-project-copy h3{margin:12px 0 5px;color:var(--navy);font-family:Georgia,serif;font-size:23px;font-weight:600;line-height:1.2}.demo-project-description{margin:0;color:#748286;font-size:11px}.demo-project-stats{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}.demo-project-stats span{padding:4px 8px;border:1px solid #b7d1ca;border-radius:20px;color:#49656a;font-size:9px}.demo-project-stats b{color:var(--navy)}.demo-project-last{display:grid;gap:3px;margin:0 0 14px;color:#66797d;font-size:10px}.demo-project-last strong{color:#455e63}.demo-stage-head{display:flex;justify-content:space-between;gap:10px;color:#75858a;font-size:9px}.demo-stage-head b{color:#a17125}.demo-stage-track{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:9px 0 14px}.demo-stage-track span{height:6px;border-radius:10px;background:#e8e6dc}.demo-stage-track span.done,.demo-stage-track span.current{background:#f0a52a}.demo-journal{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;color:#60777a;font-size:10px}.demo-journal summary{cursor:pointer;color:#176d70;font-weight:750}.demo-journal ul{display:grid;gap:8px;margin:10px 0 0;padding-left:18px}.demo-journal li strong{display:block;color:var(--navy)}
+    @media(max-width:850px){.demo-project-card{grid-template-columns:1fr}.demo-project-media{min-height:260px}.demo-project-copy{padding:17px}}
+
+  
+    .create-project-overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:18px;background:#082c5077;backdrop-filter:blur(3px)}
+    .create-project-card{width:min(100%,520px);max-height:min(92vh,760px);overflow:auto;padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:0 22px 70px #082c5040}
+    .create-project-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .create-project-head h2{margin:0;color:var(--navy);font:500 24px/1.2 Georgia,serif}
+    .create-project-head p{margin:6px 0 0;color:var(--muted);font-size:12px}
+    .create-project-close{width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#62777a;font-size:20px}
+    .create-project-form{display:grid;gap:13px}
+    .create-project-field{display:grid;gap:5px}
+    .create-project-field label{color:#526b70;font-size:11px;font-weight:700}
+    .create-project-field input,.create-project-field textarea,.create-project-field select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+    .create-project-field textarea{min-height:94px;resize:vertical}
+    .create-project-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:4px}
+    .create-project-cancel,.create-project-submit{padding:10px 15px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:12px;font-weight:750}
+    .create-project-submit{border:0;background:var(--teal);color:#fff}
+    .created-project-list{display:grid;gap:12px}
+    .created-project-card{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:center;gap:14px;margin:0 0 12px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}.created-project-card .project-artifacts{grid-column:1/-1;width:100%;min-width:0}
+    .created-project-icon{display:grid;place-items:center;width:54px;height:54px;border-radius:14px;background:#e7f3ed;color:#138c92;font-size:22px}
+    .created-project-info{min-width:0}.created-project-info .demo-project-tag{display:inline-block}.created-project-info h3{margin:6px 0 3px;color:var(--navy);font-family:Georgia,serif;font-size:18px}.created-project-info p{margin:0;color:#75858a;font-size:11px;overflow-wrap:anywhere}.created-project-meta{color:#75858a;font-size:10px;white-space:nowrap}
+    @media(max-width:600px){.create-project-card{padding:18px}.created-project-card{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:13px}.created-project-icon{width:44px;height:44px}.created-project-meta{grid-column:2;white-space:normal}}
+
+  
+    .project-artifacts{margin-top:12px;padding:9px 10px;border:1px solid #dce8df;border-radius:12px;background:#f5f8f4}.artifact-add-button{padding:9px 12px;border:1px solid #cfe1d9;border-radius:10px;background:#f4faf6;color:#176d70;font-size:10px;font-weight:750}.artifact-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin-top:9px}.artifact-item{min-width:0;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#61777a;font-size:10px;overflow-wrap:anywhere}.artifact-item img,.artifact-item video{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:7px;background:#e8efea}.artifact-item audio{display:block;width:100%;height:34px}.artifact-item p{margin:5px 0 0;white-space:pre-wrap}.artifact-item small{display:block;margin-top:5px;color:#829094;font-size:8px}.artifact-overlay[hidden]{display:none!important}.artifact-overlay{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:18px;background:#082c5077;backdrop-filter:blur(3px)}.artifact-card{width:min(100%,460px);max-height:min(92vh,700px);overflow:auto;padding:21px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:0 22px 70px #082c5040}.artifact-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}.artifact-card-head h2{margin:0;color:var(--navy);font:500 22px/1.2 Georgia,serif}.artifact-card-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.artifact-close{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#62777a;font-size:20px}.artifact-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}.project-artifact-label{margin:0 0 6px;color:#74878a;font-size:9px;font-weight:650}.project-artifact-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.project-artifact-options .artifact-option{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:36px;padding:4px 5px;border:1px solid #d7e3dc;border-radius:8px;background:#fffefa;color:#435f68;text-align:center;transition:background .15s,border-color .15s}.project-artifact-options .artifact-option:hover{border-color:#b9d9cf;background:#f5faf7}.project-artifact-options .artifact-option-icon{display:grid;place-items:center;flex:0 0 19px;width:19px;height:19px;padding:3px;border-radius:6px;background:#e7f3ed;color:#188c8b}.project-artifact-options .artifact-option:nth-child(2) .artifact-option-icon{background:#f7f0df;color:#a98642}.project-artifact-options .artifact-option:nth-child(4) .artifact-option-icon{background:#edf0f6;color:#71809a}.project-artifact-options .artifact-option-icon svg{display:block;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.project-artifact-options .artifact-option strong{min-width:0;font-size:8px;font-weight:650;line-height:1.1;white-space:normal}.project-albums{margin-top:10px;padding:11px 12px;border-radius:13px;background:#f4f8f4}.project-albums-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--navy);font-size:10px}.project-albums-heading small{color:#829093;font-size:8px}.project-album-empty{display:grid;place-items:center;min-height:78px;margin-top:8px;padding:12px;border:1px dashed #c9d9d0;border-radius:11px;color:#879397;text-align:center;font-size:10px}.template-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}.template-card{display:flex;min-width:0;flex-direction:column;align-items:flex-start;padding:17px;border:1px solid var(--line);border-radius:16px;background:#fffefa;box-shadow:var(--shadow)}.template-art{display:grid;place-items:center;width:42px;height:42px;margin-bottom:11px;border-radius:13px;background:#e6f3ee;font-size:21px}.template-card h3{margin:0 0 6px;color:var(--navy);font-family:Georgia,serif;font-size:18px;font-weight:500}.template-card p{min-height:42px;margin:0 0 10px;color:#77878b;font-size:10px}.template-stage-preview{display:-webkit-box;overflow:hidden;margin:0 0 12px;color:#718587;font-size:8px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}.template-card .button-primary{width:100%;margin-top:auto;padding:9px 11px;border:0;border-radius:10px;background:var(--teal);color:#fff;font-size:10px;font-weight:750}.template-hint{margin:0;padding:9px 10px;border-radius:9px;background:#f3faf7;color:#61777a;font-size:10px;line-height:1.5}@media(max-width:850px){.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.template-grid{grid-template-columns:1fr}.template-card{padding:15px}.template-card p{min-height:0}}@media(max-width:480px){.project-artifact-options{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}.project-artifact-options .artifact-option{min-height:34px;padding:3px 2px;gap:3px}.project-artifact-options .artifact-option-icon{flex-basis:17px;width:17px;height:17px}.project-artifact-options .artifact-option-icon svg{width:12px;height:12px}.project-artifact-options .artifact-option strong{font-size:7.5px}}.mini-albums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:8px 0}.project-album-stage{margin-top:10px;padding-top:9px;border-top:1px solid #f0ede4}.project-album-stage-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:#718587;font-size:9px}.project-album-stage-head small{color:#829093;font-size:8px}.mini-album{min-width:0;padding:6px;border:1px solid var(--line);border-radius:10px;background:#fffefa;text-align:left;color:var(--ink)}.mini-album-grid{height:90px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,1fr);gap:3px;overflow:hidden;border-radius:8px;background:#e8f0eb}.mini-album-grid img,.mini-album-grid video{width:100%;height:100%;object-fit:cover}.mini-album-grid img:only-child,.mini-album-grid .mini-album-video:only-child{grid-column:1/3;grid-row:1/3}.mini-album-video{display:grid;place-items:center;background:#e7f3ed;color:#138c92;font-size:17px}.mini-album-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:5px 1px 1px;font-size:9px;font-weight:750}.mini-album-meta{display:block;margin:0 1px;color:#879397;font-size:8px}.artifact-album-card{width:min(100%,760px)}.artifact-album-stage{position:relative;display:grid;place-items:center;height:min(48vh,390px);min-height:180px;overflow:hidden;border-radius:12px;background:#071c23}.artifact-album-stage img,.artifact-album-stage video{width:100%;height:100%;object-fit:contain}.artifact-album-arrow{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border:1px solid #ffffff77;border-radius:50%;background:#071c2388;color:#fff;font-size:23px}.artifact-album-arrow:first-of-type{left:9px}.artifact-album-arrow:last-of-type{right:9px}.artifact-album-meta{display:flex;justify-content:space-between;gap:8px;margin:8px 0;color:#61787c;font-size:9px}.artifact-album-meta small{color:#829093}.artifact-album-note-label{display:block;margin:8px 0 5px;color:#62777a;font-size:10px;font-weight:700}.artifact-album-voices{display:grid;gap:7px;margin-top:10px}.artifact-album-voice{display:flex;align-items:center;gap:8px}.artifact-album-voice audio{flex:1;min-width:0}.artifact-album-voice small{color:#829093;font-size:9px}.artifact-option{display:flex;align-items:center;gap:10px;min-height:64px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);text-align:left}.artifact-option-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:#e7f3ed;color:#138c92;font-size:18px}.artifact-option strong{display:block;font-size:11px}.artifact-option small{display:block;color:#829094;font-size:9px}.artifact-status{min-height:18px;margin:11px 0 0;color:#62777a;font-size:10px}.artifact-status.error{color:#a23d3d}.artifact-note-text{width:100%;min-height:130px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;resize:vertical}.artifact-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.artifact-action{padding:9px 13px;border:1px solid #dce5de;border-radius:10px;background:#fff;color:#176d70;font-size:11px;font-weight:750}.artifact-action.primary{border:0;background:var(--teal);color:#fff}@media(max-width:500px){.artifact-options{grid-template-columns:1fr}.artifact-card{padding:17px}}
+
+      .project-stage-controls{margin:0 0 14px;padding:15px 14px 12px;border:1px solid var(--line);border-radius:18px;background:#fffefa;box-shadow:var(--shadow)}
+    .project-journey-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:11px;color:#395e60;font-size:11px;font-weight:750}
+    .project-journey-heading>span{max-width:58%;line-height:1.6}
+    .project-current-picker{max-width:48%;padding:0;border:0;background:transparent;color:#288079;text-align:right;font:inherit;font-size:11px;font-weight:800}
+    .project-current-picker:after{content:" ▾";font-size:9px}
+    .project-journey-track{display:flex;align-items:center;gap:7px;margin:8px 0 9px}
+    .project-stage-step{position:relative;flex:1;min-width:10px;height:18px;padding:0;border:0;background:transparent}
+    .project-stage-step:before{content:"";position:absolute;left:0;right:0;top:6px;height:7px;border-radius:8px;background:#ebe9e0}
+    .project-stage-step.done:before{background:#56c1b4}
+    .project-stage-step.current:before{background:#f5a11a}
+    .project-stage-step.current:after{content:"";position:absolute;left:50%;top:-3px;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #f5a11a}
+    .project-stage-step.selected:not(.current):before{background:#75d0c5}
+    .project-stage-labels{display:grid;gap:7px;margin-top:4px}
+    .project-stage-label{display:grid;align-content:start;min-width:0;min-height:0;padding:4px 2px;border:0;border-radius:7px;background:transparent;color:#879294;text-align:left;font-size:8px;line-height:1.22;overflow-wrap:anywhere}
+    .project-stage-label.selected{background:#eaf6f2;color:#496d5e;font-weight:800}
+    .project-stage-dates-preview{display:grid;gap:2px;margin-top:4px;color:#8b9694;font-size:7px;font-weight:500;line-height:1.2}
+    .project-stage-label.current .project-stage-dates-preview{color:#9a7335}
+    .project-stage-controls .project-albums{margin-bottom:0}
+    .project-milestones-overlay{position:fixed;inset:0;z-index:42;display:grid;place-items:center;padding:14px;background:#082c5077;backdrop-filter:blur(3px)}
+    .project-milestones-dialog{display:flex;flex-direction:column;width:min(100%,660px);max-height:min(90dvh,850px);overflow:hidden;border:1px solid var(--line);border-radius:25px;background:var(--paper);box-shadow:0 22px 70px #082c5040}
+    .project-milestones-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:22px 22px 10px}
+    .project-milestones-header h2{margin:0;color:var(--navy);font-size:24px;font-weight:800;letter-spacing:-.5px}
+    .project-milestones-header p{margin:7px 0 0;color:#7b898c;font-size:12px;line-height:1.5}
+    .project-milestones-close{flex:0 0 36px;width:36px;height:36px;border:0;border-radius:50%;background:#f0f4ef;color:#66777a;font-size:21px}
+    .project-milestones-content{overflow:auto;padding:8px 22px 12px;overscroll-behavior:contain}
+    .project-milestones-current{display:grid;gap:7px;margin:0 0 12px;color:#334e52;font-size:11px;font-weight:800}
+    .project-milestones-current select{width:100%;height:56px;padding:0 14px;border:1px solid var(--line);border-radius:16px;background:#fffefa;color:#435d61;font:inherit;font-size:15px;font-weight:500}
+    .project-milestone-edit-list{display:grid;gap:12px}
+    .project-milestone-edit-card{display:grid;gap:7px;padding:15px 16px 16px;border:1px solid #e9e6dc;border-radius:18px;background:#fffefa}
+    .project-milestone-name{width:100%;height:49px;padding:0 12px;border:1px solid var(--line);border-radius:13px;background:#fffefa;color:#405d60;font-size:13px;font-weight:800}
+    .project-milestone-date-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .project-milestone-date-grid label{display:grid;gap:6px;color:#8a9696;font-size:10px;font-weight:650}
+    .project-milestone-date-grid input{width:100%;height:58px;padding:0 12px;border:1px solid var(--line);border-radius:14px;background:#fffefa;color:#42595d;font-size:13px;font-weight:700}
+    .project-milestone-add{align-self:flex-start;margin:2px 0 5px;padding:11px 15px;border:1px dashed #bedbd2;border-radius:14px;background:#f3faf7;color:#27877e;font-size:12px;font-weight:800}
+    .project-milestones-footer{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:10px;padding:14px 22px max(15px,env(safe-area-inset-bottom));background:linear-gradient(#fffefaee,#fffefa 24%);border-top:1px solid #f2efe7}
+    .project-milestones-later,.project-milestones-save{min-height:48px;padding:0 18px;border:0;border-radius:26px;background:#edf3ed;color:#526b69;font-size:12px;font-weight:800}
+    .project-milestones-save{display:flex;align-items:center;gap:8px;background:#138c83;color:#fff}
+    .project-milestones-save svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    @media(max-width:520px){
+      .project-stage-controls{padding:13px 11px}
+      .project-journey-heading{font-size:10px}
+      .project-journey-heading>span{max-width:53%}
+      .project-current-picker{max-width:51%;font-size:10px}
+      .project-stage-labels{gap:3px}
+      .project-stage-label{font-size:7px;padding:3px 1px}
+      .project-stage-dates-preview{font-size:6px}
+      .project-milestones-overlay{padding:10px}
+      .project-milestones-dialog{max-height:90dvh;border-radius:23px}
+      .project-milestones-header{padding:20px 20px 9px}
+      .project-milestones-header h2{font-size:22px}
+      .project-milestones-content{padding:7px 20px 10px}
+      .project-milestone-date-grid{gap:8px}
+      .project-milestone-date-grid input{height:53px;padding:0 9px;font-size:11px}
+      .project-milestones-footer{padding-left:20px;padding-right:20px}
+    }
+    .project-stage-label.current strong{color:#9a6b22;font-weight:800}
+    .project-milestone-edit-title{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px}
+    .project-milestone-current-radio{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:#547276;font-size:9px;font-weight:750;cursor:pointer}
+    .project-milestone-current-radio input{width:17px;height:17px;margin:0;accent-color:#138c92}
+    .project-albums-heading>small{display:flex;align-items:center;gap:8px}
+    .project-albums-show-all{padding:3px 8px;border:1px solid #c9ddd4;border-radius:8px;background:#f4faf6;color:#176d70;font:inherit;font-size:8px;font-weight:750}
+    @media(max-width:480px){.project-milestone-edit-title{grid-template-columns:1fr;align-items:start}.project-milestone-current-radio{padding-left:2px}}
+      .demo-project-media{align-self:start;width:100%;aspect-ratio:1/1;max-height:480px;min-height:0;display:block;overflow:hidden;padding:10px;background:linear-gradient(145deg,#e7eeea,#dce9e2)}
+    .project-photo-collage{display:grid;width:100%;height:100%;grid-template-columns:1.2fr 1fr;grid-template-rows:minmax(0,1fr);gap:5px;overflow:hidden;border-radius:13px}
+    .project-collage-lead{grid-column:1;grid-row:1}
+    .project-collage-secondary{display:grid;min-width:0;min-height:0;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:5px}
+    .project-photo-collage.secondary-1 .project-collage-secondary{grid-template-columns:1fr;grid-template-rows:1fr}
+    .project-photo-collage.secondary-2 .project-collage-secondary{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr))}
+    .project-collage-photo{display:block;min-width:0;min-height:0;overflow:hidden;border:1px solid #fff;border-radius:9px;background:#e2ece6}
+    .project-collage-photo img{display:block;width:100%;height:100%;object-fit:cover}
+    .project-collage-photo .project-media-placeholder{display:grid;width:100%;height:100%;min-height:0;place-items:center}
+    .demo-project-media>.demo-photo-label{left:16px;bottom:16px;z-index:2;pointer-events:none}
+    .project-artifact-options{width:max-content;max-width:100%;grid-template-columns:repeat(4,minmax(0,74px));justify-content:start;gap:6px}
+    .project-artifact-options .artifact-option{min-height:30px;padding:2px 4px;gap:3px;border-radius:7px}
+    .project-artifact-options .artifact-option-icon{flex-basis:16px;width:16px;height:16px;padding:2px}
+    .project-artifact-options .artifact-option-icon svg{width:12px;height:12px}
+    .project-artifact-options .artifact-option strong{font-size:7.5px}
+    @media(max-width:850px){.demo-project-media{aspect-ratio:1/1;max-height:440px;min-height:0}}
+    @media(max-width:420px){.project-artifact-options{width:100%;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}}
+      .top{height:48px;margin-bottom:11px}
+    @media(max-width:700px){
+      .shell{padding-top:0;padding-bottom:62px}
+      .top{height:42px;margin-bottom:4px}
+      .top-heading strong{font-size:16px}
+      .tabs{padding:3px 5px max(3px,env(safe-area-inset-bottom))}
+      .tab{gap:1px;padding:2px 2px;font-size:12px}
+      .tab small{font-size:6px}
+    }
+    @media(max-width:390px){
+      .top{height:40px}
+      .tabs{padding-left:3px;padding-right:3px}
+      .tab small{font-size:5.5px}
+    }
+  .demo-project-stats button{appearance:none;background:#fffdf7;font:inherit;cursor:pointer}.demo-project-stats button:hover,.demo-project-stats button:focus-visible{border-color:#16877f;color:#115e61;outline:2px solid #16877f33;outline-offset:1px}
+.project-tracking-overlay{position:fixed;inset:0;z-index:1250;display:grid;place-items:center;padding:18px;background:rgba(13,39,49,.56)}.project-tracking-overlay[hidden]{display:none}.project-tracking-dialog{width:min(680px,100%);max-height:min(88vh,900px);overflow:auto;border:1px solid #dce6df;border-radius:24px;background:#fffef9;box-shadow:0 24px 80px #0b30364a;padding:24px}.project-tracking-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.project-tracking-header small{color:#16877f;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.project-tracking-header h2{margin:4px 0 0;color:var(--navy);font-size:24px}.project-tracking-close{width:38px;height:38px;border:0;border-radius:50%;background:#eff5f0;color:#37555a;font-size:25px;cursor:pointer}.project-tracking-tabs{display:flex;gap:8px;margin:20px 0 16px;padding:5px;border-radius:14px;background:#f1f5ef}.project-tracking-tabs button{flex:1;border:0;border-radius:10px;background:transparent;padding:10px 8px;color:#607477;font-weight:700;cursor:pointer}.project-tracking-tabs button[aria-selected="true"]{background:#16877f;color:#fff}.project-tracking-content{color:#435d61}.tracking-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 16px}.tracking-summary div{border:1px solid #e1e8df;border-radius:14px;background:#f7faf5;padding:13px}.tracking-summary small{display:block;color:#78898a;font-size:11px}.tracking-summary strong{display:block;margin-top:5px;color:var(--navy);font-size:18px}.tracking-list{display:grid;gap:9px}.tracking-row{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid #e3e8df;border-radius:13px;background:#fff;padding:12px 14px}.tracking-row-main{min-width:0}.tracking-row-main strong{display:block;color:var(--navy);font-size:14px}.tracking-row-main small{display:block;margin-top:4px;color:#7d8a8a;font-size:11px}.tracking-row select{max-width:150px;border:1px solid #d7e1d9;border-radius:9px;background:white;padding:8px;color:#39565a}.tracking-reminder-check{display:flex;align-items:center;gap:10px}.tracking-reminder-check input{width:18px;height:18px;accent-color:#16877f}.tracking-row.is-done strong{text-decoration:line-through;color:#80908d}.tracking-empty{padding:22px 14px;text-align:center;color:#7a8988;border:1px dashed #d4e1da;border-radius:14px}.tracking-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.tracking-action{border:1px solid #cddfd6;border-radius:11px;background:#f1faf6;padding:10px 13px;color:#147a75;font-weight:700;cursor:pointer}.tracking-form{display:grid;gap:12px;margin-top:14px;border:1px solid #dce7df;border-radius:15px;background:#f8fbf7;padding:15px}.tracking-form label{display:grid;gap:6px;color:#617879;font-size:12px;font-weight:700}.tracking-form input,.tracking-form textarea,.tracking-form select{box-sizing:border-box;width:100%;border:1px solid #d4dfd9;border-radius:10px;background:#fff;padding:11px;color:#294c54;font:inherit}.tracking-form textarea{min-height:85px;resize:vertical}.tracking-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tracking-form-actions{display:flex;justify-content:flex-end;gap:8px}.tracking-primary{border:0;border-radius:10px;background:#16877f;padding:10px 15px;color:#fff;font-weight:700;cursor:pointer}.tracking-secondary{border:1px solid #d4dfd9;border-radius:10px;background:#fff;padding:10px 15px;color:#52696b;cursor:pointer}.tracking-expenses{margin-top:16px}.tracking-expenses h3{margin:0 0 8px;color:var(--navy);font-size:14px}.tracking-expenses .tracking-row{padding:9px 12px}.moments-wand-icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:600px){.project-tracking-overlay{padding:10px;align-items:end}.project-tracking-dialog{max-height:90vh;padding:19px;border-radius:22px 22px 14px 14px}.tracking-summary{gap:6px}.tracking-summary div{padding:10px}.tracking-summary strong{font-size:15px}.tracking-row{align-items:flex-start}.tracking-form-row{grid-template-columns:1fr}.project-tracking-tabs button{font-size:12px;padding:10px 5px}}
+.demo-project-stats button{appearance:none;display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border:1px solid #b7d1ca;border-radius:999px;background:#fffef9;color:#49656a;font-size:9px;line-height:1.25;cursor:pointer}.demo-project-stats button:hover,.demo-project-stats button:focus-visible{border-color:#16877f;background:#edf8f3;color:#115e61;outline:2px solid #16877f33;outline-offset:1px}
+.project-tracking-inline{display:grid;gap:12px;margin:14px 0}.issue-log,.for-later,.budget-tracking-card{border:1px solid #e2e5d7;border-radius:22px;background:#fffef9;padding:17px 19px;box-shadow:0 5px 18px #23493908}.issue-log-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:13px}.issue-log-head .eyebrow{color:#16877f;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.issue-log-head h2{margin:5px 0 0;color:#203e4a;font:500 25px/1.15 Georgia,serif}.button-soft{flex:none;border:0;border-radius:999px;background:#edf3ec;padding:12px 16px;color:#49656a;font-size:14px;font-weight:700;cursor:pointer}.button-soft:hover{background:#dcebe2}.for-later{background:#fff7e5;border-color:#f0e9d4}.for-later-head{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.for-later-head>strong{color:#203e4a;font-size:18px}.for-later-head small{margin-left:auto;color:#788784;font-size:11px}.subtle-link{border:0;background:transparent;padding:5px 0;color:#147a75;font-size:14px;font-weight:700;cursor:pointer}.subtle-link:hover{text-decoration:underline}.project-tracking-inline .tracking-list{margin-top:10px}.project-tracking-inline .tracking-row{border-color:#e7e7dc}.project-tracking-inline .tracking-empty{margin-top:8px;border:0;padding:6px 0;text-align:left;color:#7b8581}.project-tracking-inline .tracking-form{margin-top:12px}.budget-tracking-card .tracking-summary{margin-top:14px}.budget-tracking-card .tracking-expenses{margin-top:14px}
+@media(max-width:600px){.issue-log,.for-later,.budget-tracking-card{padding:15px;border-radius:20px}.issue-log-head{align-items:flex-start}.issue-log-head h2{font-size:24px}.button-soft{padding:10px 12px;font-size:12px}.for-later-head{gap:8px}.for-later-head>strong{font-size:17px}.subtle-link{font-size:13px}.demo-project-stats button{min-height:30px;padding:5px 9px;font-size:10px}}
+</style>
 </head>
 <body>
-  <main aria-label="FieldWorks under construction">
-    <img src="fieldworks-icon.png" alt="FieldWorks icon">
-    <h1>FieldWorks</h1>
-    <p class="status">Under Construction</p>
-  </main>
+  
+
+  <div id="dashboard">
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="mark" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+            <rect x="8" y="8" width="184" height="184" rx="34" fill="#fff" stroke="#082c50" stroke-width="10"/>
+            <circle cx="100" cy="100" r="65" fill="none" stroke="#48c2c5" stroke-width="7"/>
+            <path d="M100 35 C62 57 62 143 100 165 M100 35 C138 57 138 143 100 165 M39 90 C68 111 132 111 161 90 M42 140 C73 111 109 98 153 51" fill="none" stroke="#138c92" stroke-width="8" stroke-linecap="round"/>
+            <circle cx="43" cy="140" r="12" fill="#138c92"/><circle cx="98" cy="104" r="13" fill="#f5a11a"/><circle cx="153" cy="51" r="12" fill="#138c92"/>
+          </svg>
+        </div>
+        <div class="side-brand-copy">
+          <strong>FieldWorks</strong>
+          <small>Project journal</small>
+          <small class="app-version">V0.4.00 Build 01</small>
+        </div>
+      </div>
+      <div class="side-label">YOUR WORKSPACE</div>
+      <button class="side-link active" type="button" data-page="home" onclick="showFieldWorksPage('home')"><span>⌂</span>My FieldWorks</button>
+      <button class="side-link" type="button" data-page="projects" onclick="showFieldWorksPage('projects')"><span><svg class="project-nav-icon project-checklist-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 4.5h9A2.5 2.5 0 0 1 20 7v4.2M8.5 4.5V3.7a2.7 2.7 0 0 1 5.4 0v.8M8.5 4.5H6A2.5 2.5 0 0 0 3.5 7v13A2.5 2.5 0 0 0 6 22.5h6.4"/><path d="m6.5 9.5 1.2 1.2 2-2M11.5 10H17M6.5 14.5l1.2 1.2 2-2M11.5 15h1.8"/><path d="m18.5 12.7.6 1.2 1.4.2-.9 1 .2 1.4-1.3-.6-1.2.6.2-1.4-.9-1 1.4-.2zM19.4 17.3l.2 1.1 1 .6-1 .5-.3 1.1-.6-.8-1.1.1.6-.9-.4-1 1.1.3z" fill="currentColor" stroke="none"/></svg></span>My Projects</button>
+      <button class="side-link" type="button" data-page="templates" onclick="showFieldWorksPage('templates')"><span><svg class="project-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h4l2 2h6A2.5 2.5 0 0 1 20.5 9.5v8A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M3.5 10h17"/></svg></span>My Templates</button>
+      <button class="side-link" type="button" data-page="moments" onclick="showFieldWorksPage('moments')"><span><svg class="project-nav-icon moments-wand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 20.5 9-9"/><path d="m8 20 8-8"/><path d="m15.5 3 .7 2.8 2.8.7-2.8.7-.7 2.8-.7-2.8-2.8-.7 2.8-.7z"/><path d="m6 3 .4 1.4L8 4.8l-1.6.4L6 7l-.4-1.8L4 4.8l1.6-.4z"/></svg></span>Recent moments</button>
+      <button class="side-link" type="button" data-page="followups" onclick="showFieldWorksPage('followups')"><span>✦</span>Follow-ups</button>
+      <div class="side-spacer"></div>
+      <button class="side-link" type="button" data-page="archive" onclick="showFieldWorksPage('archive')"><span>▤</span>Archive</button>
+      <button class="side-link" type="button" data-page="account" onclick="showFieldWorksPage('account')"><span>♙</span>My Account</button>
+      <div class="side-guest">
+        <small id="sideAccountLabel">WORKING AS</small>
+        <b id="sideAccountName">Guest</b>
+        <p id="sideAccountMessage">FieldWorks debug menu preview.</p>
+      </div>
+    </aside>
+
+    <div class="shell">
+      <header class="top">
+        <div class="top-heading">
+          <small>FIELDWORKS · MY WORKSPACE</small>
+          <strong id="topTitle">My FieldWorks</strong>
+        </div>
+        <div class="topright">
+          <div class="guestpill"><b>●</b> &nbsp; <span id="guestPillLabel">Guest mode</span></div>
+          <button id="profileButton" class="profile" type="button" aria-label="Sign in to FieldWorks" onclick="openLoginCard()"><svg class="profile-login-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg></button>
+        </div>
+      </header>
+
+      <main>
+        <section id="page-home" class="page">
+          <button id="openCreateProject" class="home-create" type="button" aria-label="Create project">
+            <span class="home-create-icon"><svg class="create-project-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3.5h10l5 5V12"/><path d="M14 3.5V9h5"/><path d="M4 3.5v17h7"/><path d="m13 17 5.7-5.7a1.7 1.7 0 0 1 2.4 2.4L15.4 20.4l-3.1.7z"/></svg></span>
+            <span class="home-create-copy"><strong>Create project</strong><small>Start with a name. Add the moments as you go.</small></span>
+            <span class="home-create-arrow" aria-hidden="true">→</span>
+          </button>
+          <div class="sectionhead"><div><div class="eyebrow">Ready when you are</div><h2>Favourite Projects</h2><p>Your quick notes and photos will go here.</p></div></div>
+          <div id="homeMiniRenovation" class="created-project-list"></div>
+          <div class="sectionhead"><div><div class="eyebrow">Latest activity first</div><h2>My Projects</h2><p>Projects you create appear here.</p></div></div>
+          <div id="homeCreatedProjects" class="created-project-list"></div>
+          <div class="sectionhead"><div><div class="eyebrow">Ready to start</div><h2>My Templates</h2><p>Choose a template to start a project.</p></div></div>
+          <div class="template-grid" id="homeTemplates"></div>
+          <div class="sectionhead"><div><div class="eyebrow">A little of everything</div><h2>Recent moments</h2><p>Your latest photos, thoughts and voice notes.</p></div></div>
+          <div class="placeholder-card" aria-label="Recent moments placeholder"></div>
+        </section>
+        <section id="page-projects" class="page" hidden><h2 class="page-title">My Projects</h2><div id="projectsMiniRenovation"></div><div id="projectsCreatedProjects" class="created-project-list"></div></section>
+        <section id="page-templates" class="page" hidden><div class="sectionhead"><div><div class="eyebrow">Start with a FieldWorks template</div><h2>My Templates</h2><p>Choose a template to start a project with its milestones already organised.</p></div><button class="account-action" type="button" onclick="openCreateProjectCard()">Create blank project</button></div><div class="template-grid" id="templateGrid"></div></section>
+        <section id="page-moments" class="page" hidden><h2 class="page-title">Recent moments</h2><div class="placeholder-card" aria-label="Recent moments placeholder"></div></section>
+        <section id="page-followups" class="page" hidden><h2 class="page-title">Follow-ups</h2><div class="placeholder-card" aria-label="Follow-ups placeholder"></div></section>
+        <section id="page-archive" class="page" hidden><h2 class="page-title">Archive</h2><div class="placeholder-card" aria-label="Archive placeholder"></div></section>
+        <section id="page-account" class="page" hidden>
+          <div class="sectionhead"><div><div class="eyebrow">Your FieldWorks profile</div><h2>My Account</h2><p>Manage your sign-in and subscription.</p></div></div>
+          <article class="account-page-card">
+            <div class="account-page-avatar" id="accountPageAvatar">G</div>
+            <div class="account-page-info"><span id="accountPageLabel">WORKING AS</span><strong id="accountPageEmail">Guest</strong><p id="accountPageMessage">Sign in to connect your account and manage a subscription.</p></div>
+            <div class="account-page-actions">
+              <button class="account-action" id="accountPageSignIn" type="button" onclick="openLoginCard()">Sign in</button>
+              <button class="account-action" id="accountPageSignOut" type="button" hidden>Sign out</button>
+            </div>
+          </article>
+          <section class="subscription-card" aria-labelledby="subscriptionTitle">
+            <div class="subscription-heading"><div><div class="eyebrow">Google Play</div><h3 id="subscriptionTitle">My subscription</h3><p id="subscriptionStatus">Sign in to check or manage a subscription.</p></div><button class="account-action restore-action" id="restoreSubscription" type="button">Restore purchase</button></div>
+            <div class="plan-grid">
+              <article class="plan-card"><span class="plan-kicker">For students</span><h4>Student</h4><div class="plan-price" id="studentPrice">Price shown in Google Play</div><p>Full FieldWorks access for one named student account.</p><button class="plan-button" type="button" data-plan-product="fw2026_stu">Subscribe</button><small>Six-month renewal. Cancel any time in Google Play. For currently enrolled students.</small></article>
+              <article class="plan-card plan-featured"><span class="plan-kicker">For personal projects</span><h4>Personal</h4><div class="plan-price" id="personalPrice">Price shown in Google Play</div><p>Full FieldWorks access for one named user account.</p><button class="plan-button" type="button" data-plan-product="fw2026">Subscribe</button><small>Six-month renewal. Cancel any time in Google Play.</small></article>
+            </div>
+            <p id="billingStatus" class="billing-status">Connect to Google Play to load the available subscription plans.</p>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <nav class="tabs" aria-label="FieldWorks pages">
+      <button class="tab active" type="button" data-page="home" onclick="showFieldWorksPage('home')">⌂<small>Home</small></button>
+      <button class="tab" type="button" data-page="projects" onclick="showFieldWorksPage('projects')"><svg class="project-nav-icon project-checklist-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 4.5h9A2.5 2.5 0 0 1 20 7v4.2M8.5 4.5V3.7a2.7 2.7 0 0 1 5.4 0v.8M8.5 4.5H6A2.5 2.5 0 0 0 3.5 7v13A2.5 2.5 0 0 0 6 22.5h6.4"/><path d="m6.5 9.5 1.2 1.2 2-2M11.5 10H17M6.5 14.5l1.2 1.2 2-2M11.5 15h1.8"/></svg><small>Projects</small></button>
+      <button class="tab" type="button" data-page="templates" onclick="showFieldWorksPage('templates')"><svg class="project-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h4l2 2h6A2.5 2.5 0 0 1 20.5 9.5v8A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M3.5 10h17"/></svg><small>Templates</small></button>
+      <button class="tab" type="button" data-page="moments" onclick="showFieldWorksPage('moments')"><svg class="project-nav-icon moments-wand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 20.5 9-9"/><path d="m8 20 8-8"/><path d="m15.5 3 .7 2.8 2.8.7-2.8.7-.7 2.8-.7-2.8-2.8-.7 2.8-.7z"/><path d="m6 3 .4 1.4L8 4.8l-1.6.4L6 7l-.4-1.8L4 4.8l1.6-.4z"/></svg><small>Moments</small></button>
+      <button class="tab" type="button" data-page="followups" onclick="showFieldWorksPage('followups')">✦<small>Later</small></button>
+      <button class="tab" type="button" data-page="archive" onclick="showFieldWorksPage('archive')">▤<small>Archive</small></button>
+      <button class="tab" type="button" data-page="account" onclick="showFieldWorksPage('account')">♙<small>Account</small></button>
+    </nav>
+
+    
+    
+    <div id="artifactAlbumOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card artifact-album-card" role="dialog" aria-modal="true" aria-labelledby="artifactAlbumTitle">
+        <div class="artifact-card-head"><div><h2 id="artifactAlbumTitle">Project album</h2><p id="artifactAlbumSummary"></p></div><button class="artifact-close" type="button" data-close-artifact aria-label="Close album">×</button></div>
+        <div class="artifact-album-stage"><div id="artifactAlbumMedia"></div><button id="artifactAlbumPrev" class="artifact-album-arrow" type="button" aria-label="Previous item">‹</button><button id="artifactAlbumNext" class="artifact-album-arrow" type="button" aria-label="Next item">›</button></div>
+        <div class="artifact-album-meta"><span id="artifactAlbumCount"></span><small id="artifactAlbumTimestamp"></small></div>
+        <label class="artifact-album-note-label" for="artifactAlbumNote">Notes for this album</label>
+        <textarea id="artifactAlbumNote" class="artifact-note-text" placeholder="Write a note about this upload batch…"></textarea>
+        <div class="artifact-actions"><button id="saveArtifactAlbumNote" class="artifact-action primary" type="button">Save album note</button><button id="addArtifactAlbumVoice" class="artifact-action" type="button">🎙 Add voice note</button></div>
+        <div id="artifactAlbumVoices" class="artifact-album-voices"></div>
+      </section>
+    </div>
+
+    <div id="mediaSourceOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card" role="dialog" aria-modal="true" aria-labelledby="mediaSourceTitle">
+        <div class="artifact-card-head"><div><h2 id="mediaSourceTitle">Add media</h2><p>Capture a new moment or choose a file from this device.</p></div><button class="artifact-close" type="button" data-close-artifact aria-label="Close media menu">×</button></div>
+        <div class="artifact-options">
+          <button class="artifact-option" type="button" data-media-action="camera"><span class="artifact-option-icon">📷</span><span><strong id="mediaCaptureLabel">Take a photo</strong><small>Open the camera</small></span></button>
+          <button class="artifact-option" type="button" data-media-action="device"><span class="artifact-option-icon">⌁</span><span><strong id="mediaChooseLabel">Choose photos</strong><small>Browse device storage</small></span></button>
+        </div>
+        <p id="mediaSourceStatus" class="artifact-status" role="status"></p>
+      </section>
+    </div>
+    <div id="noteArtifactOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card" role="dialog" aria-modal="true" aria-labelledby="noteArtifactTitle">
+        <div class="artifact-card-head"><div><h2 id="noteArtifactTitle">Write a note</h2><p>Add a detail to this project journal.</p></div><button class="artifact-close" type="button" data-close-artifact aria-label="Close note card">×</button></div>
+        <textarea id="noteArtifactText" class="artifact-note-text" maxlength="3000" placeholder="What would you like to remember?"></textarea>
+        <p id="noteArtifactStatus" class="artifact-status" role="status"></p>
+        <div class="artifact-actions"><button class="artifact-action" type="button" data-close-artifact>Cancel</button><button id="saveNoteArtifact" class="artifact-action primary" type="button">Save note</button></div>
+      </section>
+    </div>
+    <div id="voiceArtifactOverlay" class="artifact-overlay" hidden>
+      <section class="artifact-card" role="dialog" aria-modal="true" aria-labelledby="voiceArtifactTitle">
+        <div class="artifact-card-head"><div><h2 id="voiceArtifactTitle">Voice note</h2><p>Record a spoken project update.</p></div><button id="cancelVoiceArtifact" class="artifact-close" type="button" aria-label="Close voice note">×</button></div>
+        <p id="voiceArtifactStatus" class="artifact-status" role="status">Tap Record and allow microphone access.</p>
+        <div class="artifact-actions"><button id="startVoiceArtifact" class="artifact-action primary" type="button">Record</button><button id="stopVoiceArtifact" class="artifact-action primary" type="button" hidden>Stop &amp; save</button><button id="cancelVoiceArtifactButton" class="artifact-action" type="button">Cancel</button></div>
+      </section>
+    </div>
+
+    <div id="createProjectOverlay" class="create-project-overlay" hidden>
+      <section class="create-project-card" role="dialog" aria-modal="true" aria-labelledby="createProjectTitle">
+        <div class="create-project-head"><div><h2 id="createProjectTitle">Create project</h2><p>Give your project a name and a little context.</p></div><button id="closeCreateProject" class="create-project-close" type="button" aria-label="Close create project card">×</button></div>
+        <form id="createProjectForm" class="create-project-form">
+          <div class="create-project-field"><label for="newProjectName">Project name</label><input id="newProjectName" name="name" maxlength="80" placeholder="e.g. Home renovation" autocomplete="off" required></div>
+          <div class="create-project-field"><label for="newProjectType">Type of project</label><select id="newProjectType" name="type"><option>Construction</option><option>Catering</option><option>Field Trips</option><option>Garden Works</option><option>Farms &amp; Agriculture</option><option>Birthday Party</option><option>Charity Function</option></select><div id="projectTemplateStages" class="template-hint" hidden></div></div>
+          <div class="create-project-field"><label for="newProjectDescription">A little about it</label><textarea id="newProjectDescription" name="description" maxlength="500" placeholder="What are you working on?"></textarea></div>
+          <div class="create-project-actions"><button id="cancelCreateProject" class="create-project-cancel" type="button">Cancel</button><button class="create-project-submit" type="submit">Create project</button></div>
+        </form>
+      </section>
+    </div>
+
+    <div id="projectMilestonesOverlay" class="project-milestones-overlay" hidden>
+      <section class="project-milestones-dialog" role="dialog" aria-modal="true" aria-labelledby="projectMilestonesTitle">
+        <header class="project-milestones-header">
+          <div><h2 id="projectMilestonesTitle">Project milestones</h2><p>Rename the stages or add more for this project. Set the current stage and dates as needed.</p></div>
+          <button type="button" class="project-milestones-close" data-close-project-milestones aria-label="Close project milestones">×</button>
+        </header>
+        <div class="project-milestones-content">
+          <label class="project-milestones-current">Current stage<select id="projectMilestonesCurrentStage" aria-label="Current project stage"></select></label>
+          <div id="projectMilestoneEditList" class="project-milestone-edit-list"></div>
+          <button type="button" class="project-milestone-add" data-add-project-stage>＋ Add stage</button>
+        </div>
+        <footer class="project-milestones-footer">
+          <button type="button" class="project-milestones-later" data-close-project-milestones>Maybe later</button>
+          <button type="button" class="project-milestones-save" data-save-project-milestones><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h13l3 3v15H4z"></path><path d="M8 3v6h8V3M8 21v-8h8v8"></path></svg>Stages</button>
+        </footer>
+      </section>
+    </div>
+
+    <div id="loginOverlay" class="login-overlay" hidden>
+      <section class="login-card" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+        <div class="login-head">
+          <div><h2 id="loginTitle">Sign in to FieldWorks</h2><p>Use your FieldWorks account to sign in.</p></div>
+          <button class="login-close" type="button" aria-label="Close sign-in card" onclick="closeLoginCard()">×</button>
+        </div>
+        <div id="loginSocials" class="login-socials" aria-label="Sign in with a social account">
+          <button class="login-social" type="button" data-social="Google">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11c-.5 2.5-1.9 4.6-4 6v5h6.5c3.8-3.5 6.1-8.6 6.1-14.7z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.5-5c-1.8 1.2-4.1 2-7 2-5.3 0-9.8-3.6-11.4-8.4H5.9v5.2C9.3 39.6 16.1 44 24 44z"/><path fill="#FBBC05" d="M12.6 27.8a12 12 0 0 1 0-7.6V15H5.9a20 20 0 0 0 0 17.9l6.7-5.1z"/><path fill="#EA4335" d="M24 12c3 0 5.7 1 7.8 3.1l5.8-5.8C34.1 6 29.5 4 24 4 16.1 4 9.3 8.4 5.9 15l6.7 5.2C14.2 15.6 18.7 12 24 12z"/></svg>
+            <span>Continue with Google</span>
+          </button>
+          <button class="login-social" type="button" data-social="Facebook">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="8" fill="#1877F2"/><path fill="#fff" d="M27.7 41V26.2h5l.8-5.8h-5.8v-3.7c0-1.7.5-2.9 2.9-2.9h3.1V8.6c-.5-.1-2.5-.2-4.8-.2-4.7 0-7.9 2.9-7.9 8.1v4h-5.3v5.8H21V41h6.7z"/></svg>
+            <span>Continue with Facebook</span>
+          </button>
+        </div>
+        <div id="loginDivider" class="login-divider">or sign in with email</div>
+        <form id="loginForm" class="login-form">
+          <div id="signupNameField" class="login-field" hidden>
+            <label for="loginName">Your name</label>
+            <input id="loginName" name="name" autocomplete="name" placeholder="Your name">
+          </div>
+          <div class="login-field">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+          </div>
+          <div class="login-field">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="At least 6 characters" required>
+          </div>
+          <div class="login-links">
+            <button id="forgotPassword" class="login-link" type="button">Forgot password?</button>
+            <button id="toggleAuthMode" class="login-link" type="button">Create account</button>
+          </div>
+          <button id="loginSubmit" class="login-submit" type="submit">Sign in</button>
+          <p id="loginStatus" class="login-status" role="status" aria-live="polite"></p>
+        </form>
+        <div id="signedInPanel" class="login-account" hidden>
+          <p>Signed in as <strong id="signedInEmail"></strong></p>
+          <button id="signOutButton" class="login-signout" type="button">Sign out</button>
+          <p id="accountStatus" class="login-status" role="status" aria-live="polite"></p>
+        </div>
+        <button class="login-guest" type="button" onclick="closeLoginCard()">Continue as guest</button>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const pageTitles = {
+      home: "My FieldWorks",
+      projects: "My Projects",
+      templates: "My Templates",
+      moments: "Recent moments",
+      followups: "Follow-ups",
+      archive: "Archive",
+      account: "My Account"
+    };
+
+
+    const MINI_RENOVATION_DEMO = {
+      name: "Mini Renovation",
+      type: "Construction",
+      description: "A small home renovation with sample progress photos and milestone updates.",
+      location: "Kuala Lumpur",
+      issueCount: 0,
+      reminderCount: 1,
+      issues: [],
+      reminders: [{id:"demo-reminder-gutter", text:"Check the kitchen gutter joint after the next rain.", targetDate:"2026-10-31", done:false}],
+      expenses: [],
+      spent: 8420,
+      budget: 11200,
+      stage: 2,
+      stageDates: [],
+      stages: ["Plan & prepare", "Cabinet installation", "Finishing touches", "Complete"],
+      latestMoment: "25 Oct 2026 · 05:30 pm",
+      photos: [
+        { src: "mini-renovation-progress.jpg", alt: "Cabinet installation underway with pale wood fronts and tile backsplash" },
+        { src: "mini-renovation-finishing.jpg", alt: "Renovation finishing touches with cabinets installed" }
+      ],
+      journal: [
+        { date: "18 Oct · Sample milestone", text: "Old cabinets cleared. Measurements checked, with plumbing and power points marked before installation." },
+        { date: "22 Oct · Sample progress photo", text: "Cabinet installation is underway. The pale-wood fronts and tile backsplash are in; checking the countertop joins." },
+        { date: "25 Oct · Sample progress photo", text: "Finishing touches: hardware fitted and sealant drying. Next up is the final clean and walkthrough." }
+      ]
+    };
+function loadDemoProjectState() {
+      if (demoProjectStateLoaded) return;
+      demoProjectStateLoaded = true;
+      try {
+        const saved = JSON.parse(localStorage.getItem(DEMO_PROJECT_STATE_KEY) || "{}");
+        if (Array.isArray(saved.stageNames)) MINI_RENOVATION_DEMO.stageNames = saved.stageNames;
+        const demoStageCount = (MINI_RENOVATION_DEMO.stageNames && MINI_RENOVATION_DEMO.stageNames.length) || MINI_RENOVATION_DEMO.stages.length;
+        if (Number.isInteger(saved.stage)) MINI_RENOVATION_DEMO.stage = Math.max(0, Math.min(demoStageCount - 1, saved.stage));
+        if (Array.isArray(saved.stageDates)) MINI_RENOVATION_DEMO.stageDates = saved.stageDates;
+        if (Number.isInteger(saved.selectedStage)) MINI_RENOVATION_DEMO.selectedStage = Math.max(0, Math.min(demoStageCount - 1, saved.selectedStage));
+        if (Number.isInteger(saved.albumStageFilter)) MINI_RENOVATION_DEMO.albumStageFilter = Math.max(0, Math.min(demoStageCount - 1, saved.albumStageFilter));
+        if (typeof saved.comments === "string") MINI_RENOVATION_DEMO.comments = saved.comments;
+        if (Array.isArray(saved.issues)) MINI_RENOVATION_DEMO.issues = saved.issues;
+        if (Array.isArray(saved.reminders)) MINI_RENOVATION_DEMO.reminders = saved.reminders;
+        if (Array.isArray(saved.expenses)) MINI_RENOVATION_DEMO.expenses = saved.expenses;
+        if (Number.isFinite(Number(saved.spent))) MINI_RENOVATION_DEMO.spent = Number(saved.spent);
+        if (Number.isFinite(Number(saved.budget))) MINI_RENOVATION_DEMO.budget = Number(saved.budget);
+      } catch (error) {}
+    }
+    function saveDemoProjectState() {
+      try {
+        localStorage.setItem(DEMO_PROJECT_STATE_KEY, JSON.stringify({
+          stage: MINI_RENOVATION_DEMO.stage,
+          selectedStage: MINI_RENOVATION_DEMO.selectedStage,
+          albumStageFilter: Number.isInteger(MINI_RENOVATION_DEMO.albumStageFilter) ? MINI_RENOVATION_DEMO.albumStageFilter : null,
+          stageDates: MINI_RENOVATION_DEMO.stageDates || [],
+          stageNames: MINI_RENOVATION_DEMO.stageNames || [],
+          comments: MINI_RENOVATION_DEMO.comments || "",
+          issues: MINI_RENOVATION_DEMO.issues || [],
+          reminders: MINI_RENOVATION_DEMO.reminders || [],
+          expenses: MINI_RENOVATION_DEMO.expenses || [],
+          spent: Number(MINI_RENOVATION_DEMO.spent) || 0,
+          budget: Number(MINI_RENOVATION_DEMO.budget) || 0
+        }));
+        return true;
+      } catch (error) { return false; }
+    }
+    function getProjectCardRecord(projectId) {
+      if (projectId === "demo-mini-renovation") { loadDemoProjectState(); return MINI_RENOVATION_DEMO; }
+      loadCreatedProjects();
+      return createdProjects.find(function(project) { return String(project.id) === String(projectId); }) || null;
+    }
+    function saveProjectCardRecord(projectId) {
+      if (projectId === "demo-mini-renovation") return saveDemoProjectState();
+      return saveCreatedProjects();
+    }
+    function projectCardStageNames(project, projectId) {
+      if (Array.isArray(project.stageNames) && project.stageNames.length) return project.stageNames;
+      if (projectId === "demo-mini-renovation" && Array.isArray(project.stages) && project.stages.length) return project.stages;
+      const byId = FIELDWORKS_TEMPLATES.find(function(template) { return template.id === project.templateId; });
+      const byType = FIELDWORKS_TEMPLATES.find(function(template) { return template.type === project.type; });
+      const template = byId || byType;
+      return template && Array.isArray(template.stages) && template.stages.length ? template.stages : FIELDWORKS_TEMPLATES[0].stages;
+    }
+    function formatProjectMilestoneDate(value) {
+      if (!value) return "—";
+      const parts = String(value).split("-");
+      return parts.length === 3 ? parts[2] + "/" + parts[1] + "/" + parts[0] : String(value);
+    }
+    function renderProjectStageControls(projectId, project) {
+      const safeId = escapeProjectText(projectId);
+      const stages = projectCardStageNames(project, projectId);
+      const currentStage = Math.max(0, Math.min(stages.length - 1, Number(project.stage) || 0));
+      const selectedStage = Math.max(0, Math.min(stages.length - 1, Number.isInteger(Number(project.selectedStage)) ? Number(project.selectedStage) : currentStage));
+      const track = stages.map(function(stage, index) {
+        const isCurrent = index === currentStage, isSelected = index === selectedStage;
+        const state = (index < currentStage ? " done" : "") + (isCurrent ? " current" : "") + (isSelected ? " selected" : "");
+        return '<button type="button" class="project-stage-step' + state + '" data-project-stage-select="' + safeId + '" data-stage-index="' + index + '" aria-label="View artifacts from ' + escapeProjectText(stage) + '" aria-pressed="' + isSelected + '" title="' + escapeProjectText(stage) + '"></button>';
+      }).join("");
+      const labels = stages.map(function(stage, index) {
+        const dates = (Array.isArray(project.stageDates) ? project.stageDates[index] : null) || {};
+        const selected = index === selectedStage, current = index === currentStage;
+        return '<button type="button" class="project-stage-label' + (selected ? ' selected' : '') + (current ? ' current' : '') + '" data-project-stage-select="' + safeId + '" data-stage-index="' + index + '" aria-pressed="' + selected + '"><strong>' + escapeProjectText(stage) + '</strong><span class="project-stage-dates-preview"><span>S ' + formatProjectMilestoneDate(dates.start) + '</span><span>E ' + formatProjectMilestoneDate(dates.end) + '</span></span></button>';
+      }).join("");
+      return '<section class="project-stage-controls"><div class="project-journey-heading"><span>Project journey · tap a stage to see its artifacts</span><button type="button" class="project-current-picker" data-open-project-milestones="' + safeId + '" aria-label="Edit project milestones. Current stage: ' + escapeProjectText(stages[currentStage]) + '">' + escapeProjectText(stages[currentStage]) + '</button></div><div class="project-journey-track" aria-label="Project journey" style="gap:7px">' + track + '</div><div class="project-stage-labels" style="grid-template-columns:repeat(' + stages.length + ',minmax(0,1fr))">' + labels + '</div></section>';
+    }
+    let activeProjectMilestoneId = "";
+    let projectMilestoneDraft = null;
+    function renderProjectMilestoneEditorRows() {
+      const list = document.getElementById("projectMilestoneEditList");
+      const selector = document.getElementById("projectMilestonesCurrentStage");
+      if (!projectMilestoneDraft || !list || !selector) return;
+      selector.innerHTML = projectMilestoneDraft.names.map(function(name,index) {
+        return '<option value="' + index + '"' + (index === projectMilestoneDraft.currentStage ? ' selected' : '') + '>' + escapeProjectText(name || ("Stage " + (index + 1))) + '</option>';
+      }).join("");
+      list.innerHTML = projectMilestoneDraft.names.map(function(name,index) {
+        const date = projectMilestoneDraft.dates[index] || {};
+        const isCurrent = index === projectMilestoneDraft.currentStage;
+        return '<article class="project-milestone-edit-card"><div class="project-milestone-edit-title"><input class="project-milestone-name" type="text" maxlength="80" data-milestone-name="' + index + '" value="' + escapeProjectText(name) + '" aria-label="Stage ' + (index + 1) + ' name"><label class="project-milestone-current-radio"><input type="radio" name="projectMilestoneCurrentStage" value="' + index + '" data-milestone-current="' + index + '"' + (isCurrent ? ' checked' : '') + '><span>Current stage</span></label></div><div class="project-milestone-date-grid"><label>Start date<input type="date" data-milestone-start="' + index + '" value="' + escapeProjectText(date.start || "") + '"></label><label>End date<input type="date" data-milestone-end="' + index + '" value="' + escapeProjectText(date.end || "") + '"></label></div></article>';
+      }).join("");
+    }
+    function openProjectMilestones(projectId) {
+      const project = getProjectCardRecord(projectId);
+      if (!project) return;
+      const stages = projectCardStageNames(project, projectId);
+      activeProjectMilestoneId = String(projectId);
+      projectMilestoneDraft = {
+        names: stages.slice(),
+        dates: stages.map(function(_,index) { return Object.assign({}, (Array.isArray(project.stageDates) ? project.stageDates[index] : null) || {}); }),
+        currentStage: Math.max(0, Math.min(stages.length - 1, Number(project.stage) || 0))
+      };
+      document.getElementById("projectMilestonesTitle").textContent = "Project milestones";
+      renderProjectMilestoneEditorRows();
+      document.getElementById("projectMilestonesOverlay").hidden = false;
+    }
+    function closeProjectMilestones() {
+      const overlay = document.getElementById("projectMilestonesOverlay");
+      if (overlay) overlay.hidden = true;
+      activeProjectMilestoneId = "";
+      projectMilestoneDraft = null;
+    }
+    function saveProjectMilestones() {
+      if (!projectMilestoneDraft || !activeProjectMilestoneId) return;
+      const names = projectMilestoneDraft.names.map(function(name) { return String(name || "").trim(); });
+      if (names.some(function(name) { return !name; })) { toast("Enter a name for every stage."); return; }
+      for (let index=0; index<names.length; index++) {
+        const date = projectMilestoneDraft.dates[index] || {};
+        if (date.start && date.end && date.end < date.start) { toast("The end date must be after the start date for " + names[index] + "."); return; }
+      }
+      const project = getProjectCardRecord(activeProjectMilestoneId);
+      if (!project) return;
+      project.stageNames = names;
+      project.stageDates = projectMilestoneDraft.dates.slice(0,names.length);
+      project.stage = Math.max(0,Math.min(names.length-1,Number(projectMilestoneDraft.currentStage)||0));
+      project.selectedStage = project.stage;
+      saveProjectCardRecord(activeProjectMilestoneId);
+      closeProjectMilestones();
+      refreshProjectCards();
+    }
+    function renderProjectOverallNotes(projectId, project) {
+      const safeId = escapeProjectText(projectId);
+      return '<section class="project-overall-notes"><label>Overall project comments / notes<textarea data-project-overall-notes="' + safeId + '" placeholder="Add a note about the whole project…">' + escapeProjectText(project.comments || "") + '</textarea></label><div class="project-overall-notes-actions"><span>Project level · separate from album notes</span><button type="button" data-save-project-notes="' + safeId + '">Save notes</button></div></section>';
+    }
+    function projectCardMediaMarkup(project, projectId, isDemo) {
+      let media = [];
+      let allPhotoCount = 0;
+      const albums = projectAlbumRecords(projectId).slice().sort(function(a, b) {
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      });
+      albums.forEach(function(album) {
+        const items = albumMediaItems(projectId, album).filter(function(item) { return item.type === "photo" && item.url; });
+        allPhotoCount += items.length;
+        items.forEach(function(item) { if (media.length < 5) media.push(item); });
+      });
+      if (isDemo) {
+        (project.photos || []).forEach(function(item) {
+          if (media.length < 5) media.push({ type:"photo", url:item.src, alt:item.alt });
+        });
+        if (!allPhotoCount) allPhotoCount = (project.photos || []).length;
+      }
+      const icon = project.type === "Garden Works" || project.type === "Farms & Agriculture" ? "🌱" :
+        project.type === "Catering" || project.type === "Birthday Party" ? "✿" :
+        project.type === "Field Trips" ? "⌁" : "⌂";
+      if (!media.length) media.push({type:"placeholder"});
+      function photoMarkup(item, index, extraClass) {
+        const content = item.type === "photo" && item.url
+          ? '<img src="' + escapeProjectText(item.url) + '" alt="' + escapeProjectText(item.alt || "Project progress photo") + '">'
+          : '<span class="project-media-placeholder" aria-hidden="true">' + icon + '</span>';
+        return '<span class="project-collage-photo' + (extraClass ? ' ' + extraClass : '') + '" data-photo-index="' + index + '">' + content + '</span>';
+      }
+      const lead = photoMarkup(media[0], 0, "project-collage-lead");
+      const secondary = media.slice(1, 5).map(function(item, index) {
+        return photoMarkup(item, index + 1, "");
+      }).join("");
+      const collageClass = "project-photo-collage secondary-" + Math.max(0, media.length - 1);
+      const countLabel = allPhotoCount ? "Progress · " + allPhotoCount + " photos" : "Project journal";
+      return '<div class="demo-project-media"><div class="' + collageClass + '">' + lead + '<div class="project-collage-secondary">' + secondary + '</div></div><span class="demo-photo-label">' + countLabel + '</span></div>';
+    }
+    function renderUnifiedProjectCard(project, isDemo) {
+      const projectId = isDemo ? "demo-mini-renovation" : project.id;
+      if (isDemo) loadDemoProjectState();
+      const safeId = escapeProjectText(projectId);
+      const type = escapeProjectText(project.type || "Project");
+      const name = escapeProjectText(project.name || "Untitled project");
+      const description = escapeProjectText(project.description || "No description added yet.");
+      const createdDate = new Date(project.createdAt || Date.now());
+      const created = Number.isNaN(createdDate.getTime()) ? "" : createdDate.toLocaleDateString("en-MY", {day:"numeric",month:"short",year:"numeric"});
+      const artifacts = projectArtifactList(projectId);
+      const latestArtifact = artifacts.slice().sort(function(a, b) {
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      })[0];
+      const latest = isDemo ? project.latestMoment : latestArtifact
+        ? new Date(latestArtifact.createdAt || Date.now()).toLocaleString("en-MY", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})
+        : created;
+      const issues = Array.isArray(project.issues) ? project.issues.length : (Number(project.issueCount) || 0);
+      const reminders = Array.isArray(project.reminders) ? project.reminders.filter(function(item) { return !item.done; }).length : (Number(project.reminderCount) || 0);
+      const spent = Number(project.spent) || 0;
+      const notes = isDemo ? (project.journal || []).map(function(note) {
+        return '<li><strong>' + escapeProjectText(note.date) + '</strong>' + escapeProjectText(note.text) + '</li>';
+      }).join("") : "";
+      return '<article class="demo-project-card shared-project-card' + (readPinnedProjectIds().indexOf(projectId) >= 0 ? ' is-pinned' : '') + (activeProjectTrackingId===String(projectId) ? ' is-tracking-open' : '') + '" data-project-card="' + safeId + '">' +
+        projectCardMediaMarkup(project, projectId, isDemo) +
+        '<div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + type + '</span><button type="button" class="demo-project-favorite" data-favorite-project="' + safeId + '" aria-pressed="' + isProjectFavorite(projectId) + '" aria-label="' + (isProjectFavorite(projectId) ? 'Remove ' + name + ' from favourites' : 'Add ' + name + ' to favourites') + '" title="' + (isProjectFavorite(projectId) ? 'Remove from favourites' : 'Add to favourites') + '">' + (isProjectFavorite(projectId) ? '★' : '☆') + '</button></div>' +
+        '<h3 class="project-title-line" title="Long-press to pin or unpin this project." aria-label="' + name + '. Long-press to pin or unpin this project."><span class="project-title-copy">' + name + (readPinnedProjectIds().indexOf(projectId) >= 0 ? '<svg class="pinned-project-icon" viewBox="0 0 24 32" role="img" aria-label="Pinned project" title="Pinned project"><ellipse cx="12" cy="30.4" rx="5.1" ry="1.35" fill="#111"/><path d="M9.6 13.1 13.1 14.2 7 29.9 5.8 29.6z" fill="#85898d"/><path d="m12.8 14.1 2.3 1-7.9 14.7-1.1-.2z" fill="#b7babd"/><path d="m12.1 13.3 2.4.8-1.5 2-2.8-1z" fill="#666a6e"/><circle cx="12" cy="8" r="7.1" fill="#ed1016"/><path d="M5.1 9.1a7.1 7.1 0 0 0 13.8 0 7.1 7.1 0 0 1-13.8 0" fill="#c90008"/><circle cx="12" cy="5.3" r="1.25" fill="#fff"/></svg>' : '') + '</span></h3><p class="demo-project-description">' + description + '</p>' +
+        '<div class="demo-project-stats"><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="issues">Issues <b>' + issues + '</b></button><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="reminders">Reminders <b>' + reminders + '</b></button><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="budget">Spent <b>RM ' + spent.toLocaleString("en-MY") + '</b></button></div>' +
+        renderProjectTrackingInline(projectId, project) +
+        '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
+        renderProjectAlbums(projectId) +
+        renderProjectStageControls(projectId, project) +
+        renderProjectOverallNotes(projectId, project) +
+        (isDemo && notes ? '<details class="demo-journal"><summary>View sample project notes</summary><ul>' + notes + '</ul><p>Sample budget · RM ' + spent.toLocaleString("en-MY") + '</p></details>' : "") +
+        renderAddArtifactControls(projectId) + '</div></article>';
+    }
+    function miniRenovationCardMarkup() {
+      return renderUnifiedProjectCard(MINI_RENOVATION_DEMO, true);
+    }
+    function renderMiniRenovationDemo() { renderCreatedProjects(); }
+
+
+    let createdProjects = [];
+    let createdProjectsLoaded = false;
+    const CREATED_PROJECTS_KEY = "fieldworks.debug.created-projects.v1";
+    const DEMO_ARTIFACTS_KEY = "fieldworks.debug.demo-artifacts.v1";
+    const DEMO_ALBUMS_KEY = "fieldworks.debug.demo-albums.v1";
+    const DEMO_PROJECT_STATE_KEY = "fieldworks.debug.demo-project-state.v1";
+    let demoArtifacts = [];
+    const FIELDWORKS_TEMPLATES = [{"id":"construction","name":"Construction project","type":"Construction","icon":"⌂","description":"Plan a renovation or build, follow each stage, and keep photos, notes, and costs together.","example":"e.g. Home renovation","stages":["Discovery & Site visit","Initiation","In Progress","Handing Over","Completed"]},{"id":"catering","name":"Catering & events","type":"Catering","icon":"✿","description":"Organise an event or catering job with a simple project journal for every update.","example":"e.g. Harvest day catering","stages":["Plan the menu","Book suppliers","Prepare","Event day","Wrap up"]},{"id":"field-trips","name":"Field study & trips","type":"Field Trips","icon":"⌁","description":"Capture field observations, trip notes, media, and follow-ups in one place.","example":"e.g. Riverbank field study","stages":["Plan the visit","Confirm access","Collect observations","Review findings","Share report"]},{"id":"garden-works","name":"Garden Works","type":"Garden Works","icon":"🌿","description":"Plan the garden, prepare the site, track planting, and keep care notes together.","example":"e.g. Backyard garden","stages":["Plan the garden","Prepare the ground","Planting","Care and maintenance","Garden complete"]},{"id":"farms-agriculture","name":"Farms & Agriculture","type":"Farms & Agriculture","icon":"🌱","description":"Plan land, crop cycles, field care, harvest, and post-harvest work.","example":"e.g. Small farm project","stages":["Land assessment & planning","Land preparation & inputs","Planting & establishment","Crop care & monitoring","Harvest & post-harvest review"]},{"id":"birthday-party","name":"Birthday Party","type":"Birthday Party","icon":"🎂","description":"Organise the date, guests, venue, and party-day details in one project.","example":"e.g. Aina’s birthday","stages":["Choose date and theme","Guest list and invitations","Book venue and supplies","Party day","Thank you and wrap up"]},{"id":"charity-function","name":"Charity Function","type":"Charity Function","icon":"♥","description":"Coordinate the cause, team, promotion, event day, and supporter follow-up.","example":"e.g. Community fundraiser","stages":["Set purpose and target","Form the team","Plan venue and programme","Promote and gather support","Function day","Report and thank supporters"]}];
+    let selectedProjectTemplateId = "";
+    let demoAlbums = [];
+    let demoProjectStateLoaded = false;
+    let demoArtifactsLoaded = false;
+    let activeArtifactProjectId = "";
+    let activeMediaType = "";
+    let activeAlbumProjectId = "";
+    let activeAlbumId = "";
+    let activeAlbumIndex = 0;
+    let activeVoiceAlbumId = "";
+    let voiceRecording = false;
+
+    function loadDemoArtifacts() {
+      if (demoArtifactsLoaded) return;
+      demoArtifactsLoaded = true;
+      try {
+        const saved = localStorage.getItem(DEMO_ARTIFACTS_KEY);
+        const parsed = saved ? JSON.parse(saved) : [];
+        demoArtifacts = Array.isArray(parsed) ? parsed : [];
+        const savedAlbums = localStorage.getItem(DEMO_ALBUMS_KEY);
+        const parsedAlbums = savedAlbums ? JSON.parse(savedAlbums) : [];
+        demoAlbums = Array.isArray(parsedAlbums) ? parsedAlbums : [];
+      } catch (error) { demoArtifacts = []; demoAlbums = []; }
+    }
+    function projectArtifactList(projectId) {
+      if (projectId === "demo-mini-renovation") { loadDemoArtifacts(); return demoArtifacts; }
+      loadCreatedProjects();
+      const project = createdProjects.find(function(item) { return item.id === projectId; });
+      if (!project) return [];
+      if (!Array.isArray(project.artifacts)) project.artifacts = [];
+      return project.artifacts;
+    }
+    function saveProjectArtifactData(projectId) {
+      if (projectId === "demo-mini-renovation") {
+        try {
+          localStorage.setItem(DEMO_ARTIFACTS_KEY, JSON.stringify(demoArtifacts));
+          localStorage.setItem(DEMO_ALBUMS_KEY, JSON.stringify(demoAlbums));
+          return true;
+        } catch (error) { return false; }
+      }
+      return saveCreatedProjects();
+    }
+    function stageForProject(projectId) {
+      if (projectId === "demo-mini-renovation") return Number(MINI_RENOVATION_DEMO.stage) || 0;
+      const project = createdProjects.find(function(item) { return item.id === projectId; });
+      return project ? Number(project.stage) || 0 : 0;
+    }
+    function makeArtifactAlbum(projectId, createdAt) {
+      return {
+        id: "album-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8),
+        createdAt: createdAt || new Date().toISOString(),
+        stage: stageForProject(projectId),
+        title: "",
+        note: "",
+        items: [],
+        voiceNotes: []
+      };
+    }
+    function projectAlbumRecords(projectId) {
+      const artifacts = projectArtifactList(projectId);
+      let albums;
+      if (projectId === "demo-mini-renovation") albums = demoAlbums;
+      else {
+        const project = createdProjects.find(function(item) { return item.id === projectId; });
+        if (!project) return [];
+        if (!Array.isArray(project.albums)) project.albums = [];
+        albums = project.albums;
+      }
+      let changed = false;
+      const byId = {};
+      albums.forEach(function(album, index) {
+        if (!album.id) { album.id = "album-legacy-" + index; changed = true; }
+        if (!Array.isArray(album.items)) album.items = [];
+        if (!Array.isArray(album.voiceNotes)) album.voiceNotes = [];
+        byId[String(album.id)] = album;
+      });
+      const unregistered = {};
+      const unregisteredOrder = [];
+      const orphaned = [];
+      artifacts.forEach(function(item) {
+        if (item.type !== "photo" && item.type !== "video") return;
+        let album = item.albumId ? byId[String(item.albumId)] : null;
+        if (!album && item.albumId) {
+          const key = String(item.albumId);
+          album = unregistered[key];
+          if (!album) {
+            album = unregistered[key] = {
+              id: key,
+              createdAt: item.createdAt || new Date().toISOString(),
+              stage: Math.max(0, Number(item.stage) || stageForProject(projectId)),
+              title: "",
+              note: "",
+              items: [],
+              voiceNotes: []
+            };
+            unregisteredOrder.push(album);
+            byId[key] = album;
+            changed = true;
+          }
+        }
+        if (!album) { orphaned.push(item); return; }
+        if (album.items.indexOf(item.id) < 0) {
+          album.items.push(item.id);
+          changed = true;
+        }
+      });
+      unregisteredOrder.forEach(function(album) { albums.push(album); });
+      function mediaTime(item) {
+        const value = item.createdAt;
+        const parsed = typeof value === "number" ? value : Date.parse(value || "");
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+      orphaned.sort(function(a, b) {
+        return mediaTime(a) - mediaTime(b) || String(a.id).localeCompare(String(b.id));
+      });
+      let batch = [];
+      let lastTime = 0;
+      let lastStage = -1;
+      function flushLegacyBatch() {
+        if (!batch.length) return;
+        const first = batch[0];
+        const stage = Math.max(0, Number(first.stage) || stageForProject(projectId));
+        const time = mediaTime(first);
+        let id = "legacy-batch-" + (time || Date.now()) + "-" + stage;
+        let suffix = 1;
+        while (byId[id]) id = "legacy-batch-" + (time || Date.now()) + "-" + stage + "-" + suffix++;
+        const album = {
+          id: id,
+          createdAt: first.createdAt || new Date(time || Date.now()).toISOString(),
+          stage: stage,
+          title: "",
+          note: "",
+          items: [],
+          voiceNotes: []
+        };
+        batch.forEach(function(item) {
+          item.albumId = id;
+          album.items.push(item.id);
+        });
+        albums.push(album);
+        byId[id] = album;
+        batch = [];
+        changed = true;
+      }
+      orphaned.forEach(function(item) {
+        const time = mediaTime(item);
+        const stage = Math.max(0, Number(item.stage) || stageForProject(projectId));
+        if (batch.length && (stage !== lastStage || (time && lastTime && time - lastTime > 100))) flushLegacyBatch();
+        batch.push(item);
+        lastTime = time;
+        lastStage = stage;
+      });
+      flushLegacyBatch();
+      const singletonAlbums = albums.filter(function(album) {
+        return String(album.id).indexOf("album-") === 0 &&
+          albumMediaItems(projectId, album).length === 1 &&
+          !album.note && !(album.voiceNotes || []).length;
+      }).sort(function(a, b) {
+        const stageDiff = (Number(a.stage) || 0) - (Number(b.stage) || 0);
+        if (stageDiff) return stageDiff;
+        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+      });
+      let singleAlbumBatch = [];
+      let previousAlbumTime = 0;
+      let previousAlbumStage = -1;
+      function mergeLegacyAlbumBatch() {
+        if (singleAlbumBatch.length > 1) {
+          const primary = singleAlbumBatch[0];
+          singleAlbumBatch.slice(1).forEach(function(source) {
+            const item = albumMediaItems(projectId, source)[0];
+            if (!item) return;
+            if (primary.items.indexOf(item.id) < 0) primary.items.push(item.id);
+            item.albumId = primary.id;
+            const sourceIndex = albums.indexOf(source);
+            if (sourceIndex >= 0) albums.splice(sourceIndex, 1);
+            delete byId[String(source.id)];
+          });
+          changed = true;
+        }
+        singleAlbumBatch = [];
+      }
+      singleAlbumBatch = [];
+      singletonAlbums.forEach(function(album) {
+        const date = new Date(album.createdAt || 0).getTime();
+        const time = Number.isFinite(date) ? date : 0;
+        const stage = Math.max(0, Number(album.stage) || 0);
+        if (singleAlbumBatch.length && (
+          stage !== previousAlbumStage ||
+          !time ||
+          !previousAlbumTime ||
+          time - previousAlbumTime > 100
+        )) mergeLegacyAlbumBatch();
+        singleAlbumBatch.push(album);
+        previousAlbumTime = time;
+        previousAlbumStage = stage;
+      });
+      mergeLegacyAlbumBatch();
+      artifacts.forEach(function(item) {
+        if (item.type !== "voice" || !item.albumId) return;
+        const album = byId[String(item.albumId)];
+        if (album && album.voiceNotes.indexOf(item.id) < 0) {
+          album.voiceNotes.push(item.id);
+          changed = true;
+        }
+      });
+      if (changed) saveProjectArtifactData(projectId);
+      return albums;
+    }
+    function albumMediaItems(projectId, album) {
+      const artifacts = projectArtifactList(projectId);
+      const ids = Array.isArray(album.items) ? album.items : [];
+      return ids.map(function(id) { return artifacts.find(function(item) { return String(item.id) === String(id); }); })
+        .filter(function(item) { return item && (item.type === "photo" || item.type === "video") && item.url; })
+        .sort(function(a, b) { return String(a.createdAt || "").localeCompare(String(b.createdAt || "")); });
+    }
+    function renderProjectAlbums(projectId) {
+      const safeId = escapeProjectText(projectId);
+      const albums = projectAlbumRecords(projectId);
+      const project = projectId === "demo-mini-renovation"
+        ? MINI_RENOVATION_DEMO
+        : createdProjects.find(function(item) { return String(item.id) === String(projectId); });
+      const stageNames = projectCardStageNames(project || {}, projectId);
+      const filterIndex = project && Number.isInteger(Number(project.albumStageFilter)) && project.albumStageFilter !== null
+        ? Math.max(0, Math.min(stageNames.length - 1, Number(project.albumStageFilter)))
+        : null;
+      const selectedStageIndex = project
+        ? Math.max(0, Math.min(stageNames.length - 1, Number(project.selectedStage) || 0))
+        : 0;
+      const grouped = {};
+      albums.forEach(function(album) {
+        if (!albumMediaItems(projectId, album).length) return;
+        const stage = Math.max(0, Math.min(stageNames.length - 1, Number(album.stage) || 0));
+        if (filterIndex !== null && stage !== filterIndex) return;
+        (grouped[stage] || (grouped[stage] = [])).push(album);
+      });
+      const visibleStageIndexes = Object.keys(grouped).sort(function(a,b) { return Number(a)-Number(b); });
+      const albumCount = visibleStageIndexes.reduce(function(sum, stage) { return sum + grouped[stage].length; }, 0);
+      const heading = '<div class="project-albums-heading"><strong>Project albums</strong><small>' +
+        (filterIndex === null
+          ? (albumCount ? albumCount + ' ' + (albumCount === 1 ? 'album' : 'albums') + ' · grouped by stage' : 'Grouped by stage')
+          : escapeProjectText(stageNames[filterIndex] || ("Stage " + (filterIndex + 1))) + ' · ' + albumCount + ' ' + (albumCount === 1 ? 'album' : 'albums')) +
+        (filterIndex === null
+          ? '<button type="button" class="project-albums-show-all" data-filter-albums-to-selected-stage="' + safeId + '">Show ' + escapeProjectText(stageNames[selectedStageIndex] || ("Stage " + (selectedStageIndex + 1))) + '</button>'
+          : '<button type="button" class="project-albums-show-all" data-clear-album-stage-filter="' + safeId + '">Show all</button>') +
+        '</small></div>';
+      const groupsMarkup = visibleStageIndexes.map(function(stageValue) {
+        const stage = Number(stageValue);
+        const stageName = stageNames[stage] || ("Stage " + (stage + 1));
+        const cards = grouped[stage].sort(function(a,b) { return new Date(b.createdAt || 0).getTime()-new Date(a.createdAt || 0).getTime(); }).map(function(album) {
+          const items = albumMediaItems(projectId, album);
+          const preview = items.slice(0,4).map(function(item) {
+            return item.type === "video" ? '<span class="mini-album-video">▶</span>' : '<img src="' + escapeProjectText(item.url) + '" alt="">';
+          }).join("");
+          const date = new Date(album.createdAt || Date.now());
+          const title = escapeProjectText(album.title || (Number.isNaN(date.getTime()) ? "Project album" : date.toLocaleString("en-MY", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})));
+          const notes = (album.note ? 1 : 0) + (album.voiceNotes || []).length;
+          const moveOptions = stageNames.map(function(name,index) {
+            return '<option value="' + index + '"' + (index === stage ? " selected" : "") + '>' + escapeProjectText(name) + '</option>';
+          }).join("");
+          return '<article class="mini-album"><button class="mini-album-open" type="button" data-open-album="' + safeId + '" data-album-id="' + escapeProjectText(album.id) + '"><span class="mini-album-grid">' + preview + '</span><span class="mini-album-title">' + title + '</span><span class="mini-album-meta">' + items.length + ' ' + (items.length === 1 ? 'item' : 'items') + (notes ? ' · ' + notes + ' ' + (notes === 1 ? 'note' : 'notes') : '') + ' · open album</span></button><label class="mini-album-move-label"><span>Move album</span><span class="mini-album-move-arrow" aria-hidden="true">→</span><select aria-label="Move album to another stage" data-move-album-project="' + safeId + '" data-move-album-id="' + escapeProjectText(album.id) + '">' + moveOptions + '</select></label></article>';
+        }).join("");
+        return '<section class="project-album-stage" data-project-album-stage-index="' + stage + '"><div class="project-album-stage-head"><strong>' + escapeProjectText(stageName) + '</strong><small>' + grouped[stage].length + ' ' + (grouped[stage].length === 1 ? 'album' : 'albums') + '</small></div><div class="mini-albums">' + cards + '</div></section>';
+      }).join("");
+      const emptyMessage = filterIndex === null
+        ? 'Photos and videos added to this project will appear here.'
+        : 'No albums in ' + escapeProjectText(stageNames[filterIndex] || ("Stage " + (filterIndex + 1))) + ' yet.';
+      return '<div class="project-albums">' + heading + (albumCount ? groupsMarkup : '<div class="project-album-empty">' + emptyMessage + '</div>') + '</div>';
+    }
+    function renderAddArtifactControls(projectId) {
+      const safeId = escapeProjectText(projectId);
+      const loose = projectArtifactList(projectId).filter(function(item) {
+        return (item.type === "note" || item.type === "voice") && !item.albumId;
+      }).map(function(item) {
+        const createdAt = new Date(item.createdAt || Date.now());
+        const created = Number.isNaN(createdAt.getTime()) ? "" : createdAt.toLocaleString("en-MY", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+        if (item.type === "voice") return '<article class="artifact-item"><strong>Voice note</strong><audio controls preload="metadata" src="' + escapeProjectText(item.url || "") + '"></audio><small>' + created + '</small></article>';
+        return '<article class="artifact-item"><strong>Note</strong><p>' + escapeProjectText(item.text) + '</p><small>' + created + '</small></article>';
+      }).join("");
+      return '<section class="project-artifacts"><p class="project-artifact-label">Add to this project</p><div class="artifact-options project-artifact-options">' +
+        '<button class="artifact-option" type="button" data-artifact-type="photo" data-project-id="' + safeId + '"><span class="artifact-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"></rect><circle cx="12" cy="13" r="3"></circle><path d="M8 6l1.4-2h5.2L16 6"></path></svg></span><strong>Photo</strong></button>' +
+        '<button class="artifact-option" type="button" data-artifact-type="video" data-project-id="' + safeId + '"><span class="artifact-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"></rect><path d="m16 10 5-3v10l-5-3z"></path></svg></span><strong>Video</strong></button>' +
+        '<button class="artifact-option" type="button" data-artifact-type="note" data-project-id="' + safeId + '"><span class="artifact-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v5h5M9 12h6M9 16h6"></path></svg></span><strong>Note</strong></button>' +
+        '<button class="artifact-option" type="button" data-artifact-type="voice" data-project-id="' + safeId + '"><span class="artifact-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M9 22h6"></path></svg></span><strong>Voice note</strong></button>' +
+        '</div>' + (loose ? '<div class="artifact-list">' + loose + '</div>' : '') + '</section>';
+    }
+    function projectDisplayName(projectId) {
+      if (projectId === "demo-mini-renovation") return MINI_RENOVATION_DEMO.name;
+      const project = createdProjects.find(function(item) { return item.id === projectId; });
+      return project ? project.name : "project";
+    }
+    function persistProjectMediaBatch(projectId, items) {
+      const artifactList = projectArtifactList(projectId);
+      if (!artifactList) return false;
+      const files = (Array.isArray(items) ? items : []).filter(function(item) {
+        return item && (item.type === "photo" || item.type === "video") && item.url;
+      });
+      if (!files.length) return false;
+      const now = Date.now();
+      const album = makeArtifactAlbum(projectId, new Date(now).toISOString());
+      const albums = projectAlbumRecords(projectId);
+      albums.unshift(album);
+      files.forEach(function(file, index) {
+        const artifact = {
+          id: "artifact-" + (now + index).toString(36) + "-" + Math.random().toString(36).slice(2,7),
+          createdAt: new Date(now + index).toISOString(),
+          type: file.type,
+          url: file.url,
+          name: file.name || (file.type === "video" ? "Video" : "Photo"),
+          albumId: album.id
+        };
+        artifactList.unshift(artifact);
+        album.items.push(artifact.id);
+      });
+      saveProjectArtifactData(projectId);
+      renderMiniRenovationDemo();
+      renderCreatedProjects();
+      return true;
+    }
+    function persistProjectArtifact(projectId, artifact) {
+      if (artifact.type === "photo" || artifact.type === "video") return persistProjectMediaBatch(projectId, [artifact]);
+      const artifactList = projectArtifactList(projectId);
+      if (!artifactList) return false;
+      artifact.id = "artifact-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
+      artifact.createdAt = new Date().toISOString();
+      if (artifact.type === "voice" && activeVoiceAlbumId) {
+        artifact.albumId = activeVoiceAlbumId;
+        const album = projectAlbumRecords(projectId).find(function(item) { return String(item.id) === String(activeVoiceAlbumId); });
+        if (album && album.voiceNotes.indexOf(artifact.id) < 0) album.voiceNotes.push(artifact.id);
+      }
+      artifactList.unshift(artifact);
+      saveProjectArtifactData(projectId);
+      renderMiniRenovationDemo();
+      renderCreatedProjects();
+      return true;
+    }
+    function renderArtifactAlbum() {
+      const records = projectAlbumRecords(activeAlbumProjectId);
+      const album = records.find(function(item) { return String(item.id) === String(activeAlbumId); });
+      const items = album ? albumMediaItems(activeAlbumProjectId, album) : [];
+      if (!album || !items.length) { closeArtifactOverlays(); return; }
+      activeAlbumIndex = Math.max(0, Math.min(activeAlbumIndex, items.length - 1));
+      const item = items[activeAlbumIndex];
+      const date = new Date(item.createdAt || album.createdAt || Date.now());
+      document.getElementById("artifactAlbumTitle").textContent = album.title || projectDisplayName(activeAlbumProjectId) + " · Mini album";
+      document.getElementById("artifactAlbumSummary").textContent = items.length + " " + (items.length === 1 ? "item" : "items") + " from this upload batch";
+      document.getElementById("artifactAlbumCount").textContent = (activeAlbumIndex + 1) + " / " + items.length;
+      document.getElementById("artifactAlbumTimestamp").textContent = "Uploaded " + (Number.isNaN(date.getTime()) ? "" : date.toLocaleString("en-MY", {day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}));
+      const media = document.getElementById("artifactAlbumMedia");
+      media.innerHTML = item.type === "video"
+        ? '<video controls playsinline src="' + escapeProjectText(item.url) + '"></video>'
+        : '<img src="' + escapeProjectText(item.url) + '" alt="' + escapeProjectText(item.name || "Uploaded photo") + '">';
+      document.getElementById("artifactAlbumNote").value = album.note || "";
+      const voices = projectArtifactList(activeAlbumProjectId).filter(function(entry) { return entry.type === "voice" && String(entry.albumId) === String(album.id); });
+      document.getElementById("artifactAlbumVoices").innerHTML = voices.map(function(entry) {
+        const time = new Date(entry.createdAt || Date.now());
+        return '<div class="artifact-album-voice"><audio controls preload="metadata" src="' + escapeProjectText(entry.url || "") + '"></audio><small>' + (Number.isNaN(time.getTime()) ? "" : time.toLocaleString("en-MY", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})) + '</small></div>';
+      }).join("");
+      document.getElementById("artifactAlbumOverlay").hidden = false;
+    }
+    function openArtifactAlbum(projectId, albumId) {
+      activeArtifactProjectId = projectId;
+      activeAlbumProjectId = projectId;
+      activeAlbumId = albumId;
+      activeAlbumIndex = 0;
+      renderArtifactAlbum();
+    }
+    function saveArtifactAlbumNote() {
+      const album = projectAlbumRecords(activeAlbumProjectId).find(function(item) { return String(item.id) === String(activeAlbumId); });
+      if (!album) return;
+      album.note = document.getElementById("artifactAlbumNote").value.trim();
+      album.noteUpdatedAt = Date.now();
+      saveProjectArtifactData(activeAlbumProjectId);
+      renderMiniRenovationDemo();
+      renderCreatedProjects();
+      renderArtifactAlbum();
+    }
+    function closeArtifactOverlays() {
+      ["artifactAlbumOverlay","mediaSourceOverlay","noteArtifactOverlay"].forEach(function(id) { document.getElementById(id).hidden = true; });
+    }
+    function showArtifactSource(type) {
+      activeMediaType = type;
+      document.getElementById("mediaSourceTitle").textContent = type === "photo" ? "Add an image / photo" : "Add a video";
+      document.getElementById("mediaCaptureLabel").textContent = type === "photo" ? "Take a photo" : "Record a video";
+      document.getElementById("mediaChooseLabel").textContent = type === "photo" ? "Choose photos" : "Choose videos";
+      document.getElementById("mediaSourceStatus").textContent = "";
+      document.getElementById("mediaSourceStatus").classList.remove("error");
+      document.getElementById("mediaSourceOverlay").hidden = false;
+    }
+    function openNoteArtifact() {
+      document.getElementById("noteArtifactText").value = "";
+      document.getElementById("noteArtifactStatus").textContent = "";
+      document.getElementById("noteArtifactStatus").classList.remove("error");
+      document.getElementById("noteArtifactOverlay").hidden = false;
+      document.getElementById("noteArtifactText").focus();
+    }
+    function openVoiceArtifact() {
+      voiceRecording = false;
+      document.getElementById("voiceArtifactStatus").textContent = "Tap Record and allow microphone access.";
+      document.getElementById("voiceArtifactStatus").classList.remove("error");
+      document.getElementById("startVoiceArtifact").hidden = false;
+      document.getElementById("stopVoiceArtifact").hidden = true;
+      document.getElementById("startVoiceArtifact").disabled = false;
+      document.getElementById("stopVoiceArtifact").disabled = false;
+      document.getElementById("voiceArtifactOverlay").hidden = false;
+    }
+    function handleMediaReady(projectId, type, url, name) {
+      if (projectId !== activeArtifactProjectId) return;
+      const albumToReopen = type === "voice" ? activeVoiceAlbumId : "";
+      if (persistProjectArtifact(projectId, { type:type, url:url, name:name || type })) {
+        closeArtifactOverlays();
+        document.getElementById("voiceArtifactOverlay").hidden = true;
+        activeVoiceAlbumId = "";
+        if (albumToReopen) openArtifactAlbum(projectId, albumToReopen);
+      }
+    }
+    let activeProjectTrackingId = "";
+    let activeProjectTrackingView = "issues";
+    let projectTrackingFormMode = "";
+    function projectTodayDate() { const now=new Date(); return now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0"); }
+    function projectTrackingCounts(project) { return {issues:Array.isArray(project.issues)?project.issues.length:(Number(project.issueCount)||0),reminders:Array.isArray(project.reminders)?project.reminders.filter(function(item){return !item.done;}).length:(Number(project.reminderCount)||0)}; }
+    function projectTrackingMoney(value) { return "RM "+(Number(value)||0).toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function trackingFormShell(title,inner) { return '<form class="tracking-form" data-tracking-form><strong>'+title+'</strong>'+inner+'<div class="tracking-form-actions"><button type="button" class="tracking-secondary" data-cancel-tracking-form>Cancel</button><button class="tracking-primary" type="submit">Save</button></div></form>'; }
+    function renderProjectTrackingInline(projectId,project) {
+      if(String(projectId)!==activeProjectTrackingId)return "";
+      const counts=projectTrackingCounts(project);
+      const issues=Array.isArray(project.issues)?project.issues:[];
+      const reminders=Array.isArray(project.reminders)?project.reminders:[];
+      const issueRows=issues.length?'<div class="tracking-list">'+issues.map(function(issue,index){
+        const date=issue.createdAt?new Date(issue.createdAt).toLocaleString("en-MY",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+        return '<article class="tracking-row"><div class="tracking-row-main"><strong>'+escapeProjectText(issue.text||"Issue")+'</strong><small>'+escapeProjectText(issue.severity||"Medium")+' · '+escapeProjectText(date)+'</small></div><select data-issue-status="'+index+'" aria-label="Issue status"><option'+(issue.status==="Open"?" selected":"")+'>Open</option><option'+(issue.status==="In progress"?" selected":"")+'>In progress</option><option'+(issue.status==="Resolved"?" selected":"")+'>Resolved</option></select></article>';
+      }).join("")+'</div>':'<div class="tracking-empty">No issues logged for this project yet.</div>';
+      const reminderRows=reminders.length?'<div class="tracking-list">'+reminders.map(function(reminder,index){
+        return '<label class="tracking-row'+(reminder.done?' is-done':'')+'"><span class="tracking-reminder-check"><input type="checkbox" data-reminder-done="'+index+'" '+(reminder.done?'checked':'')+'><span class="tracking-row-main"><strong>'+escapeProjectText(reminder.text||"Reminder")+'</strong><small>'+(reminder.targetDate?escapeProjectText(formatProjectMilestoneDate(reminder.targetDate)):"Target date not set")+'</small></span></span></label>';
+      }).join("")+'</div>':'<div class="tracking-empty">No reminders set for this project yet.</div>';
+      let html='<div class="project-tracking-inline" data-inline-tracking="'+escapeProjectText(projectId)+'"><section class="issue-log"><div class="issue-log-head"><div><div class="eyebrow">Project tracking</div><h2>Issue log</h2></div><button type="button" class="button-soft" data-show-tracking-form="issue">＋ Log issue</button></div>'+issueRows;
+      if(projectTrackingFormMode==="issue")html+=trackingFormShell("Log an issue",'<label>Issue<textarea name="text" required maxlength="500" placeholder="Describe the issue..."></textarea></label><div class="tracking-form-row"><label>Severity<select name="severity"><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select></label><label>Status<select name="status"><option selected>Open</option><option>In progress</option><option>Resolved</option></select></label></div>');
+      html+='</section><section class="for-later"><div class="for-later-head"><strong>For later</strong><button type="button" class="subtle-link" data-show-tracking-form="reminder">＋ Add a reminder</button><small>'+counts.reminders+' active</small></div>'+reminderRows;
+      if(projectTrackingFormMode==="reminder")html+=trackingFormShell("Add a reminder",'<label>Reminder<textarea name="text" required maxlength="300" placeholder="What should you remember?"></textarea></label><label>Target date<input type="date" name="targetDate" min="'+projectTodayDate()+'" value="'+projectTodayDate()+'" required></label>');
+      html+='</section>';
+      if(activeProjectTrackingView==="budget"){
+        const spent=Number(project.spent)||0,budget=Number(project.budget)||0,remaining=budget-spent;
+        html+='<section class="budget-tracking-card"><div class="for-later-head"><strong>Project budget</strong><span><button type="button" class="subtle-link" data-show-tracking-form="budget">Set budget</button> <button type="button" class="subtle-link" data-show-tracking-form="expense">＋ Add expense</button></span></div><div class="tracking-summary"><div><small>Spent so far</small><strong>'+projectTrackingMoney(spent)+'</strong></div><div><small>Budget idea</small><strong>'+(budget?projectTrackingMoney(budget):"Not set")+'</strong></div><div><small>'+(remaining>=0?"Remaining":"Over budget")+'</small><strong>'+(budget?projectTrackingMoney(Math.abs(remaining)):"—")+'</strong></div></div>';
+        if(projectTrackingFormMode==="budget")html+=trackingFormShell("Set budget idea",'<label>Budget amount (RM)<input type="number" name="amount" min="0" step="0.01" value="'+budget+'" required></label>');
+        if(projectTrackingFormMode==="expense")html+=trackingFormShell("Record an expense",'<div class="tracking-form-row"><label>Description<input name="text" maxlength="160" required placeholder="e.g. Cabinet materials"></label><label>Amount (RM)<input type="number" name="amount" min="0.01" step="0.01" required></label></div>');
+        const expenses=Array.isArray(project.expenses)?project.expenses:[];
+        html+=expenses.length?'<div class="tracking-expenses"><h3>Recent expenses</h3><div class="tracking-list">'+expenses.slice().reverse().map(function(expense){return '<div class="tracking-row"><div class="tracking-row-main"><strong>'+escapeProjectText(expense.text||"Expense")+'</strong><small>'+escapeProjectText(expense.createdAt?new Date(expense.createdAt).toLocaleDateString("en-MY",{day:"numeric",month:"short"}):"")+'</small></div><strong>'+projectTrackingMoney(expense.amount)+'</strong></div>';}).join("")+'</div></div>':'<div class="tracking-empty">No expenses recorded yet.</div>';
+        html+='</section>';
+      }
+      return html+'</div>';
+    }
+    function openProjectTracking(projectId,view){
+      const project=getProjectCardRecord(projectId);if(!project)return;
+      const nextView=["issues","reminders","budget"].includes(view)?view:"issues";
+      if(activeProjectTrackingId===String(projectId)&&activeProjectTrackingView===nextView){activeProjectTrackingId="";projectTrackingFormMode="";}
+      else{activeProjectTrackingId=String(projectId);activeProjectTrackingView=nextView;projectTrackingFormMode="";}
+      refreshProjectCards();
+      if(activeProjectTrackingId)requestAnimationFrame(function(){
+        const cards=Array.from(document.querySelectorAll("[data-project-card]"));
+        const card=cards.find(function(item){return item.dataset.projectCard===activeProjectTrackingId&&item.offsetParent!==null;})||cards.find(function(item){return item.dataset.projectCard===activeProjectTrackingId;});
+        if(card)card.scrollIntoView({behavior:"smooth",block:"center"});
+      });
+    }
+    function closeProjectTracking(){activeProjectTrackingId="";projectTrackingFormMode="";refreshProjectCards();}
+    function saveProjectTracking(){if(!saveProjectCardRecord(activeProjectTrackingId)){toast("Could not save project changes on this device.");return false;}refreshProjectCards();return true;}
+    function wireProjectCardControls() {
+      let longPressTimer = 0, longPressCard = null, longPressStart = null;
+      document.addEventListener("pointerdown", function(event) {
+        const card = event.target.closest("[data-project-card]");
+        if (!card || event.target.closest("button,input,textarea,select,label,a,summary")) return;
+        longPressCard = card;
+        longPressStart = {x:event.clientX,y:event.clientY};
+        clearTimeout(longPressTimer);
+        longPressTimer = window.setTimeout(function() {
+          if (!longPressCard) return;
+          togglePinnedProject(longPressCard.dataset.projectCard);
+          longPressCard = null; longPressTimer = 0;
+        }, 600);
+      });
+      document.addEventListener("pointermove", function(event) {
+        if (!longPressCard || !longPressStart) return;
+        if (Math.abs(event.clientX-longPressStart.x)>10 || Math.abs(event.clientY-longPressStart.y)>10) {
+          clearTimeout(longPressTimer); longPressCard=null; longPressTimer=0;
+        }
+      });
+      ["pointerup","pointercancel","pointerleave"].forEach(function(type) {
+        document.addEventListener(type, function() { clearTimeout(longPressTimer); longPressCard=null; longPressTimer=0; });
+      });
+      document.addEventListener("click", function(event) {
+        const trackingOpen=event.target.closest("[data-open-project-tracking]");
+        if(trackingOpen){openProjectTracking(trackingOpen.dataset.openProjectTracking,trackingOpen.dataset.trackingView);return;}
+        if(event.target.closest("[data-close-project-tracking]")){closeProjectTracking();return;}
+        const showTrackingForm=event.target.closest("[data-show-tracking-form]");
+        if(showTrackingForm){projectTrackingFormMode=showTrackingForm.dataset.showTrackingForm;if(projectTrackingFormMode==="issue")activeProjectTrackingView="issues";else if(projectTrackingFormMode==="reminder")activeProjectTrackingView="reminders";else activeProjectTrackingView="budget";refreshProjectCards();return;}
+        if(event.target.closest("[data-cancel-tracking-form]")){projectTrackingFormMode="";refreshProjectCards();return;}
+        const openMilestones = event.target.closest("[data-open-project-milestones]");
+        if (openMilestones) { openProjectMilestones(openMilestones.dataset.openProjectMilestones); return; }
+        if (event.target.closest("[data-close-project-milestones]")) { closeProjectMilestones(); return; }
+        if (event.target.closest("[data-add-project-stage]")) {
+          if (!projectMilestoneDraft) return;
+          projectMilestoneDraft.names.push("New stage " + (projectMilestoneDraft.names.length + 1));
+          projectMilestoneDraft.dates.push({start:"",end:""});
+          renderProjectMilestoneEditorRows();
+          return;
+        }
+        if (event.target.closest("[data-save-project-milestones]")) { saveProjectMilestones(); return; }
+        const clearAlbumFilter = event.target.closest("[data-clear-album-stage-filter]");
+        const filterAlbumStage = event.target.closest("[data-filter-albums-to-selected-stage]");
+        if (clearAlbumFilter || filterAlbumStage) {
+          const projectId = clearAlbumFilter
+            ? clearAlbumFilter.dataset.clearAlbumStageFilter
+            : filterAlbumStage.dataset.filterAlbumsToSelectedStage;
+          const project = getProjectCardRecord(projectId);
+          if (!project) return;
+          if (clearAlbumFilter) delete project.albumStageFilter;
+          else project.albumStageFilter = Math.max(0, Math.min(projectCardStageNames(project, projectId).length - 1, Number(project.selectedStage) || 0));
+          saveProjectCardRecord(projectId);
+          refreshProjectCards();
+          return;
+        }
+        if (event.target.id === "projectMilestonesOverlay") { closeProjectMilestones(); return; }
+        const favoriteButton = event.target.closest("[data-favorite-project]");
+        if (favoriteButton) { toggleFavoriteProject(favoriteButton.dataset.favoriteProject); return; }
+        const stageButton = event.target.closest("[data-project-stage-select][data-stage-index]");
+        if (stageButton) {
+          const projectId = stageButton.dataset.projectStageSelect;
+          const project = getProjectCardRecord(projectId);
+          if (!project) return;
+          const stageIndex = Number(stageButton.dataset.stageIndex) || 0;
+          project.selectedStage = stageIndex;
+          project.albumStageFilter = stageIndex;
+          saveProjectCardRecord(projectId);
+          refreshProjectCards();
+          requestAnimationFrame(function() {
+            const card = Array.from(document.querySelectorAll("[data-project-card]")).find(function(item) {
+              return item.dataset.projectCard === projectId && item.getClientRects().length > 0;
+            });
+            const albumStage = card && card.querySelector('[data-project-album-stage-index="' + stageIndex + '"]');
+            if (albumStage) albumStage.scrollIntoView({behavior:"smooth",block:"center"});
+            else toast("No albums in this stage yet.");
+          });
+          return;
+        }
+        const saveNotes = event.target.closest("[data-save-project-notes]");
+        if (saveNotes) {
+          const projectId = saveNotes.dataset.saveProjectNotes;
+          const project = getProjectCardRecord(projectId);
+          const card = saveNotes.closest("[data-project-card]");
+          if (!project || !card) return;
+          project.comments = card.querySelector("[data-project-overall-notes]").value.trim();
+          saveProjectCardRecord(projectId);
+          toast("Project notes saved.");
+        }
+      });
+      document.addEventListener("submit", function(event) {
+        const form=event.target.closest("[data-tracking-form]");if(!form)return;
+        event.preventDefault();const project=getProjectCardRecord(activeProjectTrackingId);if(!project)return;
+        const data=new FormData(form),now=new Date().toISOString();
+        if(activeProjectTrackingView==="issues"&&projectTrackingFormMode==="issue"){
+          if(!Array.isArray(project.issues))project.issues=[];
+          project.issues.push({id:"issue-"+Date.now().toString(36),text:String(data.get("text")||"").trim(),severity:String(data.get("severity")||"Medium"),status:String(data.get("status")||"Open"),createdAt:now});
+        }else if(activeProjectTrackingView==="reminders"&&projectTrackingFormMode==="reminder"){
+          if(!Array.isArray(project.reminders))project.reminders=[];
+          project.reminders.push({id:"reminder-"+Date.now().toString(36),text:String(data.get("text")||"").trim(),targetDate:String(data.get("targetDate")||""),done:false,createdAt:now});
+        }else if(activeProjectTrackingView==="budget"&&projectTrackingFormMode==="budget"){
+          project.budget=Math.max(0,Number(data.get("amount"))||0);
+        }else if(activeProjectTrackingView==="budget"&&projectTrackingFormMode==="expense"){
+          const amount=Math.max(0,Number(data.get("amount"))||0);if(!Array.isArray(project.expenses))project.expenses=[];
+          project.expenses.push({id:"expense-"+Date.now().toString(36),text:String(data.get("text")||"").trim(),amount:amount,createdAt:now});project.spent=(Number(project.spent)||0)+amount;
+        }
+        projectTrackingFormMode="";saveProjectTracking();
+      });
+      document.addEventListener("keydown", function(event) {
+        if(event.key==="Escape"&&activeProjectTrackingId)closeProjectTracking();
+      });
+      document.addEventListener("input", function(event) {
+        const nameInput = event.target.closest("[data-milestone-name]");
+        if (!nameInput || !projectMilestoneDraft) return;
+        const index = Number(nameInput.dataset.milestoneName);
+        projectMilestoneDraft.names[index] = nameInput.value;
+        const option = document.querySelector('#projectMilestonesCurrentStage option[value="' + index + '"]');
+        if (option) option.textContent = nameInput.value || ("Stage " + (index + 1));
+      });
+      document.addEventListener("change", function(event) {
+        const issueStatus=event.target.closest("[data-issue-status]");
+        if(issueStatus){const project=getProjectCardRecord(activeProjectTrackingId);if(!project)return;const issue=(project.issues||[])[Number(issueStatus.dataset.issueStatus)];if(issue){issue.status=issueStatus.value;saveProjectTracking();}return;}
+        const reminderDone=event.target.closest("[data-reminder-done]");
+        if(reminderDone){const project=getProjectCardRecord(activeProjectTrackingId);if(!project)return;const reminder=(project.reminders||[])[Number(reminderDone.dataset.reminderDone)];if(reminder){reminder.done=reminderDone.checked;saveProjectTracking();}return;}
+        if (event.target.id === "projectMilestonesCurrentStage" && projectMilestoneDraft) {
+          projectMilestoneDraft.currentStage = Number(event.target.value) || 0;
+          renderProjectMilestoneEditorRows();
+          return;
+        }
+        const currentRadio = event.target.closest("[data-milestone-current]");
+        if (currentRadio && projectMilestoneDraft) {
+          projectMilestoneDraft.currentStage = Number(currentRadio.dataset.milestoneCurrent) || 0;
+          document.getElementById("projectMilestonesCurrentStage").value = String(projectMilestoneDraft.currentStage);
+          renderProjectMilestoneEditorRows();
+          return;
+        }
+        const startDate = event.target.closest("[data-milestone-start]");
+        const endDate = event.target.closest("[data-milestone-end]");
+        if ((startDate || endDate) && projectMilestoneDraft) {
+          const dateInput = startDate || endDate;
+          const index = Number(dateInput.dataset.milestoneStart || dateInput.dataset.milestoneEnd) || 0;
+          const field = startDate ? "start" : "end";
+          if (!projectMilestoneDraft.dates[index]) projectMilestoneDraft.dates[index] = {};
+          projectMilestoneDraft.dates[index][field] = dateInput.value;
+          return;
+        }
+        const moveSelect = event.target.closest("[data-move-album-project]");
+        if (moveSelect) {
+          const projectId = moveSelect.dataset.moveAlbumProject;
+          const albumId = moveSelect.dataset.moveAlbumId;
+          const album = projectAlbumRecords(projectId).find(function(item) { return String(item.id) === String(albumId); });
+          if (!album) return;
+          album.stage = Math.max(0, Number(moveSelect.value) || 0);
+          saveProjectArtifactData(projectId);
+          refreshProjectCards();
+        }
+      });
+      document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape" && activeProjectMilestoneId) closeProjectMilestones();
+      });
+    }
+    const PINNED_PROJECTS_KEY = "fieldworks.debug.pinned-projects.v1";
+    const FAVORITE_PROJECTS_KEY = "fieldworks.debug.favorite-projects.v1";
+    function readFavoriteProjectIds() {
+      try { const value = JSON.parse(localStorage.getItem(FAVORITE_PROJECTS_KEY) || "[]"); return Array.isArray(value) ? value.map(String) : []; }
+      catch (error) { return []; }
+    }
+    function isProjectFavorite(projectId) {
+      return readFavoriteProjectIds().indexOf(String(projectId)) >= 0 || readPinnedProjectIds().indexOf(String(projectId)) >= 0;
+    }
+    function toggleFavoriteProject(projectId) {
+      const id = String(projectId);
+      const favorites = readFavoriteProjectIds();
+      const pins = readPinnedProjectIds();
+      const isOn = favorites.indexOf(id) >= 0 || pins.indexOf(id) >= 0;
+      if (isOn) {
+        const f = favorites.indexOf(id); if (f >= 0) favorites.splice(f,1);
+        const p = pins.indexOf(id); if (p >= 0) pins.splice(p,1);
+        try {
+          localStorage.setItem(FAVORITE_PROJECTS_KEY,JSON.stringify(favorites));
+          localStorage.setItem(PINNED_PROJECTS_KEY,JSON.stringify(pins));
+        } catch (error) {}
+        toast("Removed from Favourite Projects.");
+      } else {
+        favorites.unshift(id);
+        try { localStorage.setItem(FAVORITE_PROJECTS_KEY,JSON.stringify(favorites)); } catch (error) {}
+        toast("Added to Favourite Projects.");
+      }
+      renderCreatedProjects();
+    }
+    function readPinnedProjectIds() {
+      try { const value = JSON.parse(localStorage.getItem(PINNED_PROJECTS_KEY) || "[]"); return Array.isArray(value) ? value.map(String) : []; }
+      catch (error) { return []; }
+    }
+    function togglePinnedProject(projectId) {
+      const ids = readPinnedProjectIds();
+      const index = ids.indexOf(String(projectId));
+      if (index >= 0) ids.splice(index,1); else ids.unshift(String(projectId));
+      try { localStorage.setItem(PINNED_PROJECTS_KEY,JSON.stringify(ids)); } catch (error) {}
+      renderCreatedProjects();
+      toast(index >= 0 ? "Project unpinned." : "Project pinned to the top.");
+    }
+    function refreshProjectCards() {
+      const top = window.scrollY;
+      renderMiniRenovationDemo();
+      renderCreatedProjects();
+      requestAnimationFrame(function() { window.scrollTo({ top: top, behavior: "auto" }); });
+    }
+    function wireArtifactMenu() {
+      document.addEventListener("click", function(event) {
+        const closeButton = event.target.closest("[data-close-artifact]");
+        if (closeButton) { closeArtifactOverlays(); return; }
+        const albumButton = event.target.closest("[data-open-album]");
+        if (albumButton) { openArtifactAlbum(albumButton.dataset.openAlbum, albumButton.dataset.albumId); return; }
+        const artifactButton = event.target.closest("[data-artifact-type]");
+        if (artifactButton) {
+          activeArtifactProjectId = artifactButton.dataset.projectId || "";
+          if (!activeArtifactProjectId) return;
+          const type = artifactButton.dataset.artifactType;
+          if (type === "photo" || type === "video") showArtifactSource(type);
+          else if (type === "note") openNoteArtifact();
+          else if (type === "voice") openVoiceArtifact();
+          return;
+        }
+        const mediaButton = event.target.closest("[data-media-action]");
+        if (mediaButton) {
+          if (!window.FieldWorksMedia) {
+            document.getElementById("mediaSourceStatus").textContent = "Media capture is unavailable in this build.";
+            document.getElementById("mediaSourceStatus").classList.add("error");
+            return;
+          }
+          document.getElementById("mediaSourceOverlay").hidden = true;
+          if (mediaButton.dataset.mediaAction === "camera") window.FieldWorksMedia.capture(activeMediaType, activeArtifactProjectId);
+          else window.FieldWorksMedia.pickMedia(activeMediaType, activeArtifactProjectId);
+          return;
+        }
+      });
+      document.getElementById("saveArtifactAlbumNote").addEventListener("click", saveArtifactAlbumNote);
+      document.getElementById("artifactAlbumPrev").addEventListener("click", function() {
+        const album = projectAlbumRecords(activeAlbumProjectId).find(function(item) { return String(item.id) === String(activeAlbumId); });
+        if (!album) return;
+        activeAlbumIndex = (activeAlbumIndex - 1 + albumMediaItems(activeAlbumProjectId, album).length) % albumMediaItems(activeAlbumProjectId, album).length;
+        renderArtifactAlbum();
+      });
+      document.getElementById("artifactAlbumNext").addEventListener("click", function() {
+        const album = projectAlbumRecords(activeAlbumProjectId).find(function(item) { return String(item.id) === String(activeAlbumId); });
+        if (!album) return;
+        activeAlbumIndex = (activeAlbumIndex + 1) % albumMediaItems(activeAlbumProjectId, album).length;
+        renderArtifactAlbum();
+      });
+      document.getElementById("addArtifactAlbumVoice").addEventListener("click", function() {
+        activeVoiceAlbumId = activeAlbumId;
+        document.getElementById("artifactAlbumOverlay").hidden = true;
+        openVoiceArtifact();
+      });
+      document.getElementById("saveNoteArtifact").addEventListener("click", function() {
+        const note = document.getElementById("noteArtifactText").value.trim();
+        if (!note) { const status = document.getElementById("noteArtifactStatus"); status.textContent = "Write a note first."; status.classList.add("error"); return; }
+        persistProjectArtifact(activeArtifactProjectId, { type:"note", text:note, name:"Note" });
+        closeArtifactOverlays();
+      });
+      document.getElementById("startVoiceArtifact").addEventListener("click", function() {
+        if (!window.FieldWorksMedia) { document.getElementById("voiceArtifactStatus").textContent = "Voice recording is unavailable in this build."; return; }
+        this.disabled = true;
+        document.getElementById("voiceArtifactStatus").textContent = "Requesting microphone access…";
+        window.FieldWorksMedia.startVoice(activeArtifactProjectId);
+      });
+      document.getElementById("stopVoiceArtifact").addEventListener("click", function() {
+        if (!window.FieldWorksMedia || !voiceRecording) return;
+        this.disabled = true;
+        document.getElementById("voiceArtifactStatus").textContent = "Saving voice note…";
+        window.FieldWorksMedia.stopVoice();
+      });
+      function cancelVoice() {
+        if (window.FieldWorksMedia) window.FieldWorksMedia.cancelVoice();
+        voiceRecording = false;
+        const albumToReopen = activeVoiceAlbumId;
+        activeVoiceAlbumId = "";
+        document.getElementById("voiceArtifactOverlay").hidden = true;
+        if (albumToReopen) openArtifactAlbum(activeArtifactProjectId, albumToReopen);
+      }
+      document.getElementById("cancelVoiceArtifact").addEventListener("click", cancelVoice);
+      document.getElementById("cancelVoiceArtifactButton").addEventListener("click", cancelVoice);
+      document.addEventListener("click", function(event) {
+        if (event.target.id === "artifactAlbumOverlay" || event.target.id === "mediaSourceOverlay" || event.target.id === "noteArtifactOverlay") closeArtifactOverlays();
+      });
+      document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") {
+          closeArtifactOverlays();
+          if (!document.getElementById("voiceArtifactOverlay").hidden) cancelVoice();
+        }
+      });
+    }
+    window.onFieldWorksMediaReady = function(projectId, type, url, name) {
+      if (type === "voice") { voiceRecording = false; document.getElementById("voiceArtifactOverlay").hidden = true; }
+      handleMediaReady(projectId, type, url, name);
+    };
+    window.onFieldWorksImportBatch = function(items, projectId) {
+      if (String(projectId) !== String(activeArtifactProjectId)) return;
+      const ready = (Array.isArray(items) ? items : []).map(function(item) {
+        return { type:item.kind || item.type, url:item.url, name:item.name || "" };
+      });
+      if (persistProjectMediaBatch(projectId, ready)) closeArtifactOverlays();
+    };
+    window.onFieldWorksMediaError = function(projectId, message) {
+      if (projectId !== activeArtifactProjectId) return;
+      document.getElementById("mediaSourceOverlay").hidden = false;
+      document.getElementById("mediaSourceStatus").textContent = message || "Could not add that file.";
+      document.getElementById("mediaSourceStatus").classList.add("error");
+    };
+    window.onFieldWorksVoiceStatus = function(state, message) {
+      const status = document.getElementById("voiceArtifactStatus");
+      status.textContent = message || (state === "recording" ? "Recording…" : "");
+      status.classList.toggle("error", state === "error");
+      if (state === "recording") {
+        voiceRecording = true;
+        document.getElementById("startVoiceArtifact").hidden = true;
+        document.getElementById("stopVoiceArtifact").hidden = false;
+      } else if (state === "error") {
+        voiceRecording = false;
+        document.getElementById("startVoiceArtifact").disabled = false;
+      } else if (state === "canceled") {
+        voiceRecording = false;
+        document.getElementById("voiceArtifactOverlay").hidden = true;
+      }
+    };
+    function loadCreatedProjects() {
+      if (createdProjectsLoaded) return;
+      createdProjectsLoaded = true;
+      try {
+        const saved = localStorage.getItem(CREATED_PROJECTS_KEY);
+        const parsed = saved ? JSON.parse(saved) : [];
+        createdProjects = Array.isArray(parsed) ? parsed.filter(function(project) {
+          return project && typeof project.name === "string" && typeof project.id === "string";
+        }) : [];
+      } catch (error) { createdProjects = []; }
+    }
+    function saveCreatedProjects() {
+      try { localStorage.setItem(CREATED_PROJECTS_KEY, JSON.stringify(createdProjects)); return true; }
+      catch (error) { return false; }
+    }
+    function escapeProjectText(value) {
+      return String(value || "").replace(/[&<>"']/g, function(character) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character];
+      });
+    }
+    function renderCreatedProjectCard(project) {
+      return renderUnifiedProjectCard(project, false);
+    }
+    function renderCreatedProjects() {
+      loadCreatedProjects();
+      const pinnedIds = readPinnedProjectIds();
+      const favoriteIds = readFavoriteProjectIds();
+      const projects = [MINI_RENOVATION_DEMO].concat(createdProjects).sort(function(a,b) {
+        const aId = String(a === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : a.id);
+        const bId = String(b === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : b.id);
+        const aPin = pinnedIds.indexOf(aId), bPin = pinnedIds.indexOf(bId);
+        if (aPin >= 0 && bPin >= 0) return aPin - bPin;
+        if (aPin >= 0) return -1;
+        if (bPin >= 0) return 1;
+        const aFav = favoriteIds.indexOf(aId), bFav = favoriteIds.indexOf(bId);
+        if (aFav >= 0 && bFav >= 0) return aFav - bFav;
+        if (aFav >= 0) return -1;
+        if (bFav >= 0) return 1;
+        return a === MINI_RENOVATION_DEMO ? -1 : b === MINI_RENOVATION_DEMO ? 1 : 0;
+      });
+      function cardsFor(items) {
+        return items.map(function(project) {
+          return renderUnifiedProjectCard(project, project === MINI_RENOVATION_DEMO);
+        }).join("");
+      }
+      function isInFavorites(project) {
+        const id = String(project === MINI_RENOVATION_DEMO ? "demo-mini-renovation" : project.id);
+        return pinnedIds.indexOf(id) >= 0 || favoriteIds.indexOf(id) >= 0;
+      }
+      const favourites = projects.filter(isInFavorites);
+      const otherProjects = projects.filter(function(project) { return !isInFavorites(project); });
+      const favoriteSlot = document.getElementById("homeMiniRenovation");
+      const home = document.getElementById("homeCreatedProjects");
+      const list = document.getElementById("projectsCreatedProjects");
+      const favoriteEmpty = '<div class="empty">No favourite projects yet. Tap the star on a project to add it here.</div>';
+      const projectEmpty = '<div class="empty">Projects you create will appear here.</div>';
+      if (favoriteSlot) favoriteSlot.innerHTML = cardsFor(favourites) || favoriteEmpty;
+      if (home) home.innerHTML = cardsFor(otherProjects) || projectEmpty;
+      if (list) list.innerHTML = cardsFor(projects) || projectEmpty;
+      const demoProjects = document.getElementById("projectsMiniRenovation");
+      if (demoProjects) demoProjects.innerHTML = "";
+    }
+    function renderTemplateCard(template) {
+      const stages = escapeProjectText((template.stages || []).join(" · "));
+      return '<article class="template-card"><div class="template-art" aria-hidden="true">' + escapeProjectText(template.icon) + '</div><h3>' + escapeProjectText(template.name) + '</h3><p>' + escapeProjectText(template.description) + '</p><small class="template-stage-preview">' + stages + '</small><button class="button-primary" type="button" data-use-template="' + escapeProjectText(template.id) + '">Use template</button></article>';
+    }
+    function renderTemplates() {
+      const cards = FIELDWORKS_TEMPLATES.map(renderTemplateCard).join("");
+      ["templateGrid", "homeTemplates"].forEach(function(id) {
+        const grid = document.getElementById(id);
+        if (grid) grid.innerHTML = cards;
+      });
+    }
+    function openCreateProjectCard(templateId) {
+      loadCreatedProjects();
+      const template = FIELDWORKS_TEMPLATES.find(function(item) { return item.id === templateId; });
+      selectedProjectTemplateId = template ? template.id : "";
+      const title = document.getElementById("createProjectTitle");
+      const subtitle = document.querySelector(".create-project-head p");
+      const nameInput = document.getElementById("newProjectName");
+      const description = document.getElementById("newProjectDescription");
+      const stageHint = document.getElementById("projectTemplateStages");
+      title.textContent = template ? "Create from " + template.name : "Create project";
+      subtitle.textContent = template ? "Give this project a name. Its milestones will follow the selected template." : "Give your project a name and a little context.";
+      nameInput.placeholder = template ? template.example : "e.g. Home renovation";
+      description.placeholder = template ? template.description : "What are you working on?";
+      document.getElementById("newProjectType").value = template ? template.type : "Construction";
+      stageHint.hidden = !template;
+      stageHint.textContent = template ? "Milestones: " + template.stages.join(" → ") : "";
+      document.getElementById("createProjectOverlay").hidden = false;
+      nameInput.focus();
+    }
+    function closeCreateProjectCard() {
+      document.getElementById("createProjectOverlay").hidden = true;
+      selectedProjectTemplateId = "";
+      document.getElementById("createProjectTitle").textContent = "Create project";
+      document.querySelector(".create-project-head p").textContent = "Give your project a name and a little context.";
+      document.getElementById("newProjectName").placeholder = "e.g. Home renovation";
+      document.getElementById("newProjectDescription").placeholder = "What are you working on?";
+      document.getElementById("projectTemplateStages").hidden = true;
+    }
+    function createProjectFromCard(event) {
+      event.preventDefault();
+      const name = document.getElementById("newProjectName").value.trim();
+      if (!name) { document.getElementById("newProjectName").focus(); return; }
+      const template = FIELDWORKS_TEMPLATES.find(function(item) { return item.id === selectedProjectTemplateId; });
+      const project = {
+        id: "project-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7),
+        name: name,
+        type: document.getElementById("newProjectType").value,
+        description: document.getElementById("newProjectDescription").value.trim(),
+        createdAt: new Date().toISOString(),
+        stage: 0,
+        stageDates: [],
+        stageNames: (template ? template.stages : ["Discovery & Site visit", "Initiation", "In Progress", "Handing Over", "Completed"]).slice(),
+        templateId: template ? template.id : "",
+        template: template ? template.name : "",
+        artifacts: [],
+        albums: [],
+        issues: [],
+        reminders: [],
+        expenses: [],
+        spent: 0,
+        budget: 0
+      };
+      createdProjects.unshift(project);
+      saveCreatedProjects();
+      document.getElementById("createProjectForm").reset();
+      closeCreateProjectCard();
+      renderCreatedProjects();
+      showFieldWorksPage("projects");
+    }
+    function wireCreateProjectCard() {
+      document.getElementById("openCreateProject").addEventListener("click", openCreateProjectCard);
+      document.getElementById("closeCreateProject").addEventListener("click", closeCreateProjectCard);
+      document.getElementById("cancelCreateProject").addEventListener("click", closeCreateProjectCard);
+      document.getElementById("createProjectOverlay").addEventListener("click", function(event) {
+        if (event.target.id === "createProjectOverlay") closeCreateProjectCard();
+      });
+      document.getElementById("createProjectForm").addEventListener("submit", createProjectFromCard);
+      ["templateGrid", "homeTemplates"].forEach(function(id) {
+        const grid = document.getElementById(id);
+        if (!grid) return;
+        grid.addEventListener("click", function(event) {
+          const button = event.target.closest("[data-use-template]");
+          if (button) openCreateProjectCard(button.dataset.useTemplate);
+        });
+      });
+      document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape" && !document.getElementById("createProjectOverlay").hidden) closeCreateProjectCard();
+      });
+    }
+
+    function openFieldWorksMenu() {
+      document.getElementById("dashboard").hidden = false;
+      try { updateAuthUI(window.FieldWorksAuth ? window.FieldWorksAuth.currentEmail() : ""); } catch (error) { updateAuthUI(""); }
+      renderCreatedProjects();
+      renderTemplates();
+      showFieldWorksPage("home");
+    }
+
+    function showFieldWorksPage(page) {
+      document.querySelectorAll(".page").forEach(function (section) {
+        section.hidden = section.id !== "page-" + page;
+      });
+      document.querySelectorAll(".side-link, .tab").forEach(function (button) {
+        const active = button.dataset.page === page;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-current", active ? "page" : "false");
+      });
+      document.getElementById("topTitle").textContent = pageTitles[page] || "My FieldWorks";
+      if (page === "account") { renderAccountPage(); loadSubscriptionPackage(); }
+      if (page === "templates") renderTemplates();
+      if (page === "home" || page === "projects") { renderMiniRenovationDemo(); renderCreatedProjects(); }
+    }
+
+    wireCreateProjectCard();
+    wireArtifactMenu();
+    wireProjectCardControls();
+    let authMode = "signin";
+    let signedInEmail = "";
+    let billingCatalog = {};
+    let billingEntitlement = { active: false, productId: "", uid: "" };
+    function currentFieldWorksUid() { try { return window.FieldWorksAuth ? window.FieldWorksAuth.currentUid() : ""; } catch (error) { return ""; } }
+    function renderAccountPage() {
+      const uid = currentFieldWorksUid();
+      const active = !!uid && billingEntitlement.active && billingEntitlement.uid === uid;
+      document.getElementById("accountPageEmail").textContent = signedInEmail || "Guest";
+      document.getElementById("accountPageLabel").textContent = signedInEmail ? "SIGNED IN AS" : "WORKING AS";
+      document.getElementById("accountPageAvatar").textContent = signedInEmail ? signedInEmail.trim().charAt(0).toUpperCase() : "G";
+      document.getElementById("accountPageMessage").textContent = signedInEmail ? "Your FieldWorks account is connected." : "Sign in to connect your account and manage a subscription.";
+      document.getElementById("accountPageSignIn").hidden = !!uid;
+      document.getElementById("accountPageSignOut").hidden = !uid;
+      const status = document.getElementById("subscriptionStatus");
+      if (active) status.textContent = "Active · " + (billingEntitlement.productId === "fw2026_stu" ? "Student" : "Personal") + " plan is linked to this account.";
+      else if (uid) status.textContent = "No active FieldWorks subscription found for this account.";
+      else status.textContent = "Sign in to check or manage a subscription.";
+      document.querySelectorAll("[data-plan-product]").forEach(function(button) {
+        const id = button.dataset.planProduct;
+        button.textContent = active && billingEntitlement.productId === id ? "Current plan" : "Subscribe";
+        button.disabled = active && billingEntitlement.productId === id;
+      });
+      document.getElementById("studentPrice").textContent = billingCatalog.fw2026_stu || "Price shown in Google Play";
+      document.getElementById("personalPrice").textContent = billingCatalog.fw2026 || "Price shown in Google Play";
+    }
+    function loadSubscriptionPackage() {
+      if (!window.FieldWorksBilling) return;
+      window.FieldWorksBilling.loadProducts();
+      if (currentFieldWorksUid()) window.FieldWorksBilling.syncEntitlement();
+    }
+    function signOutOfFieldWorks() {
+      if (window.FieldWorksAuth) window.FieldWorksAuth.signOut();
+      billingEntitlement = { active: false, productId: "", uid: "" };
+      updateAuthUI("");
+      setAccountStatus("Signed out. Guest mode is active.", false);
+      setSubscriptionMessage("Sign in to check or manage a subscription.", false);
+    }
+    function setSubscriptionMessage(message, error) {
+      const status = document.getElementById("billingStatus");
+      status.textContent = message || "";
+      status.classList.toggle("error", !!error);
+    }
+    function closeLoginCard() {
+      document.getElementById("loginOverlay").hidden = true;
+    }
+    function setAuthStatus(message, error) {
+      const status = document.getElementById("loginStatus");
+      status.textContent = message || "";
+      status.classList.toggle("error", !!error);
+    }
+    function setAccountStatus(message, error) {
+      const status = document.getElementById("accountStatus");
+      status.textContent = message || "";
+      status.classList.toggle("error", !!error);
+    }
+    function setAuthMode(mode) {
+      authMode = mode;
+      const signup = mode === "signup";
+      document.getElementById("signupNameField").hidden = !signup;
+      document.getElementById("loginName").required = signup;
+      document.getElementById("loginPassword").autocomplete = signup ? "new-password" : "current-password";
+      document.getElementById("loginSubmit").textContent = signup ? "Create account" : "Sign in";
+      document.getElementById("toggleAuthMode").textContent = signup ? "I already have an account" : "Create account";
+      document.getElementById("forgotPassword").hidden = signup;
+      setAuthStatus("", false);
+    }
+    function updateAuthUI(email) {
+      signedInEmail = email || "";
+      const signedIn = !!signedInEmail;
+      const sideLabel = document.getElementById("sideAccountLabel");
+      const sideName = document.getElementById("sideAccountName");
+      const sideMessage = document.getElementById("sideAccountMessage");
+      if (sideLabel) sideLabel.textContent = signedIn ? "SIGNED IN AS" : "WORKING AS";
+      if (sideName) sideName.textContent = signedInEmail || "Guest";
+      if (sideMessage) sideMessage.textContent = signedIn ? "Your account is connected. Project data stays on this device." : "FieldWorks debug menu preview.";
+      document.getElementById("guestPillLabel").textContent = signedIn ? email : "Guest mode";
+      const profile = document.getElementById("profileButton");
+      if (signedIn) profile.textContent = email.trim().charAt(0).toUpperCase(); else profile.innerHTML = '<svg class="profile-login-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>';
+      profile.setAttribute("aria-label", signedIn ? "Account: " + email : "Sign in to FieldWorks");
+      document.getElementById("signedInEmail").textContent = email || "";
+      document.getElementById("loginForm").hidden = signedIn;
+      document.getElementById("loginSocials").hidden = signedIn;
+      document.getElementById("loginDivider").hidden = signedIn;
+      document.getElementById("signedInPanel").hidden = !signedIn;
+      renderAccountPage();
+      if (signedIn) loadSubscriptionPackage();
+      else billingEntitlement = { active: false, productId: "", uid: "" };
+    }
+    function openLoginCard() {
+      const overlay = document.getElementById("loginOverlay");
+      overlay.hidden = false;
+      setAuthMode("signin");
+      setAccountStatus("", false);
+      try {
+        const email = window.FieldWorksAuth ? window.FieldWorksAuth.currentEmail() : "";
+        updateAuthUI(email || "");
+        if (!window.FieldWorksAuth) setAuthStatus("Sign-in is unavailable in this build.", true);
+      } catch (error) {
+        updateAuthUI("");
+        setAuthStatus("Could not connect to FieldWorks sign-in. Please retry.", true);
+      }
+      if (document.getElementById("signedInPanel").hidden) document.getElementById("loginEmail").focus();
+      else document.getElementById("signOutButton").focus();
+    }
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      const button = document.getElementById("loginSubmit");
+      if (!window.FieldWorksAuth) {
+        setAuthStatus("Sign-in is unavailable in this build.", true);
+        return;
+      }
+      button.disabled = true;
+      setAuthStatus(authMode === "signup" ? "Creating your account…" : "Signing in…", false);
+      if (authMode === "signup") {
+        window.FieldWorksAuth.createAccount(document.getElementById("loginName").value.trim(), email, password);
+      } else {
+        window.FieldWorksAuth.signIn(email, password);
+      }
+    });
+    document.querySelectorAll("[data-social]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        const provider = button.dataset.social.toLowerCase();
+        if (!window.FieldWorksAuth) {
+          setAuthStatus("Account sign-in is unavailable in this build.", true);
+          return;
+        }
+        button.disabled = true;
+        setAuthStatus("Opening " + (provider === "google" ? "Google" : "Facebook") + " sign-in…", false);
+        try {
+          if (provider === "google") window.FieldWorksAuth.startGoogle();
+          else if (provider === "facebook") window.FieldWorksAuth.startFacebook();
+        } catch (error) {
+          button.disabled = false;
+          setAuthStatus("Could not start " + provider + " sign-in. Please retry.", true);
+        }
+      });
+    });
+    document.getElementById("toggleAuthMode").addEventListener("click", function() {
+      setAuthMode(authMode === "signup" ? "signin" : "signup");
+    });
+    document.getElementById("forgotPassword").addEventListener("click", function() {
+      const email = document.getElementById("loginEmail").value.trim();
+      if (!email) {
+        setAuthStatus("Enter your email first, then tap Forgot password.", true);
+        document.getElementById("loginEmail").focus();
+        return;
+      }
+      if (!window.FieldWorksAuth) {
+        setAuthStatus("Password reset is unavailable in this build.", true);
+        return;
+      }
+      setAuthStatus("Sending reset email…", false);
+      window.FieldWorksAuth.sendPasswordReset(email);
+    });
+    document.getElementById("signOutButton").addEventListener("click", signOutOfFieldWorks);
+    document.getElementById("accountPageSignOut").addEventListener("click", signOutOfFieldWorks);
+    document.getElementById("restoreSubscription").addEventListener("click", function() {
+      if (!currentFieldWorksUid()) { setSubscriptionMessage("Sign in before restoring a subscription.", true); openLoginCard(); return; }
+      if (!window.FieldWorksBilling) { setSubscriptionMessage("Subscription billing is unavailable in this build.", true); return; }
+      setSubscriptionMessage("Checking subscriptions linked to this FieldWorks account…", false);
+      window.FieldWorksBilling.restorePurchases();
+    });
+    document.querySelectorAll("[data-plan-product]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        const uid = currentFieldWorksUid();
+        if (!uid) { setSubscriptionMessage("Sign in before subscribing.", true); openLoginCard(); return; }
+        if (!window.FieldWorksBilling) { setSubscriptionMessage("Subscription billing is unavailable in this build.", true); return; }
+        setSubscriptionMessage("Opening Google Play subscription options…", false);
+        window.FieldWorksBilling.purchase(button.dataset.planProduct);
+      });
+    });
+    window.onFieldWorksBillingProducts = function(products) {
+      billingCatalog = products || {};
+      renderAccountPage();
+      if (!Object.keys(billingCatalog).length) setSubscriptionMessage("Could not load plans from Google Play. Install through a FieldWorks Google Play testing track and try again.", true);
+      else setSubscriptionMessage("Prices are provided by Google Play. Subscriptions are linked to your signed-in FieldWorks account.", false);
+    };
+    window.onFieldWorksBillingEntitlement = function(result) {
+      result = result || {};
+      const uid = currentFieldWorksUid();
+      if (result.uid && result.uid !== uid) return;
+      billingEntitlement = { active: !!result.active, productId: result.productId || "", uid: result.uid || "" };
+      renderAccountPage();
+    };
+    window.onFieldWorksBillingMessage = function(result) {
+      result = result || {};
+      setSubscriptionMessage(result.message || "", !result.success);
+    };
+    window.onFieldWorksAuthResult = function(result) {
+      const button = document.getElementById("loginSubmit");
+      button.disabled = false;
+      document.querySelectorAll("[data-social]").forEach(function(item) { item.disabled = false; });
+      if (result.action === "reset") {
+        setAuthStatus(result.message, !result.success);
+        return;
+      }
+      if (!result.success) {
+        setAuthStatus(result.message, true);
+        return;
+      }
+      updateAuthUI(result.email || "");
+      setAuthStatus(result.message, false);
+      closeLoginCard();
+    };
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Escape") closeLoginCard();
+    });
+      openFieldWorksMenu();
+</script>
 </body>
 </html>

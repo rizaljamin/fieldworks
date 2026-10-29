@@ -1,28 +1,26 @@
 package com.fieldworks.app;
 
-import android.Manifest;
 import android.app.Activity;
+import android.Manifest;
 import android.content.ClipData;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.media.MediaRecorder;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.media.MediaRecorder;
 import android.net.Uri;
-import android.os.Bundle;
-import android.util.Base64;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.webkit.MimeTypeMap;
+import androidx.core.content.FileProvider;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import android.os.Bundle;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.PermissionRequest;
-import android.webkit.ValueCallback;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import androidx.core.content.FileProvider;
-import android.widget.FrameLayout;
+import android.webkit.WebViewClient;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
@@ -31,21 +29,22 @@ import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.GoogleAuthProvider;
 import androidx.credentials.Credential;
 import androidx.credentials.CredentialManager;
 import androidx.credentials.CredentialManagerCallback;
@@ -53,131 +52,150 @@ import androidx.credentials.CustomCredential;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
+import androidx.credentials.exceptions.NoCredentialException;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.OAuthProvider;
 import android.os.CancellationSignal;
-import java.util.concurrent.Executor;
-import androidx.webkit.WebViewAssetLoader;
-import androidx.webkit.WebViewClientCompat;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import org.json.JSONObject;
-import org.json.JSONArray;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends Activity {
-    private static class LocalContentWebViewClient extends WebViewClientCompat {
-        private final WebViewAssetLoader assetLoader;
-
-        LocalContentWebViewClient(WebViewAssetLoader assetLoader) {
-            this.assetLoader = assetLoader;
-        }
-
-        @Override
-        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-            return assetLoader.shouldInterceptRequest(request.getUrl());
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            return !"appassets.androidplatform.net".equals(request.getUrl().getHost());
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
-        public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-            return assetLoader.shouldInterceptRequest(Uri.parse(url));
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return !"appassets.androidplatform.net".equals(Uri.parse(url).getHost());
-        }
-    }
-
-    private static final int FILE_CHOOSER_REQUEST = 1201;
-    private static final int AUDIO_PERMISSION_REQUEST = 1202;
-    private static final int CAMERA_PHOTO_REQUEST = 1203;
-    private static final int CAMERA_VIDEO_REQUEST = 1204;
-    private static final int MEDIA_PICKER_REQUEST = 1205;
-    private static final int NATIVE_AUDIO_PERMISSION_REQUEST = 1206;
-    private static final int ARCHIVE_EXPORT_REQUEST = 1207;
+    private static final int CAMERA_PHOTO_REQUEST = 2301;
+    private static final int CAMERA_VIDEO_REQUEST = 2302;
+    private static final int MEDIA_PICKER_REQUEST = 2303;
+    private static final int AUDIO_PERMISSION_REQUEST = 2304;
+    private static final int MAX_MEDIA_PER_PICK = 5;
     private WebView webView;
-    private boolean googleSignInInProgress;
-    private CancellationSignal pendingGoogleSignIn;
-    private Runnable googleSignInTimeout;
-    private String googleSignInStage = "";
+    private File captureFile;
+    private String captureKind = "";
+    private String captureProjectId = "";
+    private String importKind = "";
+    private String importProjectId = "";
+    private MediaRecorder voiceRecorder;
+    private File voiceFile;
+    private String voiceProjectId = "";
+    private boolean voicePermissionPending;
     private BillingClient billingClient;
     private final ExecutorService subscriptionExecutor = Executors.newSingleThreadExecutor();
     private static final String SUBSCRIPTION_FUNCTION_URL = "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksSubscription";
     private volatile boolean restoreRequested;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
-    private static final String PLAY_TESTING_NOTICE = "Google Play subscription testing requires installing FieldWorks from a Google Play testing track. Purchases or restore may fail when the app is sideloaded.";
-    private static final String[] SUBSCRIPTION_PRODUCT_IDS = {
-            "fw2026", "fw2026_stu"
-    };
-    private ValueCallback<Uri[]> fileCallback;
-    private PermissionRequest pendingPermission;
-    private File captureFile;
-    private File archiveTempFile;
-    private FileOutputStream archiveOutputStream;
-    private String archiveExportName = "";
-    private String archiveWriteError = "";
-    private String captureKind;
-    private MediaRecorder voiceRecorder;
-    private File voiceFile;
-    private long voiceProjectId;
-    private String voiceAlbumId = "";
-    private boolean voicePermissionPending;
-    private long captureProjectId;
-    private long importProjectId;
-    private String importKind;
-    private volatile String pendingFileSource = "folders";
+    private static final String PLAY_TESTING_NOTICE = "Google Play subscriptions require installing FieldWorks from a Google Play testing track. Purchases and restore may fail when this app is sideloaded.";
+    private static final String[] SUBSCRIPTION_PRODUCT_IDS = { "fw2026", "fw2026_stu" };
 
-    private final class AppInfoBridge {
-        @JavascriptInterface
-        public String getVersionName() {
-            try {
-                String versionName = getPackageManager()
-                        .getPackageInfo(getPackageName(), 0).versionName;
-                return versionName == null ? "" : versionName;
-            } catch (PackageManager.NameNotFoundException e) {
-                return "";
-            }
+    private String resourceString(String name) {
+        int id = getResources().getIdentifier(name, "string", getPackageName());
+        return id == 0 ? "" : getString(id);
+    }
+
+    private void handleGoogleCredential(GetCredentialResponse response) {
+        Credential credential = response.getCredential();
+        if (!(credential instanceof CustomCredential)
+                || !GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                    .equals(credential.getType())) {
+            sendAuthResult(false, "Google returned an unsupported sign-in credential.", "");
+            return;
+        }
+        try {
+            GoogleIdTokenCredential googleCredential =
+                    GoogleIdTokenCredential.createFrom(credential.getData());
+            AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(
+                    googleCredential.getIdToken(), null);
+            FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = task.getResult().getUser();
+                            sendAuthResult(true, "Signed in with Google.",
+                                    user == null ? googleCredential.getId() : user.getEmail());
+                        } else {
+                            sendAuthResult(false, authErrorMessage(task.getException()), "");
+                        }
+                    });
+        } catch (Exception error) {
+            sendAuthResult(false, "Google returned an invalid sign-in response: "
+                    + (error.getLocalizedMessage() == null ? "Please try again." : error.getLocalizedMessage()), "");
         }
     }
 
+    private void launchGoogleButtonFlow(CredentialManager manager, String clientId) {
+        GetSignInWithGoogleOption googleOption =
+                new GetSignInWithGoogleOption.Builder(clientId).build();
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleOption)
+                .build();
+        manager.getCredentialAsync(this, request, new CancellationSignal(), getMainExecutor(),
+                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                    @Override
+                    public void onResult(GetCredentialResponse response) {
+                        handleGoogleCredential(response);
+                    }
+
+                    @Override
+                    public void onError(GetCredentialException error) {
+                        String message = error.getLocalizedMessage();
+                        if (message == null || message.trim().isEmpty()) {
+                            message = "Google account selection was cancelled or could not start.";
+                        }
+                        sendAuthResult(false, message, "");
+                    }
+                });
+    }
+
+    private void launchGoogleSignIn() {
+        String clientId = resourceString("default_web_client_id");
+        if (clientId.isEmpty()) {
+            sendAuthResult(false, "Google setup is incomplete. Download the refreshed Firebase config and rebuild.", "");
+            return;
+        }
+        GetGoogleIdOption googleOption = new GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(clientId)
+                .setAutoSelectEnabled(false)
+                .build();
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleOption)
+                .build();
+        CredentialManager manager = CredentialManager.create(this);
+        manager.getCredentialAsync(this, request, new CancellationSignal(), getMainExecutor(),
+                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                    @Override
+                    public void onResult(GetCredentialResponse response) {
+                        handleGoogleCredential(response);
+                    }
+
+                    @Override
+                    public void onError(GetCredentialException error) {
+                        if (error instanceof NoCredentialException) {
+                            launchGoogleButtonFlow(manager, clientId);
+                            return;
+                        }
+                        String message = error.getLocalizedMessage();
+                        if (message == null || message.trim().isEmpty()) {
+                            message = "Google sign-in was cancelled or could not start.";
+                        }
+                        sendAuthResult(false, message, "");
+                    }
+                });
+    }
     private final class MediaBridge {
         @JavascriptInterface
-        public void prepareSource(String source) {
-            pendingFileSource = "drive".equals(source) ? "drive" : "folders";
+        public void capture(String kind, String projectId) {
+            runOnUiThread(() -> launchMediaCapture(kind, projectId));
         }
 
         @JavascriptInterface
-        public void capture(String kind, long projectId) {
-            runOnUiThread(() -> launchCamera(kind, projectId));
-        }
-
-        @JavascriptInterface
-        public void pickMedia(String kind, long projectId) {
+        public void pickMedia(String kind, String projectId) {
             runOnUiThread(() -> launchMediaPicker(kind, projectId));
         }
 
         @JavascriptInterface
-        public void startVoice(long projectId, String albumId) {
-            runOnUiThread(() -> requestVoicePermissionAndStart(projectId, albumId));
+        public void startVoice(String projectId) {
+            runOnUiThread(() -> requestVoicePermissionAndStart(projectId));
         }
 
         @JavascriptInterface
@@ -187,46 +205,15 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void cancelVoice() {
-            runOnUiThread(() -> finishVoiceRecording(false));
-        }
-
-        @JavascriptInterface
-        public void beginArchiveExport(String fileName) {
-            runOnUiThread(() -> beginProjectArchiveExport(fileName));
-        }
-
-        @JavascriptInterface
-        public synchronized boolean writeArchiveChunk(String base64Chunk) {
-            if (archiveOutputStream == null || !archiveWriteError.isEmpty()) return false;
-            try {
-                byte[] chunk = Base64.decode(base64Chunk, Base64.DEFAULT);
-                archiveOutputStream.write(chunk);
-                return true;
-            } catch (Exception error) {
-                archiveWriteError = "Could not write a backup chunk. Check device storage space.";
-                return false;
-            }
-        }
-
-        @JavascriptInterface
-        public void finishArchiveExport() {
-            runOnUiThread(() -> showProjectArchiveSavePicker());
-        }
-
-        @JavascriptInterface
-        public void cancelArchiveExport() {
             runOnUiThread(() -> {
-                closeArchiveOutput();
-                deleteArchiveTempFile();
+                if (voicePermissionPending) {
+                    voicePermissionPending = false;
+                    voiceProjectId = "";
+                    notifyVoiceStatus("canceled", "Recording canceled.");
+                } else {
+                    finishVoiceRecording(false);
+                }
             });
-        }
-
-        @JavascriptInterface
-        public void removeCapture(String name) {
-            if (name == null || name.contains("/") || name.contains("\\")) return;
-            File directory = new File(getFilesDir(), "fieldworks_media");
-            File file = new File(directory, name);
-            if (file.getParentFile().equals(directory)) file.delete();
         }
     }
 
@@ -558,6 +545,458 @@ public class MainActivity extends Activity {
         sendBillingCallback("onFieldWorksBillingEntitlement", payload);
     }
 
+    private File mediaDirectory() {
+        File directory = new File(getFilesDir(), "fieldworks_media");
+        if (!directory.exists() && !directory.mkdirs()) return null;
+        return directory;
+    }
+
+    private void launchMediaCapture(String kind, String projectId) {
+        boolean video = "video".equals(kind);
+        captureKind = video ? "video" : "photo";
+        captureProjectId = projectId == null ? "" : projectId;
+        File directory = mediaDirectory();
+        if (directory == null) {
+            notifyMediaError(captureProjectId, "Could not prepare FieldWorks media storage.");
+            return;
+        }
+        try {
+            captureFile = File.createTempFile("fieldworks_capture_", video ? ".mp4" : ".jpg", directory);
+            Uri outputUri = FileProvider.getUriForFile(
+                    this, getPackageName() + ".fileprovider", captureFile);
+            Intent camera = new Intent(video ? MediaStore.ACTION_VIDEO_CAPTURE : MediaStore.ACTION_IMAGE_CAPTURE);
+            camera.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+            camera.setClipData(ClipData.newRawUri("FieldWorks capture", outputUri));
+            camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            startActivityForResult(camera, video ? CAMERA_VIDEO_REQUEST : CAMERA_PHOTO_REQUEST);
+        } catch (Exception error) {
+            if (captureFile != null) captureFile.delete();
+            captureFile = null;
+            notifyMediaError(captureProjectId, "No camera app is available to capture this moment.");
+        }
+    }
+
+    private void launchMediaPicker(String kind, String projectId) {
+        importKind = "video".equals(kind) ? "video" : "photo";
+        importProjectId = projectId == null ? "" : projectId;
+        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        picker.addCategory(Intent.CATEGORY_OPENABLE);
+        picker.setType("video".equals(importKind) ? "video/*" : "image/*");
+        picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        try {
+            startActivityForResult(picker, MEDIA_PICKER_REQUEST);
+        } catch (Exception error) {
+            notifyMediaError(importProjectId, "Could not open the device media picker.");
+        }
+    }
+
+    private String mediaDisplayName(Uri uri) {
+        String name = "";
+        try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int column = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (column >= 0) name = cursor.getString(column);
+            }
+        } catch (Exception ignored) { }
+        if (name == null || name.trim().isEmpty()) {
+            name = "FieldWorks " + System.currentTimeMillis()
+                    + ("video".equals(importKind) ? ".mp4" : ".jpg");
+        }
+        return name.replaceAll("[\\\\/\\r\\n]", "_");
+    }
+
+    private File copySelectedMedia(Uri uri, String kind) throws IOException {
+        File directory = mediaDirectory();
+        if (directory == null) throw new IOException("Could not prepare media storage.");
+        String displayName = mediaDisplayName(uri);
+        String extension = "";
+        int dot = displayName.lastIndexOf('.');
+        if (dot >= 0 && dot < displayName.length() - 1) {
+            String candidate = displayName.substring(dot).toLowerCase()
+                    .replaceAll("[^a-z0-9.]", "");
+            if (candidate.length() <= 10) extension = candidate;
+        }
+        if (extension.isEmpty()) {
+            String mime = getContentResolver().getType(uri);
+            String guessed = mime == null ? null : MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+            extension = "." + (guessed != null ? guessed : ("video".equals(kind) ? "mp4" : "jpg"));
+        }
+        File target = File.createTempFile("fieldworks_import_", extension, directory);
+        try (InputStream input = getContentResolver().openInputStream(uri);
+             FileOutputStream output = new FileOutputStream(target)) {
+            if (input == null) throw new IOException("Could not read the selected media.");
+            byte[] buffer = new byte[16384];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            output.flush();
+        } catch (IOException error) {
+            target.delete();
+            throw error;
+        }
+        if (!target.isFile() || target.length() == 0) {
+            target.delete();
+            throw new IOException("The selected media file was empty.");
+        }
+        return target;
+    }
+
+    private java.util.List<Uri> selectedMediaUris(Intent data) {
+        java.util.List<Uri> uris = new java.util.ArrayList<>();
+        if (data == null) return uris;
+        if (data.getClipData() != null) {
+            ClipData clip = data.getClipData();
+            for (int i = 0; i < clip.getItemCount() && uris.size() < MAX_MEDIA_PER_PICK; i++) {
+                Uri uri = clip.getItemAt(i).getUri();
+                if (uri != null) uris.add(uri);
+            }
+        } else if (data.getData() != null) {
+            uris.add(data.getData());
+        }
+        return uris;
+    }
+
+    private File cameraResultFallback(Intent data) {
+        try {
+            if (data != null && data.getData() != null) return copySelectedMedia(data.getData(), captureKind);
+            if (!"photo".equals(captureKind) || data == null || data.getExtras() == null) return null;
+            Object thumbnail = data.getExtras().get("data");
+            if (!(thumbnail instanceof Bitmap)) return null;
+            File directory = mediaDirectory();
+            if (directory == null) return null;
+            File fallback = File.createTempFile("fieldworks_camera_fallback_", ".jpg", directory);
+            try (FileOutputStream output = new FileOutputStream(fallback)) {
+                if (!((Bitmap) thumbnail).compress(Bitmap.CompressFormat.JPEG, 92, output)) {
+                    fallback.delete();
+                    return null;
+                }
+                output.flush();
+            }
+            return fallback.length() > 0 ? fallback : null;
+        } catch (Exception ignored) { return null; }
+    }
+
+    private String localMediaUrl(File file) {
+        return Uri.fromFile(file).toString();
+    }
+
+    private void notifyMediaReady(String projectId, String kind, File file) {
+        if (file == null || !file.isFile() || webView == null) return;
+        String script = "window.onFieldWorksMediaReady && window.onFieldWorksMediaReady("
+                + JSONObject.quote(projectId == null ? "" : projectId) + ","
+                + JSONObject.quote(kind == null ? "" : kind) + ","
+                + JSONObject.quote(localMediaUrl(file)) + ","
+                + JSONObject.quote(file.getName()) + ")";
+        webView.evaluateJavascript(script, null);
+    }
+
+    private void notifyMediaError(String projectId, String message) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksMediaError && window.onFieldWorksMediaError("
+                + JSONObject.quote(projectId == null ? "" : projectId) + ","
+                + JSONObject.quote(message == null ? "" : message) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+
+    private void requestVoicePermissionAndStart(String projectId) {
+        if (voiceRecorder != null || voicePermissionPending) return;
+        voiceProjectId = projectId == null ? "" : projectId;
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startVoiceRecording();
+        } else {
+            voicePermissionPending = true;
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, AUDIO_PERMISSION_REQUEST);
+        }
+    }
+
+    private void startVoiceRecording() {
+        File directory = mediaDirectory();
+        if (directory == null) {
+            voiceProjectId = "";
+            notifyVoiceStatus("error", "Could not prepare FieldWorks audio storage.");
+            return;
+        }
+        try {
+            voiceFile = File.createTempFile("fieldworks_voice_", ".m4a", directory);
+            MediaRecorder recorder = new MediaRecorder();
+            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            recorder.setAudioEncodingBitRate(96000);
+            recorder.setAudioSamplingRate(44100);
+            recorder.setOutputFile(voiceFile.getAbsolutePath());
+            recorder.prepare();
+            recorder.start();
+            voiceRecorder = recorder;
+            notifyVoiceStatus("recording", "Recording… Tap Stop & save when you are done.");
+        } catch (Exception error) {
+            releaseVoiceRecorder();
+            if (voiceFile != null) voiceFile.delete();
+            voiceFile = null;
+            voiceProjectId = "";
+            notifyVoiceStatus("error", "Could not start microphone recording. Check permission and try again.");
+        }
+    }
+
+    private void finishVoiceRecording(boolean save) {
+        if (voicePermissionPending) {
+            voicePermissionPending = false;
+            voiceProjectId = "";
+            notifyVoiceStatus("canceled", "Recording canceled.");
+            return;
+        }
+        if (voiceRecorder == null) return;
+        boolean valid = false;
+        if (save) {
+            try {
+                voiceRecorder.stop();
+                valid = voiceFile != null && voiceFile.isFile() && voiceFile.length() > 0;
+            } catch (RuntimeException error) {
+                notifyVoiceStatus("error", "Recording was too short. Record a little longer and try again.");
+            }
+        }
+        releaseVoiceRecorder();
+        if (save && valid) {
+            notifyMediaReady(voiceProjectId, "voice", voiceFile);
+        } else {
+            if (voiceFile != null) voiceFile.delete();
+            if (!save) notifyVoiceStatus("canceled", "Recording canceled.");
+            else notifyVoiceStatus("error", "The voice note could not be saved. Please try again.");
+        }
+        voiceFile = null;
+        voiceProjectId = "";
+    }
+
+    private void releaseVoiceRecorder() {
+        if (voiceRecorder != null) {
+            try { voiceRecorder.reset(); } catch (Exception ignored) { }
+            try { voiceRecorder.release(); } catch (Exception ignored) { }
+            voiceRecorder = null;
+        }
+    }
+
+    private void notifyVoiceStatus(String state, String message) {
+        if (webView == null) return;
+        String script = "window.onFieldWorksVoiceStatus && window.onFieldWorksVoiceStatus("
+                + JSONObject.quote(state) + "," + JSONObject.quote(message == null ? "" : message) + ")";
+        runOnUiThread(() -> webView.evaluateJavascript(script, null));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == MEDIA_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                java.util.List<Uri> uris = selectedMediaUris(data);
+                if (uris.isEmpty()) {
+                    notifyMediaError(importProjectId, "No media file was selected.");
+                    return;
+                }
+                java.util.List<File> copiedFiles = new java.util.ArrayList<>();
+                org.json.JSONArray imports = new org.json.JSONArray();
+                try {
+                    for (Uri uri : uris) {
+                        File file = copySelectedMedia(uri, importKind);
+                        copiedFiles.add(file);
+                        org.json.JSONObject item = new org.json.JSONObject();
+                        item.put("url", localMediaUrl(file));
+                        item.put("name", mediaDisplayName(uri));
+                        item.put("kind", importKind);
+                        imports.put(item);
+                    }
+                } catch (Exception error) {
+                    for (File file : copiedFiles) file.delete();
+                    notifyMediaError(importProjectId, "Could not copy the selected media to FieldWorks.");
+                    return;
+                }
+                String script = "window.onFieldWorksImportBatch && window.onFieldWorksImportBatch("
+                        + imports + "," + JSONObject.quote(importProjectId) + ")";
+                webView.evaluateJavascript(script, null);
+            }
+            return;
+        }
+        if (requestCode == CAMERA_PHOTO_REQUEST || requestCode == CAMERA_VIDEO_REQUEST) {
+            File result = captureFile;
+            if (resultCode == RESULT_OK && (result == null || !result.isFile() || result.length() == 0)) {
+                result = cameraResultFallback(data);
+                if (captureFile != null) captureFile.delete();
+            }
+            if (resultCode == RESULT_OK && result != null && result.isFile() && result.length() > 0) {
+                notifyMediaReady(captureProjectId, captureKind, result);
+            } else if (resultCode == RESULT_OK) {
+                notifyMediaError(captureProjectId, "The camera returned no saved media. Try again or choose an existing file.");
+                if (captureFile != null) captureFile.delete();
+            } else if (captureFile != null) {
+                captureFile.delete();
+            }
+            captureFile = null;
+            captureProjectId = "";
+            captureKind = "";
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != AUDIO_PERMISSION_REQUEST || !voicePermissionPending) return;
+        voicePermissionPending = false;
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startVoiceRecording();
+        } else {
+            voiceProjectId = "";
+            notifyVoiceStatus("error", "Microphone permission is required to record a voice note.");
+        }
+    }
+
+    private final class AuthBridge {
+        @JavascriptInterface
+        public String currentUid() {
+            try {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                return user == null ? "" : user.getUid();
+            } catch (Exception error) { return ""; }
+        }
+
+        @JavascriptInterface
+        public String currentEmail() {
+            try {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                return user == null || user.getEmail() == null ? "" : user.getEmail();
+            } catch (Exception error) {
+                return "";
+            }
+        }
+
+        @JavascriptInterface
+        public void signIn(String email, String password) {
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(email.trim(), password)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = task.getResult().getUser();
+                            sendAuthResult(true, "Welcome back.", user == null ? email : user.getEmail(), "");
+                        } else {
+                            sendAuthResult(false, authErrorMessage(task.getException()), email, "");
+                        }
+                    });
+        }
+
+        @JavascriptInterface
+        public void createAccount(String name, String email, String password) {
+            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email.trim(), password)
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful()) {
+                            sendAuthResult(false, authErrorMessage(task.getException()), email, "");
+                            return;
+                        }
+                        FirebaseUser user = task.getResult().getUser();
+                        if (user == null) {
+                            sendAuthResult(false, "Account created, but the session could not be opened.", email, "");
+                            return;
+                        }
+                        String displayName = name == null ? "" : name.trim();
+                        if (displayName.isEmpty()) {
+                            sendAuthResult(true, "Your FieldWorks account is ready.", user.getEmail(), "");
+                            return;
+                        }
+                        UserProfileChangeRequest profile = new UserProfileChangeRequest.Builder()
+                                .setDisplayName(displayName).build();
+                        user.updateProfile(profile).addOnCompleteListener(profileTask ->
+                                sendAuthResult(true, "Your FieldWorks account is ready.",
+                                        user.getEmail(), ""));
+                    });
+        }
+
+        @JavascriptInterface
+        public void startGoogle() {
+            runOnUiThread(() -> launchGoogleSignIn());
+        }
+
+        @JavascriptInterface
+        public void startFacebook() {
+            runOnUiThread(() -> {
+                OAuthProvider provider = OAuthProvider.newBuilder("facebook.com").build();
+                FirebaseAuth.getInstance()
+                        .startActivityForSignInWithProvider(MainActivity.this, provider)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                FirebaseUser user = task.getResult().getUser();
+                                sendAuthResult(true, "Signed in with Facebook.",
+                                        user == null ? "" : user.getEmail(), "");
+                            } else {
+                                sendAuthResult(false, authErrorMessage(task.getException()), "", "");
+                            }
+                        });
+            });
+        }
+
+        @JavascriptInterface
+        public void sendPasswordReset(String email) {
+            FirebaseAuth.getInstance().sendPasswordResetEmail(email.trim())
+                    .addOnCompleteListener(task -> sendAuthResult(task.isSuccessful(),
+                            task.isSuccessful()
+                                    ? "Password reset email sent. Check your inbox."
+                                    : authErrorMessage(task.getException()), email, "reset"));
+        }
+
+        @JavascriptInterface
+        public void signOut() {
+            FirebaseAuth.getInstance().signOut();
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Android 15+ enforces edge-to-edge at this target SDK. Keep the native
+        // bars outside the WebView by sizing its parent to the safe content area.
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        android.widget.FrameLayout appFrame = new android.widget.FrameLayout(this);
+        appFrame.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
+        webView = new WebView(this);
+        android.widget.FrameLayout.LayoutParams webParams = new android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        appFrame.addView(webView, webParams);
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(appFrame, (view, windowInsets) -> {
+            androidx.core.graphics.Insets safeInsets = windowInsets.getInsets(
+                    androidx.core.view.WindowInsetsCompat.Type.systemBars()
+                            | androidx.core.view.WindowInsetsCompat.Type.displayCutout());
+            android.widget.FrameLayout.LayoutParams params =
+                    (android.widget.FrameLayout.LayoutParams) webView.getLayoutParams();
+            params.setMargins(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
+            webView.setLayoutParams(params);
+            return windowInsets;
+        });
+        webView.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
+        webView.setWebViewClient(new WebViewClient());
+        webView.setVerticalScrollBarEnabled(false);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowContentAccess(false);
+        webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
+        webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
+        webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
+        setContentView(appFrame);
+        androidx.core.view.ViewCompat.requestApplyInsets(appFrame);
+        webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    private String authErrorMessage(Exception error) {
+        String code = error instanceof com.google.firebase.auth.FirebaseAuthException
+                ? ((com.google.firebase.auth.FirebaseAuthException) error).getErrorCode() : "";
+        if (code.contains("INVALID_EMAIL")) return "Please enter a valid email address.";
+        if (code.contains("WEAK_PASSWORD")) return "Use a stronger password (at least 6 characters).";
+        if (code.contains("EMAIL_EXISTS")) return "An account already exists for this email.";
+        if (code.contains("INVALID_LOGIN_CREDENTIALS") || code.contains("INVALID_PASSWORD")
+                || code.contains("EMAIL_NOT_FOUND")) return "Email or password is incorrect.";
+        if (code.contains("OPERATION_NOT_ALLOWED")) return "Email sign-in is not enabled in Firebase yet.";
+        if (code.contains("NETWORK_REQUEST_FAILED")) return "Connection problem. Check your internet and try again.";
+        String detail = error == null ? "" : error.getLocalizedMessage();
+        return "Could not sign in. " + (detail == null || detail.isEmpty() ? "Please try again." : detail);
+    }
+
     private void sendAuthResult(boolean success, String message, String email) {
         sendAuthResult(success, message, email, "");
     }
@@ -574,808 +1013,17 @@ public class MainActivity extends Activity {
                     "window.onFieldWorksAuthResult && window.onFieldWorksAuthResult("
                             + result + ")", null));
         } catch (Exception ignored) {
-            // Keep authentication errors inside the login screen.
+            // Keep sign-in errors within the login card.
         }
     }
-
-    private void sendAuthProgress(String message) {
-        if (webView == null) return;
-        runOnUiThread(() -> webView.evaluateJavascript(
-                "window.onFieldWorksAuthProgress && window.onFieldWorksAuthProgress("
-                        + JSONObject.quote(message == null ? "" : message) + ")", null));
-    }
-
-    private String authErrorMessage(Exception error) {
-        String code = error instanceof com.google.firebase.auth.FirebaseAuthException
-                ? ((com.google.firebase.auth.FirebaseAuthException) error).getErrorCode() : "";
-        if (code.contains("INVALID_EMAIL")) return "Please enter a valid email address.";
-        if (code.contains("WEAK_PASSWORD")) return "Use a stronger password (at least 6 characters).";
-        if (code.contains("EMAIL_EXISTS")) return "An account already exists for this email.";
-        if (code.contains("INVALID_LOGIN_CREDENTIALS") || code.contains("INVALID_PASSWORD")
-                || code.contains("EMAIL_NOT_FOUND")) return "Email or password is incorrect.";
-        if (code.contains("OPERATION_NOT_ALLOWED")) return "Email sign-in is not enabled in Firebase yet.";
-        if (code.contains("NETWORK_REQUEST_FAILED")) return "Connection problem. Check your internet and try again.";
-        return "Could not sign in: " + (error == null ? "Please try again." : error.getLocalizedMessage());
-    }
-
-    private String resourceString(String name) {
-        int id = getResources().getIdentifier(name, "string", getPackageName());
-        return id == 0 ? "" : getString(id);
-    }
-
-    private boolean isActiveGoogleSignIn(CancellationSignal signal) {
-        return googleSignInInProgress && pendingGoogleSignIn == signal;
-    }
-
-    private void clearGoogleSignInTimeout(CancellationSignal signal) {
-        if (pendingGoogleSignIn != signal) return;
-        if (webView != null && googleSignInTimeout != null) {
-            webView.removeCallbacks(googleSignInTimeout);
-        }
-        googleSignInTimeout = null;
-    }
-
-    private void finishGoogleSignIn(CancellationSignal signal, boolean success, String message, String email) {
-        if (!isActiveGoogleSignIn(signal)) return;
-        clearGoogleSignInTimeout(signal);
-        googleSignInInProgress = false;
-        pendingGoogleSignIn = null;
-        googleSignInStage = "";
-        sendAuthResult(success, message, email);
-    }
-
-    private void handleGoogleCredential(GetCredentialResponse response, CancellationSignal signal) {
-        if (!isActiveGoogleSignIn(signal)) return;
-        Credential credential = response.getCredential();
-        if (!(credential instanceof CustomCredential)
-                || !GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-                    .equals(credential.getType())) {
-            finishGoogleSignIn(signal, false, "Google returned an unsupported sign-in credential.", "");
-            return;
-        }
-        try {
-            GoogleIdTokenCredential googleCredential =
-                    GoogleIdTokenCredential.createFrom(credential.getData());
-            AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(
-                    googleCredential.getIdToken(), null);
-            googleSignInStage = "firebase";
-            sendAuthProgress("Google account selected. Connecting to FieldWorks…");
-            FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
-                    .addOnCompleteListener(task -> {
-                        if (!isActiveGoogleSignIn(signal)) return;
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = task.getResult().getUser();
-                            finishGoogleSignIn(signal, true, "Signed in with Google.",
-                                    user == null ? googleCredential.getId() : user.getEmail());
-                        } else {
-                            finishGoogleSignIn(signal, false, authErrorMessage(task.getException()), "");
-                        }
-                    });
-        } catch (Exception error) {
-            finishGoogleSignIn(signal, false, "Google returned an invalid sign-in response: "
-                    + (error.getLocalizedMessage() == null ? "Please try again." : error.getLocalizedMessage()), "");
-        }
-    }
-
-    private void launchGoogleButtonFlow(CredentialManager manager, String clientId, CancellationSignal signal) {
-        GetSignInWithGoogleOption googleOption =
-                new GetSignInWithGoogleOption.Builder(clientId).build();
-        GetCredentialRequest request = new GetCredentialRequest.Builder()
-                .addCredentialOption(googleOption)
-                .build();
-        manager.getCredentialAsync(this, request, signal, getMainExecutor(),
-                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
-                    @Override
-                    public void onResult(GetCredentialResponse response) {
-                        if (!isActiveGoogleSignIn(signal)) return;
-                        handleGoogleCredential(response, signal);
-                    }
-
-                    @Override
-                    public void onError(GetCredentialException error) {
-                        String message = error.getLocalizedMessage();
-                        if (message == null || message.trim().isEmpty()) {
-                            message = "Google account selection was cancelled or could not start.";
-                        }
-                        finishGoogleSignIn(signal, false, message, "");
-                    }
-                });
-    }
-
-    private void launchGoogleSignIn() {
-        if (googleSignInInProgress) return;
-        String clientId = resourceString("default_web_client_id");
-        if (clientId.isEmpty()) {
-            sendAuthResult(false, "Google setup is incomplete. Download the refreshed Firebase config and rebuild.", "");
-            return;
-        }
-
-        CancellationSignal signal = new CancellationSignal();
-        googleSignInInProgress = true;
-        pendingGoogleSignIn = signal;
-        googleSignInStage = "credential";
-        googleSignInTimeout = () -> {
-            if (!isActiveGoogleSignIn(signal)) return;
-            String failedStage = googleSignInStage;
-            googleSignInInProgress = false;
-            pendingGoogleSignIn = null;
-            googleSignInTimeout = null;
-            googleSignInStage = "";
-            signal.cancel();
-            String message = "firebase".equals(failedStage)
-                    ? "Google account selected, but FieldWorks could not finish signing in. Check the connection and Firebase Google sign-in setup."
-                    : "Google account selection did not respond. Check Google Play services and try again.";
-            sendAuthResult(false, message, "");
-        };
-        if (webView != null) {
-            webView.postDelayed(googleSignInTimeout, 30000);
-        }
-
-        try {
-            CredentialManager manager = CredentialManager.create(this);
-            launchGoogleButtonFlow(manager, clientId, signal);
-        } catch (Exception error) {
-            finishGoogleSignIn(signal, false, "Google sign-in could not start: "
-                    + (error.getLocalizedMessage() == null ? "Please try again." : error.getLocalizedMessage()), "");
-        }
-    }
-    private final class AuthBridge {
-        @JavascriptInterface
-        public void signIn(String email, String password) {
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(email.trim(), password)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = task.getResult().getUser();
-                            sendAuthResult(true, "Welcome back.", user == null ? email : user.getEmail());
-                        } else {
-                            sendAuthResult(false, authErrorMessage(task.getException()), email);
-                        }
-                    });
-        }
-
-        @JavascriptInterface
-        public void createAccount(String name, String email, String password) {
-            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email.trim(), password)
-                    .addOnCompleteListener(task -> {
-                        if (!task.isSuccessful()) {
-                            sendAuthResult(false, authErrorMessage(task.getException()), email);
-                            return;
-                        }
-                        FirebaseUser user = task.getResult().getUser();
-                        if (user == null) {
-                            sendAuthResult(false, "Account created, but the session could not be opened.", email);
-                            return;
-                        }
-                        String displayName = name == null ? "" : name.trim();
-                        if (displayName.isEmpty()) {
-                            sendAuthResult(true, "Your FieldWorks account is ready.", user.getEmail());
-                            return;
-                        }
-                        UserProfileChangeRequest profile = new UserProfileChangeRequest.Builder()
-                                .setDisplayName(displayName).build();
-                        user.updateProfile(profile).addOnCompleteListener(profileTask ->
-                                sendAuthResult(true, "Your FieldWorks account is ready.", user.getEmail()));
-                    });
-        }
-
-        @JavascriptInterface
-        public void startGoogle() {
-            runOnUiThread(() -> launchGoogleSignIn());
-        }
-
-        @JavascriptInterface
-        public void sendPasswordReset(String email) {
-            FirebaseAuth.getInstance().sendPasswordResetEmail(email.trim())
-                    .addOnCompleteListener(task -> sendAuthResult(task.isSuccessful(),
-                            task.isSuccessful()
-                                    ? "Password reset email sent. Check your inbox."
-                                    : authErrorMessage(task.getException()), email, "reset"));
-        }
-
-        @JavascriptInterface
-        public void signOut() {
-            FirebaseAuth.getInstance().signOut();
-        }
-
-        @JavascriptInterface
-        public String currentEmail() {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            return user == null ? "" : (user.getEmail() == null ? "" : user.getEmail());
-        }
-        
-        @JavascriptInterface
-        public String currentUid() {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            return user == null ? "" : user.getUid();
-        }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            importProjectId = savedInstanceState.getLong("fieldworks.importProjectId", 0L);
-            importKind = savedInstanceState.getString("fieldworks.importKind");
-            captureProjectId = savedInstanceState.getLong("fieldworks.captureProjectId", 0L);
-            captureKind = savedInstanceState.getString("fieldworks.captureKind");
-            String capturePath = savedInstanceState.getString("fieldworks.captureFile");
-            if (capturePath != null) captureFile = new File(capturePath);
-        }
-        getWindow().setStatusBarColor(android.graphics.Color.rgb(247, 244, 235));
-        getWindow().setNavigationBarColor(android.graphics.Color.rgb(8, 44, 80));
-
-        webView = new WebView(this);
-        webView.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
-        FrameLayout appContainer = new FrameLayout(this);
-        appContainer.setBackgroundColor(android.graphics.Color.rgb(247, 244, 235));
-        ViewCompat.setOnApplyWindowInsetsListener(appContainer, (view, windowInsets) -> {
-            Insets safeInsets = windowInsets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-            view.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
-            return windowInsets;
-        });
-        new WindowInsetsControllerCompat(getWindow(), appContainer).setAppearanceLightStatusBars(true);
-        appContainer.addView(webView, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setAllowFileAccess(false);
-        settings.setMediaPlaybackRequiresUserGesture(false);
-        File mediaDirectory = new File(getFilesDir(), "fieldworks_media");
-        if (!mediaDirectory.exists()) mediaDirectory.mkdirs();
-        WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
-                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                .addPathHandler("/res/", new WebViewAssetLoader.ResourcesPathHandler(this))
-                .addPathHandler("/media/", new WebViewAssetLoader.InternalStoragePathHandler(
-                        this, mediaDirectory))
-                .build();
-        webView.setWebViewClient(new LocalContentWebViewClient(assetLoader));
-        webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
-        webView.addJavascriptInterface(new AppInfoBridge(), "FieldWorksAppInfo");
-        webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
-        webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
-                    FileChooserParams params) {
-                if (fileCallback != null) fileCallback.onReceiveValue(null);
-                fileCallback = callback;
-                String source = pendingFileSource;
-                pendingFileSource = "folders";
-                Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                picker.addCategory(Intent.CATEGORY_OPENABLE);
-                String title;
-                if ("archive".equals(source)) {
-                    picker.setType("application/zip");
-                    picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-                    title = "Choose a FieldWorks project backup";
-                } else {
-                    picker.setType("*/*");
-                    picker.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
-                    picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                    title = "drive".equals(source)
-                            ? "Choose from Google Drive or another location"
-                            : "Browse device folders or cloud locations";
-                }
-                try {
-                    startActivityForResult(Intent.createChooser(picker, title),
-                            FILE_CHOOSER_REQUEST);
-                } catch (Exception error) {
-                    fileCallback = null;
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            public void onPermissionRequest(PermissionRequest request) {
-                runOnUiThread(() -> {
-                    boolean audioRequested = false;
-                    for (String resource : request.getResources()) {
-                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
-                            audioRequested = true;
-                        }
-                    }
-                    if (!audioRequested) {
-                        request.deny();
-                        return;
-                    }
-                    if (checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
-                    } else {
-                        pendingPermission = request;
-                        requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},
-                                AUDIO_PERMISSION_REQUEST);
-                    }
-                });
-            }
-
-            @Override
-            public void onPermissionRequestCanceled(PermissionRequest request) {
-                if (pendingPermission == request) pendingPermission = null;
-            }
-        });
-        setContentView(appContainer);
-        ViewCompat.requestApplyInsets(appContainer);
-        loadMainPage();
-    }
-
-    private void loadMainPage() {
-        try (InputStream input = getAssets().open("index.html");
-             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = input.read(buffer)) != -1) output.write(buffer, 0, read);
-            String html = new String(output.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
-            webView.loadDataWithBaseURL("https://appassets.androidplatform.net/assets/", html,
-                    "text/html", "UTF-8", null);
-        } catch (Exception error) {
-            android.util.Log.e("FieldWorks", "Could not load the local app page", error);
-            webView.loadData("FieldWorks could not load its app page.", "text/plain", "UTF-8");
-        }
-    }
-
-    private synchronized void beginProjectArchiveExport(String fileName) {
-        closeArchiveOutput();
-        deleteArchiveTempFile();
-        archiveWriteError = "";
-        archiveExportName = fileName == null ? "FieldWorks-projects.zip" : fileName
-                .replaceAll("[^A-Za-z0-9._-]", "_");
-        if (!archiveExportName.toLowerCase().endsWith(".zip")) archiveExportName += ".zip";
-        try {
-            archiveTempFile = new File(getCacheDir(), "fieldworks-project-archive.zip");
-            archiveOutputStream = new FileOutputStream(archiveTempFile, false);
-            notifyArchiveExportStarted(true, "");
-        } catch (Exception error) {
-            closeArchiveOutput();
-            deleteArchiveTempFile();
-            notifyArchiveExportStarted(false, "Could not prepare the backup file. Check device storage space.");
-        }
-    }
-
-    private void showProjectArchiveSavePicker() {
-        synchronized (this) {
-            closeArchiveOutput();
-            if (!archiveWriteError.isEmpty()) {
-                String message = archiveWriteError;
-                deleteArchiveTempFile();
-                notifyArchiveExportResult(false, message);
-                return;
-            }
-            if (archiveTempFile == null || !archiveTempFile.isFile()) {
-                notifyArchiveExportResult(false, "The backup file could not be created.");
-                return;
-            }
-        }
-        Intent create = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        create.addCategory(Intent.CATEGORY_OPENABLE);
-        create.setType("application/zip");
-        create.putExtra(Intent.EXTRA_TITLE, archiveExportName);
-        try {
-            startActivityForResult(create, ARCHIVE_EXPORT_REQUEST);
-        } catch (Exception error) {
-            closeArchiveOutput();
-            deleteArchiveTempFile();
-            notifyArchiveExportResult(false, "No file or cloud storage provider is available to save the backup.");
-        }
-    }
-
-    private void notifyArchiveExportStarted(boolean success, String message) {
-        if (webView == null) return;
-        webView.evaluateJavascript("window.onFieldWorksArchiveExportStarted && window.onFieldWorksArchiveExportStarted("
-                + success + "," + JSONObject.quote(message) + ")", null);
-    }
-
-    private void notifyArchiveExportResult(boolean success, String message) {
-        if (webView == null) return;
-        webView.evaluateJavascript("window.onFieldWorksArchiveExportResult && window.onFieldWorksArchiveExportResult("
-                + success + "," + JSONObject.quote(message) + ")", null);
-    }
-
-    private synchronized void closeArchiveOutput() {
-        if (archiveOutputStream != null) {
-            try { archiveOutputStream.close(); } catch (IOException ignored) {}
-            archiveOutputStream = null;
-        }
-    }
-
-    private synchronized void deleteArchiveTempFile() {
-        if (archiveTempFile != null) {
-            archiveTempFile.delete();
-            archiveTempFile = null;
-        }
-    }
-
-    private void requestVoicePermissionAndStart(long projectId, String albumId) {
-        if (projectId <= 0 || voiceRecorder != null || voicePermissionPending) return;
-        voiceProjectId = projectId;
-        voiceAlbumId = albumId == null ? "" : albumId;
-        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            startVoiceRecording();
-        } else {
-            voicePermissionPending = true;
-            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},
-                    NATIVE_AUDIO_PERMISSION_REQUEST);
-        }
-    }
-
-    private void startVoiceRecording() {
-        File directory = new File(getFilesDir(), "fieldworks_media");
-        if (!directory.exists() && !directory.mkdirs()) {
-            notifyVoiceStatus("error", "Could not prepare FieldWorks audio storage.");
-            return;
-        }
-        try {
-            voiceFile = File.createTempFile("fieldworks_voice_", ".m4a", directory);
-            MediaRecorder recorder = new MediaRecorder();
-            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            recorder.setAudioEncodingBitRate(96000);
-            recorder.setAudioSamplingRate(44100);
-            recorder.setOutputFile(voiceFile.getAbsolutePath());
-            recorder.prepare();
-            recorder.start();
-            voiceRecorder = recorder;
-            notifyVoiceStatus("recording", "");
-        } catch (Exception error) {
-            releaseVoiceRecorder();
-            if (voiceFile != null) voiceFile.delete();
-            voiceFile = null;
-            voiceProjectId = 0L;
-            voiceAlbumId = "";
-            notifyVoiceStatus("error", "Could not start microphone recording. Check microphone permission and try again.");
-        }
-    }
-
-    private void finishVoiceRecording(boolean save) {
-        if (voicePermissionPending) {
-            voicePermissionPending = false;
-            voiceProjectId = 0L;
-            voiceAlbumId = "";
-            notifyVoiceStatus("canceled", "Recording canceled.");
-            return;
-        }
-        if (voiceRecorder == null) {
-            if (!save) notifyVoiceStatus("canceled", "Recording canceled.");
-            return;
-        }
-        boolean valid = false;
-        if (save) {
-            try {
-                voiceRecorder.stop();
-                valid = voiceFile != null && voiceFile.isFile() && voiceFile.length() > 0;
-            } catch (RuntimeException error) {
-                notifyVoiceStatus("error", "Recording was too short. Record for a moment longer and try again.");
-            }
-        }
-        releaseVoiceRecorder();
-        if (save && valid) {
-            String url = "https://appassets.androidplatform.net/media/" + Uri.encode(voiceFile.getName());
-            String script = "window.onFieldWorksVoiceCapture && window.onFieldWorksVoiceCapture("
-                    + JSONObject.quote(url) + "," + JSONObject.quote(voiceFile.getName()) + ","
-                    + voiceProjectId + "," + JSONObject.quote(voiceAlbumId) + ")";
-            if (webView != null) webView.evaluateJavascript(script, null);
-        } else {
-            if (voiceFile != null) voiceFile.delete();
-            notifyVoiceStatus(save ? "error" : "canceled",
-                    save ? "The recording could not be saved. Please try again." : "Recording canceled.");
-        }
-        voiceFile = null;
-        voiceProjectId = 0L;
-        voiceAlbumId = "";
-    }
-
-    private void releaseVoiceRecorder() {
-        if (voiceRecorder != null) {
-            try { voiceRecorder.reset(); } catch (Exception ignored) { }
-            try { voiceRecorder.release(); } catch (Exception ignored) { }
-            voiceRecorder = null;
-        }
-    }
-
-    private void notifyVoiceStatus(String state, String message) {
-        if (webView != null) {
-            webView.evaluateJavascript("window.onFieldWorksVoiceStatus && window.onFieldWorksVoiceStatus("
-                    + JSONObject.quote(state) + "," + JSONObject.quote(message) + ")", null);
-        }
-    }
-
-    private void launchCamera(String kind, long projectId) {
-        boolean video = "video".equals(kind);
-        captureKind = video ? "video" : "photo";
-        captureProjectId = projectId;
-        File directory = new File(getFilesDir(), "fieldworks_media");
-        if (!directory.exists() && !directory.mkdirs()) {
-            notifyCameraError("Could not prepare a place to save the capture.");
-            return;
-        }
-        try {
-            captureFile = File.createTempFile("fieldworks_", video ? ".mp4" : ".jpg", directory);
-            Uri outputUri = FileProvider.getUriForFile(
-                    this, getPackageName() + ".fileprovider", captureFile);
-            Intent camera = new Intent(video ? MediaStore.ACTION_VIDEO_CAPTURE
-                    : MediaStore.ACTION_IMAGE_CAPTURE);
-            camera.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
-            camera.setClipData(ClipData.newRawUri("FieldWorks capture", outputUri));
-            camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            startActivityForResult(camera, video ? CAMERA_VIDEO_REQUEST : CAMERA_PHOTO_REQUEST);
-        } catch (IOException | android.content.ActivityNotFoundException error) {
-            if (captureFile != null) captureFile.delete();
-            captureFile = null;
-            notifyCameraError("No camera app is available to capture this moment.");
-        }
-    }
-
-    private File cameraResultFallback(Intent data) {
-        try {
-            importKind = captureKind;
-            if (data != null && data.getData() != null) return copyImportedMedia(data.getData());
-            if (!"photo".equals(captureKind) || data == null || data.getExtras() == null) return null;
-            Object thumbnail = data.getExtras().get("data");
-            if (!(thumbnail instanceof Bitmap)) return null;
-            File directory = new File(getFilesDir(), "fieldworks_media");
-            if (!directory.exists() && !directory.mkdirs()) return null;
-            File fallback = File.createTempFile("fieldworks_camera_fallback_", ".jpg", directory);
-            try (FileOutputStream output = new FileOutputStream(fallback)) {
-                if (!((Bitmap) thumbnail).compress(Bitmap.CompressFormat.JPEG, 92, output)) {
-                    fallback.delete();
-                    return null;
-                }
-                output.flush();
-            }
-            return fallback.length() > 0 ? fallback : null;
-        } catch (Exception error) {
-            return null;
-        }
-    }
-
-    private void launchMediaPicker(String kind, long projectId) {
-        boolean video = "video".equals(kind);
-        importKind = video ? "video" : "photo";
-        importProjectId = projectId;
-        Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        picker.addCategory(Intent.CATEGORY_OPENABLE);
-        picker.setType(video ? "video/*" : "image/*");
-        picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        try {
-            startActivityForResult(picker, MEDIA_PICKER_REQUEST);
-        } catch (Exception error) {
-            notifyCameraError("Could not open the photo or video picker (" + error.getClass().getSimpleName() + "). " + (error.getMessage() == null ? "" : error.getMessage()));
-        }
-    }
-
-    private String displayName(Uri uri) {
-        String name = null;
-        try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                int column = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                if (column >= 0) name = cursor.getString(column);
-            }
-        } catch (Exception ignored) {
-            // Fall back to a generated name when a provider omits display metadata.
-        }
-        if (name == null || name.trim().isEmpty()) {
-            name = "fieldworks-" + System.currentTimeMillis()
-                    + ("video".equals(importKind) ? ".mp4" : ".jpg");
-        }
-        return name.replaceAll("[\\\\/\\r\\n]", "_");
-    }
-
-    private File copyImportedMedia(Uri uri) throws IOException {
-        File directory = new File(getFilesDir(), "fieldworks_media");
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IOException("Could not prepare FieldWorks media storage.");
-        }
-        String originalName = displayName(uri);
-        String extension = "";
-        int dot = originalName.lastIndexOf('.');
-        if (dot >= 0 && dot < originalName.length() - 1) {
-            String candidate = originalName.substring(dot).toLowerCase()
-                    .replaceAll("[^a-z0-9.]", "");
-            if (candidate.length() <= 10) extension = candidate;
-        }
-        if (extension.isEmpty()) {
-            String mime = getContentResolver().getType(uri);
-            String guessed = mime == null ? null : android.webkit.MimeTypeMap
-                    .getSingleton().getExtensionFromMimeType(mime);
-            extension = "." + (guessed != null ? guessed
-                    : ("video".equals(importKind) ? "mp4" : "jpg"));
-        }
-        File target = File.createTempFile("fieldworks_import_", extension, directory);
-        try (InputStream input = getContentResolver().openInputStream(uri);
-             FileOutputStream output = new FileOutputStream(target)) {
-            if (input == null) throw new IOException("Could not read the selected media.");
-            byte[] buffer = new byte[16 * 1024];
-            int count;
-            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
-            output.flush();
-        } catch (IOException error) {
-            target.delete();
-            throw error;
-        }
-        if (target.length() == 0) {
-            target.delete();
-            throw new IOException("The selected media file was empty.");
-        }
-        return target;
-    }
-
-    private List<Uri> selectedUris(Intent data) {
-        List<Uri> uris = new ArrayList<>();
-        if (data == null) return uris;
-        if (data.getClipData() != null) {
-            for (int i = 0; i < data.getClipData().getItemCount(); i++) {
-                Uri uri = data.getClipData().getItemAt(i).getUri();
-                if (uri != null) uris.add(uri);
-            }
-        } else if (data.getData() != null) {
-            uris.add(data.getData());
-        }
-        return uris;
-    }
-
-    private void importSelectedMedia(Intent data) {
-        if (importProjectId <= 0) {
-            notifyCameraError("Project selection expired. Reopen the project and choose media again.");
-            return;
-        }
-        List<Uri> uris = selectedUris(data);
-        if (uris.isEmpty()) {
-            notifyCameraError("No media was selected.");
-            return;
-        }
-        JSONArray imports = new JSONArray();
-        List<File> copiedFiles = new ArrayList<>();
-        for (Uri uri : uris) {
-            try {
-                File file = copyImportedMedia(uri);
-                copiedFiles.add(file);
-                JSONObject item = new JSONObject();
-                item.put("url", "https://appassets.androidplatform.net/media/"
-                        + Uri.encode(file.getName()));
-                item.put("name", displayName(uri));
-                item.put("kind", importKind);
-                imports.put(item);
-            } catch (Exception error) {
-                for (File file : copiedFiles) file.delete();
-                notifyCameraError("Media import failed (" + error.getClass().getSimpleName() + "). " + (error.getMessage() == null ? "Please try another file." : error.getMessage()));
-                return;
-            }
-        }
-        String script = "window.onFieldWorksImportBatch && window.onFieldWorksImportBatch("
-                + imports + "," + importProjectId + ")";
-        webView.evaluateJavascript(script, null);
-    }
-
-    private void notifyCameraError(String message) {
-        if (webView != null) {
-            webView.evaluateJavascript("window.toast && window.toast("
-                    + JSONObject.quote(message) + ")", null);
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putLong("fieldworks.importProjectId", importProjectId);
-        outState.putString("fieldworks.importKind", importKind);
-        outState.putLong("fieldworks.captureProjectId", captureProjectId);
-        outState.putString("fieldworks.captureKind", captureKind);
-        if (captureFile != null) outState.putString("fieldworks.captureFile", captureFile.getAbsolutePath());
-        super.onSaveInstanceState(outState);
-    }
-
-@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MEDIA_PICKER_REQUEST) {
-            if (resultCode == RESULT_OK) importSelectedMedia(data);
-            return;
-        }
-        if (requestCode == CAMERA_PHOTO_REQUEST || requestCode == CAMERA_VIDEO_REQUEST) {
-            if (resultCode == RESULT_OK
-                    && (captureFile == null || !captureFile.isFile() || captureFile.length() == 0)) {
-                File fallback = cameraResultFallback(data);
-                if (captureFile != null) captureFile.delete();
-                captureFile = fallback;
-            }
-            if (resultCode == RESULT_OK && captureFile != null
-                    && captureFile.isFile() && captureFile.length() > 0) {
-                String url = "https://appassets.androidplatform.net/media/"
-                        + Uri.encode(captureFile.getName());
-                String script = "window.onFieldWorksCapture && window.onFieldWorksCapture("
-                        + JSONObject.quote(url) + ","
-                        + JSONObject.quote(captureKind) + ","
-                        + JSONObject.quote(captureFile.getName()) + ","
-                        + captureProjectId + ")";
-                webView.evaluateJavascript(script, null);
-            } else {
-                if (resultCode == RESULT_OK) {
-                    notifyCameraError("Camera returned no saved media. Retry or choose an existing photo.");
-                }
-                if (captureFile != null) captureFile.delete();
-            }
-            captureFile = null;
-            return;
-        }
-        if (requestCode == ARCHIVE_EXPORT_REQUEST) {
-            File source;
-            synchronized (this) { source = archiveTempFile; }
-            Uri destination = resultCode == RESULT_OK && data != null ? data.getData() : null;
-            if (destination == null || source == null || !source.isFile()) {
-                closeArchiveOutput();
-                deleteArchiveTempFile();
-                notifyArchiveExportResult(false, resultCode == RESULT_CANCELED
-                        ? "Backup save canceled." : "Could not open the selected backup destination.");
-                return;
-            }
-            new Thread(() -> {
-                try (InputStream input = new java.io.FileInputStream(source);
-                     OutputStream output = getContentResolver().openOutputStream(destination, "w")) {
-                    if (output == null) throw new IOException("The selected destination could not be opened.");
-                    byte[] buffer = new byte[32768];
-                    int length;
-                    while ((length = input.read(buffer)) != -1) output.write(buffer, 0, length);
-                    output.flush();
-                    runOnUiThread(() -> {
-                        deleteArchiveTempFile();
-                        notifyArchiveExportResult(true, "");
-                    });
-                } catch (Exception error) {
-                    runOnUiThread(() -> {
-                        deleteArchiveTempFile();
-                        notifyArchiveExportResult(false, "Could not save the backup to that location. Choose another folder or cloud drive.");
-                    });
-                }
-            }, "FieldWorks-archive-export").start();
-            return;
-        }
-        if (requestCode == FILE_CHOOSER_REQUEST && fileCallback != null) {
-            Uri[] results = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
-            fileCallback.onReceiveValue(results);
-            fileCallback = null;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == NATIVE_AUDIO_PERMISSION_REQUEST) {
-            voicePermissionPending = false;
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && voiceProjectId > 0) {
-                startVoiceRecording();
-            } else {
-                voiceProjectId = 0L;
-                voiceAlbumId = "";
-                notifyVoiceStatus("error", "Microphone permission was denied. Allow it to record a voice note.");
-            }
-            return;
-        }
-        if (requestCode == AUDIO_PERMISSION_REQUEST && pendingPermission != null) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                pendingPermission.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
-            } else {
-                pendingPermission.deny();
-            }
-            pendingPermission = null;
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
-    }
-
     @Override
     protected void onDestroy() {
+        if (voiceRecorder != null || voicePermissionPending) finishVoiceRecording(false);
+        if (captureFile != null) captureFile.delete();
         if (billingClient != null) billingClient.endConnection();
-        if (voiceRecorder != null) finishVoiceRecording(false);
+        subscriptionExecutor.shutdownNow();
+        if (webView != null) webView.destroy();
+        webView = null;
         super.onDestroy();
     }
-
 }
