@@ -1907,11 +1907,25 @@ function loadDemoProjectState() {
         document.getElementById("voiceArtifactOverlay").hidden = true;
       }
     };
+    let createdProjectsOwnerKey = null;
+    function fwProjectOwnerKey(){
+      const uid=currentFieldWorksUid();
+      return uid ? CREATED_PROJECTS_KEY+":uid:"+encodeURIComponent(uid) : CREATED_PROJECTS_KEY;
+    }
+    function fwSyncProjectOwner(){
+      const key=fwProjectOwnerKey();
+      if(createdProjectsOwnerKey!==key){
+        createdProjectsOwnerKey=key;createdProjects=[];createdProjectsLoaded=false;
+        selectedArchiveProjectId="";archiveProjectPendingId="";
+      }
+      return key;
+    }
     function loadCreatedProjects() {
+      const key=fwSyncProjectOwner();
       if (createdProjectsLoaded) return;
       createdProjectsLoaded = true;
       try {
-        const saved = localStorage.getItem(CREATED_PROJECTS_KEY);
+        const saved = localStorage.getItem(key);
         const parsed = saved ? JSON.parse(saved) : [];
         createdProjects = Array.isArray(parsed) ? parsed.filter(function(project) {
           return project && typeof project.name === "string" && typeof project.id === "string";
@@ -1919,7 +1933,7 @@ function loadDemoProjectState() {
       } catch (error) { createdProjects = []; }
     }
     function saveCreatedProjects() {
-      try { localStorage.setItem(CREATED_PROJECTS_KEY, JSON.stringify(createdProjects)); return true; }
+      try { localStorage.setItem(fwSyncProjectOwner(), JSON.stringify(createdProjects)); return true; }
       catch (error) { return false; }
     }
     let archiveProjectPendingId = "";
@@ -2308,6 +2322,7 @@ function loadDemoProjectState() {
       const previousUid=window.fieldWorksTemplateUid||"";
       const nextUid=currentFieldWorksUid();
       if(previousUid!==nextUid){window.fieldWorksTemplateUid=nextUid;window.fieldWorksTemplateEntitlement=null;billingEntitlement={active:false,productId:"",uid:""};}
+      fwSyncProjectOwner();
       signedInEmail = email || "";
       const signedIn = !!signedInEmail;
       const sideLabel = document.getElementById("sideAccountLabel");
@@ -2327,6 +2342,7 @@ function loadDemoProjectState() {
       document.getElementById("signedInPanel").hidden = !signedIn;
       renderAccountPage();
       renderTemplates();
+      renderCreatedProjects();
       if (signedIn) loadSubscriptionPackage();
       else {billingEntitlement = { active: false, productId: "", uid: "" };window.fieldWorksTemplateEntitlement=null;renderTemplates();}
     }
