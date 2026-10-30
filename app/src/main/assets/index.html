@@ -531,6 +531,8 @@
   
 /* FieldWorks project finance ledger */
 .fw-finance-screen{position:fixed;inset:0;z-index:9998;background:#f7f9f4;overflow-y:auto;padding:18px 16px 85px;color:#183a37}.fw-finance-screen[hidden]{display:none!important}.fw-finance-inner{max-width:850px;margin:auto}.fw-finance-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}.fw-finance-header h2{margin:0;font-size:24px}.fw-finance-back,.fw-finance-btn{border:1px solid #d3ddd5;border-radius:12px;background:#fff;color:#174b47;padding:10px 15px;font-weight:700;cursor:pointer}.fw-finance-tabs{display:flex;gap:8px;margin:14px 0}.fw-finance-tabs button{flex:1;border:1px solid #cddbd4;border-radius:12px;padding:13px;background:#fff;color:#245450;font-weight:700}.fw-finance-tabs button.active{background:#1c5952;color:#fff}.fw-finance-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}.fw-finance-summary>div,.fw-finance-stage{background:#fff;border:1px solid #e0e7e0;border-radius:16px;padding:14px}.fw-finance-summary small{display:block;color:#687d79}.fw-finance-summary strong{font-size:17px}.fw-finance-stage{margin:12px 0}.fw-finance-stage-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.fw-finance-stage h3{font-size:17px;margin:0}.fw-finance-table{width:100%;border-collapse:collapse;margin:10px 0}.fw-finance-table td,.fw-finance-table th{border-bottom:1px solid #e9ede9;padding:10px 5px;text-align:left;font-size:13px}.fw-finance-table td:nth-child(2),.fw-finance-table th:nth-child(2){text-align:right}.fw-finance-subtotal{display:flex;justify-content:space-between;font-weight:700;padding:10px 4px}.fw-finance-total{display:flex;justify-content:space-between;font-size:20px;font-weight:800;padding:20px 6px;border-top:2px solid #245450}.fw-finance-form{display:grid;gap:10px;background:#f1f6f2;padding:14px;border-radius:12px;margin-top:12px}.fw-finance-form label{display:grid;gap:4px;font-size:13px;font-weight:600}.fw-finance-form input{width:100%;padding:11px;border:1px solid #cbd8cf;border-radius:9px;background:white}.fw-finance-row-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:5px}.fw-finance-row-actions button{border:0;background:none;color:#17635d;text-decoration:underline;cursor:pointer}.fw-finance-file{font-size:12px;color:#245450}.fw-finance-muted{font-size:13px;color:#667c77}.fw-finance-stage .fw-finance-btn{font-size:12px;padding:8px 10px}@media(max-width:500px){.fw-finance-summary{grid-template-columns:1fr 1fr}.fw-finance-summary>div:last-child{grid-column:span 2}.fw-finance-summary strong{font-size:15px}}
+
+.fw-report-entry{margin:10px 0}.fw-report-btn,.fw-report-action{background:#1b5952;color:white;border:0;border-radius:11px;padding:10px 17px;font-weight:700;cursor:pointer}.fw-report-screen{position:fixed;inset:0;z-index:9999;overflow:auto;background:#f5f7f4;padding:18px 12px 70px}.fw-report-screen[hidden]{display:none!important}.fw-report-controls{max-width:820px;margin:0 auto 15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fw-report-controls button{border-radius:9px;padding:10px 15px;cursor:pointer}.fw-report-controls label{display:grid;gap:3px;font-size:12px}.fw-report-controls textarea{width:100%;min-width:260px;min-height:65px;border:1px solid #d0d9d2;border-radius:9px;padding:9px}.fw-report-paper{max-width:820px;margin:auto;background:#fff;padding:32px;color:#192d2b;box-shadow:0 3px 18px #0001;font:14px/1.55 Arial,sans-serif}.fw-report-paper h1{font-size:27px;margin:0}.fw-report-paper h2{font-size:18px;border-bottom:1px solid #cddbd2;padding-bottom:5px;margin-top:25px}.fw-report-paper h3{font-size:15px;margin:14px 0 5px}.fw-report-paper table{border-collapse:collapse;width:100%;margin:8px 0}.fw-report-paper td,.fw-report-paper th{padding:7px;border-bottom:1px solid #e0e7e1;text-align:left}.fw-report-paper td:last-child,.fw-report-paper th:last-child{text-align:right}.fw-report-photo{max-width:100%;max-height:290px;object-fit:contain;margin:7px 0;display:block}.fw-report-muted{color:#62736d;font-size:12px}.fw-report-paper p{white-space:pre-wrap}@media print{body>*:not(#fwReportScreen){display:none!important}#fwReportScreen{position:static!important;overflow:visible!important;padding:0!important;background:#fff!important}#fwReportScreen .fw-report-controls{display:none!important}.fw-report-paper{box-shadow:none!important;max-width:none!important;padding:0!important}.fw-report-paper section{break-inside:avoid}.fw-report-photo{break-inside:avoid} @page{size:A4;margin:15mm}}
 </style>
 </head>
 <body>
@@ -1067,6 +1069,7 @@ function loadDemoProjectState() {
         '<div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + type + '</span><button type="button" class="demo-project-favorite" data-favorite-project="' + safeId + '" aria-pressed="' + isProjectFavorite(projectId) + '" aria-label="' + (isProjectFavorite(projectId) ? 'Remove ' + name + ' from favourites' : 'Add ' + name + ' to favourites') + '" title="' + (isProjectFavorite(projectId) ? 'Remove from favourites' : 'Add to favourites') + '">' + (isProjectFavorite(projectId) ? '★' : '☆') + '</button></div>' +
         '<h3 class="project-title-line" title="Long-press to pin or unpin this project." aria-label="' + name + '. Long-press to pin or unpin this project."><span class="project-title-copy">' + name + (readPinnedProjectIds().indexOf(projectId) >= 0 ? '<svg class="pinned-project-icon" viewBox="0 0 24 32" role="img" aria-label="Pinned project" title="Pinned project"><ellipse cx="12" cy="30.4" rx="5.1" ry="1.35" fill="#111"/><path d="M9.6 13.1 13.1 14.2 7 29.9 5.8 29.6z" fill="#85898d"/><path d="m12.8 14.1 2.3 1-7.9 14.7-1.1-.2z" fill="#b7babd"/><path d="m12.1 13.3 2.4.8-1.5 2-2.8-1z" fill="#666a6e"/><circle cx="12" cy="8" r="7.1" fill="#ed1016"/><path d="M5.1 9.1a7.1 7.1 0 0 0 13.8 0 7.1 7.1 0 0 1-13.8 0" fill="#c90008"/><circle cx="12" cy="5.3" r="1.25" fill="#fff"/></svg>' : '') + '</span></h3><p class="demo-project-description">' + description + '</p>' +
         '<div class="demo-project-stats"><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="issues">Issues <b>' + issues + '</b></button><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="reminders">Reminders <b>' + reminders + '</b></button><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="budget">$ <b>RM ' + spent.toLocaleString("en-MY") + '</b></button></div>' +
+        '<div class="fw-report-entry"><button type="button" class="fw-report-btn" data-fw-report-open="' + safeId + '">▤ Report · PDF</button></div>' +
         renderProjectTrackingInline(projectId, project) +
         '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
         renderProjectAlbums(projectId) +
@@ -2534,7 +2537,73 @@ function loadDemoProjectState() {
       fwFinanceEditing=null;fwFinanceRender();
     },true);
 
+
+    let fwReportProjectId="";
+    function fwReportEscape(value){return escapeProjectText(String(value===null||value===undefined?"":value));}
+    function fwReportOpen(id){
+      const project=getProjectCardRecord(id);if(!project)return;
+      fwReportProjectId=String(id);
+      document.getElementById("fwReportDate").value=new Date().toLocaleDateString("en-CA");
+      document.getElementById("fwReportConclusion").value=project.reportConclusion||"";
+      document.getElementById("fwReportScreen").hidden=false;
+      fwReportRender();
+    }
+    function fwReportRender(){
+      const project=getProjectCardRecord(fwReportProjectId);if(!project)return;
+      const esc=fwReportEscape,stages=projectCardStageNames(project,fwReportProjectId);
+      const date=document.getElementById("fwReportDate").value||new Date().toISOString().slice(0,10);
+      const artifacts=projectArtifactList(fwReportProjectId);
+      const issues=Array.isArray(project.issues)?project.issues:[];
+      const followups=Array.isArray(project.reminders)?project.reminders:[];
+      const budgets=Array.isArray(project.budgetItems)?project.budgetItems:[];
+      const expenses=Array.isArray(project.expenses)?project.expenses:[];
+      let html='<header><small>FIELDWORKS · PROJECT REPORT</small><h1>'+esc(project.name||"Untitled Project")+'</h1><div class="fw-report-muted">Report date: '+esc(date)+'</div></header>';
+      html+='<section><h2>1. Project Overview</h2><p><strong>Project title:</strong> '+esc(project.name||"")+'</p><p><strong>Description:</strong> '+esc(project.description||"Not provided")+'</p></section>';
+      html+='<section><h2>2. Stage Updates, Photos & Comments</h2>';
+      stages.forEach(function(stage,i){
+        const media=artifacts.filter(function(a){return Number(a.stage)===i;});
+        html+='<div><h3>'+esc(String(i+1)+". "+stage)+'</h3>';
+        const dates=(project.stageDates||[])[i]||{};
+        if(dates.start||dates.end)html+='<p class="fw-report-muted">Start: '+esc(dates.start||"—")+' · End: '+esc(dates.end||"—")+'</p>';
+        if(!media.length)html+='<p class="fw-report-muted">No stage media recorded.</p>';
+        media.forEach(function(a){
+          const note=a.comment||a.comments||a.text||a.description||a.caption||"";
+          if(a.type==="photo"&&a.url&&(/^(data:image\/|blob:|https?:)/i).test(a.url))html+='<img class="fw-report-photo" src="'+esc(a.url)+'" alt="Project stage photo">';
+          else if(a.type==="video")html+='<p class="fw-report-muted">Video attachment: '+esc(a.name||"Video")+'</p>';
+          if(note)html+='<p>'+esc(note)+'</p>';
+        });
+        const journal=Array.isArray(project.journal)?project.journal.filter(x=>Number(x.stage)===i):[];
+        journal.forEach(x=>html+='<p>'+esc(x.text||"")+'</p>');
+        html+='</div>';
+      });
+      html+='</section><section><h2>3. Issues & Follow-ups</h2><h3>Issues</h3>';
+      html+=issues.length?'<table><tr><th>Issue / Severity</th><th>Status</th></tr>'+issues.map(x=>'<tr><td>'+esc(x.text||"Issue")+'<br><small>'+esc(x.severity||"")+'</small></td><td>'+esc(x.status||"Open")+'</td></tr>').join("")+'</table>':'<p>No issues recorded.</p>';
+      html+='<h3>Follow-ups</h3>'+(followups.length?'<table><tr><th>Action</th><th>Status</th></tr>'+followups.map(x=>'<tr><td>'+esc(x.text||"Follow-up")+'</td><td>'+esc(x.done?"Done":"Pending")+'</td></tr>').join("")+'</table>':'<p>No follow-ups recorded.</p>')+'</section>';
+      const totalBudget=budgets.length?budgets.reduce((a,x)=>a+(Number(x.amount)||0),0):(Number(project.budget)||0);
+      const totalExpenses=expenses.length?expenses.reduce((a,x)=>a+(Number(x.amount)||0),0):(Number(project.spent)||0);
+      html+='<section><h2>4. Financial Summary</h2><table><tr><th>Budget</th><td>'+fwFinanceMoney(totalBudget)+'</td></tr><tr><th>Expenses</th><td>'+fwFinanceMoney(totalExpenses)+'</td></tr><tr><th>Balance</th><td>'+fwFinanceMoney(totalBudget-totalExpenses)+'</td></tr></table>';
+      stages.forEach(function(stage,i){
+        const b=budgets.filter(x=>Number(x.stage||0)===i).reduce((a,x)=>a+(Number(x.amount)||0),0);
+        const e=expenses.filter(x=>Number(x.stage||0)===i).reduce((a,x)=>a+(Number(x.amount)||0),0);
+        html+='<p>'+esc(stage)+' — Budget: '+fwFinanceMoney(b)+' · Expenses: '+fwFinanceMoney(e)+'</p>';
+      });
+      html+='</section><section><h2>5. Conclusion</h2><p>'+esc(document.getElementById("fwReportConclusion").value||"No conclusion provided.")+'</p></section>';
+      document.getElementById("fwReportPaper").innerHTML=html;
+    }
+    document.addEventListener("click",function(event){
+      const open=event.target.closest("[data-fw-report-open]");
+      if(open){event.preventDefault();fwReportOpen(open.dataset.fwReportOpen);return;}
+      if(event.target.closest("[data-fw-report-close]")){document.getElementById("fwReportScreen").hidden=true;fwReportProjectId="";return;}
+      if(event.target.closest("[data-fw-report-pdf]")){fwReportRender();window.print();return;}
+    },true);
+    document.getElementById("fwReportDate").addEventListener("change",fwReportRender);
+    document.getElementById("fwReportConclusion").addEventListener("input",function(){
+      const project=getProjectCardRecord(fwReportProjectId);
+      if(project){project.reportConclusion=this.value;saveProjectCardRecord(fwReportProjectId);}
+      fwReportRender();
+    });
+
 </script>
-<section id="fwFinanceScreen" class="fw-finance-screen" hidden aria-label="Project Finance"><div class="fw-finance-inner"><header class="fw-finance-header"><button type="button" class="fw-finance-back" data-fw-finance-close>← Back</button><div><h2>$ Project Finance</h2><small id="fwFinanceProjectName"></small></div></header><div class="fw-finance-tabs" role="tablist"><button type="button" data-fw-finance-tab="budget" class="active">Budget</button><button type="button" data-fw-finance-tab="expenses">Expenses</button></div><div id="fwFinanceSummary" class="fw-finance-summary"></div><div id="fwFinanceLedger"></div><p class="fw-finance-muted">Documents are saved on this device. Photo/PDF attachments up to 2 MB each.</p></div></section></body>
+<section id="fwFinanceScreen" class="fw-finance-screen" hidden aria-label="Project Finance"><div class="fw-finance-inner"><header class="fw-finance-header"><button type="button" class="fw-finance-back" data-fw-finance-close>← Back</button><div><h2>$ Project Finance</h2><small id="fwFinanceProjectName"></small></div></header><div class="fw-finance-tabs" role="tablist"><button type="button" data-fw-finance-tab="budget" class="active">Budget</button><button type="button" data-fw-finance-tab="expenses">Expenses</button></div><div id="fwFinanceSummary" class="fw-finance-summary"></div><div id="fwFinanceLedger"></div><p class="fw-finance-muted">Documents are saved on this device. Photo/PDF attachments up to 2 MB each.</p></div></section><section id="fwReportScreen" class="fw-report-screen" hidden><div class="fw-report-controls"><button type="button" data-fw-report-close>← Back to project</button><button type="button" class="fw-report-action" data-fw-report-pdf>Print / Save as PDF</button><label>Report date<input id="fwReportDate" type="date"></label><label style="flex:1 1 100%">Conclusion<textarea id="fwReportConclusion" placeholder="Write your project conclusion..."></textarea></label><small>Review the report, then choose Save as PDF in the print dialog. Photos stored only on this device may be unavailable on other devices.</small></div><article class="fw-report-paper" id="fwReportPaper"></article></section></body>
 </html>
 
