@@ -2,7 +2,7 @@ name: Build FieldWorks APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, validation/reapply-templates-reports-build09]
     paths:
       - 'app/**'
       - 'settings.gradle'
