@@ -1,4 +1,4 @@
-name: Build FieldWorks APK and AAB
+name: Build FieldWorks APK
 
 on:
   push:
@@ -54,13 +54,11 @@ jobs:
           BUILD_LABEL=$(printf '%02d' "$BUILD_NUMBER")
           VERSION_NAME="$RELEASE_VERSION Build $BUILD_LABEL"
           APK_FILENAME="FieldWorks $VERSION_NAME.apk"
-          AAB_FILENAME="FieldWorks $VERSION_NAME.aab"
           VERSION_CODE=$((192 + GITHUB_RUN_NUMBER))
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
           echo "APK_FILENAME=$APK_FILENAME" >> "$GITHUB_ENV"
-          echo "AAB_FILENAME=$AAB_FILENAME" >> "$GITHUB_ENV"
           echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
-          echo "Building $APK_FILENAME and $AAB_FILENAME (versionCode $VERSION_CODE)"
+          echo "Building $APK_FILENAME (versionCode $VERSION_CODE)"
 
       - name: Restore the existing release keystore
         shell: bash
@@ -90,25 +88,16 @@ jobs:
           echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
           echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
 
-      - name: Build signed APK and AAB
+      - name: Build signed APK
         shell: bash
         run: |
-          gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease :app:bundleRelease
+          gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease
           cp app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/$APK_FILENAME"
-          cp app/build/outputs/bundle/release/app-release.aab "app/build/outputs/bundle/release/$AAB_FILENAME"
 
       - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APK_FILENAME }}
           path: app/build/outputs/apk/release/${{ env.APK_FILENAME }}
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Upload signed AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.AAB_FILENAME }}
-          path: app/build/outputs/bundle/release/${{ env.AAB_FILENAME }}
           if-no-files-found: error
           retention-days: 30
