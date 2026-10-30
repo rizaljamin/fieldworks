@@ -2112,11 +2112,11 @@ function loadDemoProjectState() {
       if(id==="construction"||id==="charity-function")return true;
       return !!(active&&entitlement.productId==="fw2026_stu"&&id==="field-trips");
     }
-    function fwTemplateUnlock(){showFieldWorksPage("account");const x=document.querySelector(".subscription-card");if(x)x.scrollIntoView({block:"start"});}
+    function fwTemplateUnlock(){showFieldWorksPage("account");const x=document.querySelector("#page-account .subscription-card");if(x)x.scrollIntoView({block:"start"});}
     function renderTemplateCard(template) {
       const stages=escapeProjectText((template.stages||[]).join(" · "));
       const allowed=fwTemplateAllowed(template.id);
-      return '<article class="template-card'+(allowed?' template-enabled':' template-disabled')+'" aria-disabled="'+(!allowed)+'"><div class="template-art" aria-hidden="true">'+escapeProjectText(template.icon)+'</div><h3>'+escapeProjectText(template.name)+'</h3><p>'+escapeProjectText(template.description)+'</p><small class="template-stage-preview">'+stages+'</small>'+
+      return '<article class="template-card'+(allowed?' template-enabled':' template-disabled')+'" '+(allowed?'':'data-fw-template-unlock role="button" tabindex="0" aria-label="Subscribe to unlock '+escapeProjectText(template.name)+'"')+'><div class="template-art" aria-hidden="true">'+escapeProjectText(template.icon)+'</div><h3>'+escapeProjectText(template.name)+'</h3><p>'+escapeProjectText(template.description)+'</p><small class="template-stage-preview">'+stages+'</small>'+
       (allowed?'<button class="button-primary" type="button" data-use-template="'+escapeProjectText(template.id)+'">Use template</button>':'<button class="button-primary template-locked-button" type="button" data-fw-template-unlock>Subscribe to unlock this template</button>')+'</article>';
     }
     function renderTemplates() {
@@ -2201,10 +2201,11 @@ function loadDemoProjectState() {
         grid.addEventListener("click", function(event) {
           const button = event.target.closest("[data-use-template]");
           if (button) openCreateProjectCard(button.dataset.useTemplate);
-          if(event.target.closest("[data-fw-template-unlock]"))fwTemplateUnlock();
+          if(event.target.closest("[data-fw-template-unlock]")){event.preventDefault();fwTemplateUnlock();}
         });
       });
       document.addEventListener("keydown", function(event) {
+        if ((event.key==="Enter"||event.key===" ")&&event.target.matches(".template-disabled[data-fw-template-unlock]")){event.preventDefault();fwTemplateUnlock();return;}
         if (event.key === "Escape" && !document.getElementById("createProjectOverlay").hidden) closeCreateProjectCard();
       });
     }
@@ -2304,6 +2305,9 @@ function loadDemoProjectState() {
       setAuthStatus("", false);
     }
     function updateAuthUI(email) {
+      const previousUid=window.fieldWorksTemplateUid||"";
+      const nextUid=currentFieldWorksUid();
+      if(previousUid!==nextUid){window.fieldWorksTemplateUid=nextUid;window.fieldWorksTemplateEntitlement=null;billingEntitlement={active:false,productId:"",uid:""};}
       signedInEmail = email || "";
       const signedIn = !!signedInEmail;
       const sideLabel = document.getElementById("sideAccountLabel");
@@ -2322,6 +2326,7 @@ function loadDemoProjectState() {
       document.getElementById("loginDivider").hidden = signedIn;
       document.getElementById("signedInPanel").hidden = !signedIn;
       renderAccountPage();
+      renderTemplates();
       if (signedIn) loadSubscriptionPackage();
       else {billingEntitlement = { active: false, productId: "", uid: "" };window.fieldWorksTemplateEntitlement=null;renderTemplates();}
     }
@@ -2419,7 +2424,7 @@ function loadDemoProjectState() {
     window.onFieldWorksBillingEntitlement = function(result) {
       result = result || {};
       const uid = currentFieldWorksUid();
-      if (result.uid && result.uid !== uid) return;
+      if (!uid || !result.uid || result.uid !== uid) return;
       billingEntitlement = { active: !!result.active, productId: result.productId || "", uid: result.uid || "" };
       window.fieldWorksTemplateEntitlement=billingEntitlement;
       renderAccountPage();renderTemplates();
