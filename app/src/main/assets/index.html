@@ -528,7 +528,10 @@
     .archive-file-row strong{font-size:11px;overflow-wrap:anywhere}
     .archive-file-row small{color:#829093;font-size:9px}
     @media(max-width:700px){.archive-page-card{padding:15px}.archive-directory-picker{align-items:flex-start;flex-direction:column}.archive-restore-heading{align-items:flex-start;flex-direction:column}}
-  </style>
+  
+/* FieldWorks project finance ledger */
+.fw-finance-screen{position:fixed;inset:0;z-index:9998;background:#f7f9f4;overflow-y:auto;padding:18px 16px 85px;color:#183a37}.fw-finance-screen[hidden]{display:none!important}.fw-finance-inner{max-width:850px;margin:auto}.fw-finance-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}.fw-finance-header h2{margin:0;font-size:24px}.fw-finance-back,.fw-finance-btn{border:1px solid #d3ddd5;border-radius:12px;background:#fff;color:#174b47;padding:10px 15px;font-weight:700;cursor:pointer}.fw-finance-tabs{display:flex;gap:8px;margin:14px 0}.fw-finance-tabs button{flex:1;border:1px solid #cddbd4;border-radius:12px;padding:13px;background:#fff;color:#245450;font-weight:700}.fw-finance-tabs button.active{background:#1c5952;color:#fff}.fw-finance-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}.fw-finance-summary>div,.fw-finance-stage{background:#fff;border:1px solid #e0e7e0;border-radius:16px;padding:14px}.fw-finance-summary small{display:block;color:#687d79}.fw-finance-summary strong{font-size:17px}.fw-finance-stage{margin:12px 0}.fw-finance-stage-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.fw-finance-stage h3{font-size:17px;margin:0}.fw-finance-table{width:100%;border-collapse:collapse;margin:10px 0}.fw-finance-table td,.fw-finance-table th{border-bottom:1px solid #e9ede9;padding:10px 5px;text-align:left;font-size:13px}.fw-finance-table td:nth-child(2),.fw-finance-table th:nth-child(2){text-align:right}.fw-finance-subtotal{display:flex;justify-content:space-between;font-weight:700;padding:10px 4px}.fw-finance-total{display:flex;justify-content:space-between;font-size:20px;font-weight:800;padding:20px 6px;border-top:2px solid #245450}.fw-finance-form{display:grid;gap:10px;background:#f1f6f2;padding:14px;border-radius:12px;margin-top:12px}.fw-finance-form label{display:grid;gap:4px;font-size:13px;font-weight:600}.fw-finance-form input{width:100%;padding:11px;border:1px solid #cbd8cf;border-radius:9px;background:white}.fw-finance-row-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:5px}.fw-finance-row-actions button{border:0;background:none;color:#17635d;text-decoration:underline;cursor:pointer}.fw-finance-file{font-size:12px;color:#245450}.fw-finance-muted{font-size:13px;color:#667c77}.fw-finance-stage .fw-finance-btn{font-size:12px;padding:8px 10px}@media(max-width:500px){.fw-finance-summary{grid-template-columns:1fr 1fr}.fw-finance-summary>div:last-child{grid-column:span 2}.fw-finance-summary strong{font-size:15px}}
+</style>
 </head>
 <body>
   
@@ -830,6 +833,7 @@ function loadDemoProjectState() {
         if (Array.isArray(saved.issues)) MINI_RENOVATION_DEMO.issues = saved.issues;
         if (Array.isArray(saved.reminders)) MINI_RENOVATION_DEMO.reminders = saved.reminders;
         if (Array.isArray(saved.expenses)) MINI_RENOVATION_DEMO.expenses = saved.expenses;
+        if (Array.isArray(saved.budgetItems)) MINI_RENOVATION_DEMO.budgetItems = saved.budgetItems;
         if (Number.isFinite(Number(saved.spent))) MINI_RENOVATION_DEMO.spent = Number(saved.spent);
         if (Number.isFinite(Number(saved.budget))) MINI_RENOVATION_DEMO.budget = Number(saved.budget);
       } catch (error) {}
@@ -846,6 +850,7 @@ function loadDemoProjectState() {
           issues: MINI_RENOVATION_DEMO.issues || [],
           reminders: MINI_RENOVATION_DEMO.reminders || [],
           expenses: MINI_RENOVATION_DEMO.expenses || [],
+          budgetItems: MINI_RENOVATION_DEMO.budgetItems || [],
           spent: Number(MINI_RENOVATION_DEMO.spent) || 0,
           budget: Number(MINI_RENOVATION_DEMO.budget) || 0
         }));
@@ -1061,7 +1066,7 @@ function loadDemoProjectState() {
         projectCardMediaMarkup(project, projectId, isDemo) +
         '<div class="demo-project-copy"><div class="demo-project-meta"><span class="demo-project-tag">' + type + '</span><button type="button" class="demo-project-favorite" data-favorite-project="' + safeId + '" aria-pressed="' + isProjectFavorite(projectId) + '" aria-label="' + (isProjectFavorite(projectId) ? 'Remove ' + name + ' from favourites' : 'Add ' + name + ' to favourites') + '" title="' + (isProjectFavorite(projectId) ? 'Remove from favourites' : 'Add to favourites') + '">' + (isProjectFavorite(projectId) ? '★' : '☆') + '</button></div>' +
         '<h3 class="project-title-line" title="Long-press to pin or unpin this project." aria-label="' + name + '. Long-press to pin or unpin this project."><span class="project-title-copy">' + name + (readPinnedProjectIds().indexOf(projectId) >= 0 ? '<svg class="pinned-project-icon" viewBox="0 0 24 32" role="img" aria-label="Pinned project" title="Pinned project"><ellipse cx="12" cy="30.4" rx="5.1" ry="1.35" fill="#111"/><path d="M9.6 13.1 13.1 14.2 7 29.9 5.8 29.6z" fill="#85898d"/><path d="m12.8 14.1 2.3 1-7.9 14.7-1.1-.2z" fill="#b7babd"/><path d="m12.1 13.3 2.4.8-1.5 2-2.8-1z" fill="#666a6e"/><circle cx="12" cy="8" r="7.1" fill="#ed1016"/><path d="M5.1 9.1a7.1 7.1 0 0 0 13.8 0 7.1 7.1 0 0 1-13.8 0" fill="#c90008"/><circle cx="12" cy="5.3" r="1.25" fill="#fff"/></svg>' : '') + '</span></h3><p class="demo-project-description">' + description + '</p>' +
-        '<div class="demo-project-stats"><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="issues">Issues <b>' + issues + '</b></button><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="reminders">Reminders <b>' + reminders + '</b></button><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="budget">Spent <b>RM ' + spent.toLocaleString("en-MY") + '</b></button></div>' +
+        '<div class="demo-project-stats"><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="issues">Issues <b>' + issues + '</b></button><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="reminders">Reminders <b>' + reminders + '</b></button><button type="button" data-open-project-tracking="' + safeId + '" data-tracking-view="budget">$ <b>RM ' + spent.toLocaleString("en-MY") + '</b></button></div>' +
         renderProjectTrackingInline(projectId, project) +
         '<p class="demo-project-last"><strong>' + (isDemo ? "Latest moment" : "Created") + '</strong><span>' + (isDemo ? "Updated · " : "") + escapeProjectText(latest || created || "—") + '</span></p>' +
         renderProjectAlbums(projectId) +
@@ -2423,7 +2428,113 @@ function loadDemoProjectState() {
       if (event.key === "Escape") { closeLoginCard(); }
     });
       openFieldWorksMenu();
+
+    // Project Finance: standalone, stage-based budget and expenses bookkeeping.
+    let fwFinanceProjectId = "", fwFinanceTab = "budget", fwFinanceEditing = null;
+    function fwFinanceMoney(value) { return "RM " + (Number(value)||0).toLocaleString("en-MY",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function fwFinanceEntries(project, tab) {
+      if (tab === "budget") return Array.isArray(project.budgetItems) ? project.budgetItems : [];
+      return Array.isArray(project.expenses) ? project.expenses : [];
+    }
+    function fwFinanceStageIndex(entry) { return Math.max(0,Number(entry.stage)||0); }
+    function fwFinanceTotals(project) {
+      const budgetItems=fwFinanceEntries(project,"budget");
+      const budget=budgetItems.length?budgetItems.reduce((sum,e)=>sum+(Number(e.amount)||0),0):(Number(project.budget)||0);
+      const expenses=fwFinanceEntries(project,"expenses");
+      const spent=expenses.length?expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0):(Number(project.spent)||0);
+      return {budget,spent};
+    }
+    function fwFinanceOpen(projectId) {
+      if(!getProjectCardRecord(projectId))return;
+      fwFinanceProjectId=String(projectId);fwFinanceTab="budget";fwFinanceEditing=null;
+      document.getElementById("fwFinanceScreen").hidden=false;
+      fwFinanceRender();
+    }
+    function fwFinanceClose() {
+      document.getElementById("fwFinanceScreen").hidden=true;
+      fwFinanceProjectId="";fwFinanceEditing=null;
+      renderMiniRenovationDemo();renderCreatedProjects();
+    }
+    function fwFinanceRender() {
+      const project=getProjectCardRecord(fwFinanceProjectId);
+      if(!project){fwFinanceClose();return;}
+      const stages=projectCardStageNames(project,fwFinanceProjectId);
+      const totals=fwFinanceTotals(project);
+      document.getElementById("fwFinanceProjectName").textContent=project.name||"Project";
+      document.getElementById("fwFinanceSummary").innerHTML='<div><small>Budget</small><strong>'+fwFinanceMoney(totals.budget)+'</strong></div><div><small>Expenses</small><strong>'+fwFinanceMoney(totals.spent)+'</strong></div><div><small>Balance</small><strong>'+fwFinanceMoney(totals.budget-totals.spent)+'</strong></div>';
+      document.querySelectorAll("[data-fw-finance-tab]").forEach(b=>{b.classList.toggle("active",b.dataset.fwFinanceTab===fwFinanceTab);b.setAttribute("aria-selected",String(b.dataset.fwFinanceTab===fwFinanceTab));});
+      const entries=fwFinanceEntries(project,fwFinanceTab),wrap=document.getElementById("fwFinanceLedger");
+      const escape=escapeProjectText;
+      let html="";
+      stages.forEach(function(stage,si){
+        const rows=entries.map((entry,index)=>({entry,index})).filter(x=>fwFinanceStageIndex(x.entry)===si);
+        const subtotal=rows.reduce((sum,x)=>sum+(Number(x.entry.amount)||0),0);
+        html+='<section class="fw-finance-stage"><div class="fw-finance-stage-head"><h3>'+escape(String(si+1)+". "+stage)+'</h3><button class="fw-finance-btn" data-fw-add="'+si+'">+ Add item</button></div><table class="fw-finance-table"><thead><tr><th>Description / Attachment</th><th>Amount (RM)</th></tr></thead><tbody>';
+        if(!rows.length)html+='<tr><td colspan="2" class="fw-finance-muted">No items recorded</td></tr>';
+        rows.forEach(function(x){
+          const e=x.entry,attachment=e.attachment;
+          html+='<tr><td><strong>'+escape(e.text||"Item")+'</strong>'+(e.date?'<div class="fw-finance-muted">'+escape(e.date)+'</div>':'')+(attachment?'<div><button class="fw-finance-btn fw-finance-file" data-fw-file="'+x.index+'">📎 '+escape(attachment.name||"Document")+'</button></div>':'')+'<div class="fw-finance-row-actions"><button data-fw-edit="'+x.index+'">Edit</button><button data-fw-delete="'+x.index+'">Delete</button></div></td><td>'+fwFinanceMoney(e.amount).replace("RM ","")+'</td></tr>';
+        });
+        html+='</tbody></table><div class="fw-finance-subtotal"><span>Stage subtotal</span><span>'+fwFinanceMoney(subtotal)+'</span></div>';
+        if(fwFinanceEditing&&fwFinanceEditing.stage===si){
+          const edit=fwFinanceEditing.index>=0?entries[fwFinanceEditing.index]:null;
+          html+='<form class="fw-finance-form" data-fw-finance-form="'+si+'"><label>Description<input name="text" maxlength="160" required value="'+escape(edit?edit.text||"":"")+'"></label><label>Amount (RM)<input name="amount" type="number" step="0.01" min="0.01" required value="'+(edit?Number(edit.amount)||"":"")+'"></label><label>Date<input name="date" type="date" value="'+escape(edit?edit.date||"":"")+'"></label><label>📎 Attach photo or PDF (optional)<input name="attachment" type="file" accept="image/*,application/pdf"></label>'+(edit&&edit.attachment?'<small>Current: '+escape(edit.attachment.name)+'</small><label><input type="checkbox" name="removeAttachment"> Remove current attachment</label>':'')+'<div><button class="fw-finance-btn" type="submit">Save item</button> <button class="fw-finance-btn" type="button" data-fw-cancel>Cancel</button></div></form>';
+        }
+        html+='</section>';
+      });
+      const sum=entries.length?entries.reduce((total,e)=>total+(Number(e.amount)||0),0):(fwFinanceTab==="budget"?Number(project.budget)||0:Number(project.spent)||0);
+      html+='<div class="fw-finance-total"><span>GRAND TOTAL '+(fwFinanceTab==="budget"?"BUDGET":"EXPENSES")+'</span><span>'+fwFinanceMoney(sum)+'</span></div>';
+      if(!entries.length&&(fwFinanceTab==="budget"?Number(project.budget):Number(project.spent)))html+='<p class="fw-finance-muted">Existing project total shown above. Add stage items to replace this legacy total with an itemised ledger.</p>';
+      wrap.innerHTML=html;
+    }
+    document.addEventListener("click",function(event){
+      const open=event.target.closest('[data-open-project-tracking][data-tracking-view="budget"]');
+      if(open){event.stopImmediatePropagation();fwFinanceOpen(open.dataset.openProjectTracking);return;}
+      if(document.getElementById("fwFinanceScreen").hidden)return;
+      if(event.target.closest("[data-fw-finance-close]")){fwFinanceClose();return;}
+      const tab=event.target.closest("[data-fw-finance-tab]");
+      if(tab){fwFinanceTab=tab.dataset.fwFinanceTab;fwFinanceEditing=null;fwFinanceRender();return;}
+      const add=event.target.closest("[data-fw-add]");
+      if(add){fwFinanceEditing={stage:Number(add.dataset.fwAdd),index:-1};fwFinanceRender();return;}
+      const edit=event.target.closest("[data-fw-edit]");
+      if(edit){const project=getProjectCardRecord(fwFinanceProjectId),e=fwFinanceEntries(project,fwFinanceTab)[Number(edit.dataset.fwEdit)];fwFinanceEditing={stage:fwFinanceStageIndex(e),index:Number(edit.dataset.fwEdit)};fwFinanceRender();return;}
+      if(event.target.closest("[data-fw-cancel]")){fwFinanceEditing=null;fwFinanceRender();return;}
+      const del=event.target.closest("[data-fw-delete]");
+      if(del){if(!confirm("Delete this finance item?"))return;const project=getProjectCardRecord(fwFinanceProjectId);fwFinanceEntries(project,fwFinanceTab).splice(Number(del.dataset.fwDelete),1);fwFinancePersist(project);fwFinanceRender();return;}
+      const file=event.target.closest("[data-fw-file]");
+      if(file){const project=getProjectCardRecord(fwFinanceProjectId),entry=fwFinanceEntries(project,fwFinanceTab)[Number(file.dataset.fwFile)];if(entry&&entry.attachment){const a=document.createElement("a");a.href=entry.attachment.data;a.download=entry.attachment.name||"attachment";a.click();}return;}
+    },true);
+    function fwFinancePersist(project) {
+      const totals=fwFinanceTotals(project);
+      project.budget=totals.budget;project.spent=totals.spent;
+      return saveProjectCardRecord(fwFinanceProjectId);
+    }
+    document.addEventListener("submit",async function(event){
+      const form=event.target.closest("[data-fw-finance-form]");
+      if(!form)return;
+      event.preventDefault();
+      const project=getProjectCardRecord(fwFinanceProjectId);
+      const amount=Number(form.elements.amount.value);
+      if(!project||!Number.isFinite(amount)||amount<=0)return;
+      const entries=fwFinanceTab==="budget"?(project.budgetItems=project.budgetItems||[]):(project.expenses=project.expenses||[]);
+      const index=fwFinanceEditing?fwFinanceEditing.index:-1;
+      const old=index>=0?entries[index]:null;
+      const item={...(old||{}),text:form.elements.text.value.trim(),amount,stage:Number(form.dataset.fwFinanceForm),date:form.elements.date.value,createdAt:old&&old.createdAt||new Date().toISOString()};
+      if(!item.text)return;
+      if(form.elements.removeAttachment&&form.elements.removeAttachment.checked)delete item.attachment;
+      const file=form.elements.attachment.files[0];
+      if(file){
+        if(!(file.type.startsWith("image/")||file.type==="application/pdf")){alert("Only photos and PDF files are supported.");return;}
+        if(file.size>2*1024*1024){alert("Attachment exceeds 2 MB. Please choose a smaller file.");return;}
+        try{item.attachment={name:file.name,type:file.type,data:await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file);})};}
+        catch(error){alert("Could not read the attachment.");return;}
+      }
+      if(index>=0)entries[index]=item;else entries.push(item);
+      if(!fwFinancePersist(project)){if(index>=0)entries[index]=old;else entries.pop();alert("Could not save finance item. Device storage may be full.");return;}
+      fwFinanceEditing=null;fwFinanceRender();
+    },true);
+
 </script>
-</body>
+<section id="fwFinanceScreen" class="fw-finance-screen" hidden aria-label="Project Finance"><div class="fw-finance-inner"><header class="fw-finance-header"><button type="button" class="fw-finance-back" data-fw-finance-close>← Back</button><div><h2>$ Project Finance</h2><small id="fwFinanceProjectName"></small></div></header><div class="fw-finance-tabs" role="tablist"><button type="button" data-fw-finance-tab="budget" class="active">Budget</button><button type="button" data-fw-finance-tab="expenses">Expenses</button></div><div id="fwFinanceSummary" class="fw-finance-summary"></div><div id="fwFinanceLedger"></div><p class="fw-finance-muted">Documents are saved on this device. Photo/PDF attachments up to 2 MB each.</p></div></section></body>
 </html>
 
