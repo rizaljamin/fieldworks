@@ -2105,10 +2105,11 @@ function loadDemoProjectState() {
     }
     function fwTemplateAllowed(id) {
       const uid=currentFieldWorksUid();
-      const active=!!uid&&billingEntitlement.active&&billingEntitlement.uid===uid;
-      if(active&&billingEntitlement.productId==="fw2026")return true;
+      const entitlement=window.fieldWorksTemplateEntitlement||{active:false,productId:"",uid:""};
+      const active=!!uid&&entitlement.active&&entitlement.uid===uid;
+      if(active&&entitlement.productId==="fw2026")return true;
       if(id==="construction"||id==="charity-function")return true;
-      return active&&billingEntitlement.productId==="fw2026_stu"&&id==="field-trips";
+      return active&&entitlement.productId==="fw2026_stu"&&id==="field-trips";
     }
     function fwTemplateSubscriptionPage(){
       showFieldWorksPage("account");
@@ -2424,6 +2425,7 @@ function loadDemoProjectState() {
       const uid = currentFieldWorksUid();
       if (result.uid && result.uid !== uid) return;
       billingEntitlement = { active: !!result.active, productId: result.productId || "", uid: result.uid || "" };
+      window.fieldWorksTemplateEntitlement=billingEntitlement;
       renderAccountPage();renderTemplates();
     };
     window.onFieldWorksBillingMessage = function(result) {
