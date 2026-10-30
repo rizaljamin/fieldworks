@@ -2557,17 +2557,39 @@ function loadDemoProjectState() {
 
     let fwReportProjectId="", fwReportSelectedPhotos={};
     function fwReportEscape(value){return escapeProjectText(String(value===null||value===undefined?"":value));}
+    function fwReportPhotoGroups(projectId,project){
+      const groups={};
+      const albums=projectAlbumRecords(projectId);
+      // Use the same album item resolution as the project album viewer.
+      albums.forEach(function(album){
+        const stage=Math.max(0,Number(album.stage)||0);
+        albumMediaItems(projectId,album).forEach(function(photo){
+          if(photo.type==="photo"&&photo.url)(groups[stage]||(groups[stage]=[])).push(photo);
+        });
+      });
+      // Preserve photos with a stage but no album association.
+      projectArtifactList(projectId).forEach(function(photo){
+        if(photo.type!=="photo"||!photo.url)return;
+        const found=Object.values(groups).some(items=>items.some(x=>String(x.id)===String(photo.id)));
+        if(!found){const stage=Math.max(0,Number(photo.stage)||0);(groups[stage]||(groups[stage]=[])).push(photo);}
+      });
+      // The bundled demo photos are real image assets, not saved album artifacts.
+      if(projectId==="demo-mini-renovation"&&Array.isArray(project.photos)){
+        const stage=Math.max(0,Number(project.stage)||0);
+        project.photos.forEach((photo,i)=>{if(photo.src)(groups[stage]||(groups[stage]=[])).push({id:"demo-photo-"+i,url:photo.src,name:photo.alt||"Demo photo",type:"photo"});});
+      }
+      return groups;
+    }
     function fwReportOpen(id){
       const project=getProjectCardRecord(id);if(!project)return;
-      fwReportProjectId=String(id);
-      fwReportSelectedPhotos={};
-      const albums=projectAlbumRecords(fwReportProjectId), items=projectArtifactList(fwReportProjectId);
-      const paper=document.getElementById("fwReportPaper");paper.contentEditable="false";paper.removeAttribute("data-report-edited");
+      fwReportProjectId=String(id);fwReportSelectedPhotos={};
+      const groups=fwReportPhotoGroups(fwReportProjectId,project);
       projectCardStageNames(project,fwReportProjectId).forEach((stage,i)=>{
-        const choices=items.filter(a=>a.type==="photo"&&a.url&&Number((albums.find(x=>String(x.id)===String(a.albumId))||a).stage)===i);
+        const choices=(groups[i]||[]).slice();
         for(let j=choices.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[choices[j],choices[k]]=[choices[k],choices[j]];}
-        fwReportSelectedPhotos[i]=choices.slice(0,3).map(a=>String(a.id));
+        fwReportSelectedPhotos[i]=choices.slice(0,3);
       });
+      const paper=document.getElementById("fwReportPaper");paper.contentEditable="false";paper.removeAttribute("data-report-edited");
       document.getElementById("fwReportDate").value=new Date().toLocaleDateString("en-CA");
       document.getElementById("fwReportConclusion").value=project.reportConclusion||"";
       document.getElementById("fwReportConclusion").readOnly=true;
@@ -2590,19 +2612,14 @@ function loadDemoProjectState() {
       html+='<section><h2>2. Stage Updates, Photos & Comments</h2>';
       stages.forEach(function(stage,i){
         const albums=projectAlbumRecords(fwReportProjectId);
-        const media=artifacts.filter(a=>Number((albums.find(x=>String(x.id)===String(a.albumId))||a).stage)===i);
-        const selected=media.filter(a=>a.type==="photo"&&(fwReportSelectedPhotos[i]||[]).includes(String(a.id)));
+        const selected=fwReportSelectedPhotos[i]||[];
         html+='<div><h3>'+esc(String(i+1)+". "+stage)+'</h3>';
         const dates=(project.stageDates||[])[i]||{};
         if(dates.start||dates.end)html+='<p class="fw-report-muted">Start: '+esc(dates.start||"—")+' · End: '+esc(dates.end||"—")+'</p>';
-        const samplePhotos=fwReportProjectId==="demo-mini-renovation"&&Array.isArray(project.photos)&&i===Number(project.stage||0)?project.photos:[];
-        if(!media.length&&!samplePhotos.length)html+='<p class="fw-report-muted">No stage media recorded.</p>';
-        samplePhotos.forEach(function(photo){if(photo.src)html+='<img class="fw-report-photo" src="'+esc(photo.src)+'" alt="'+esc(photo.alt||"Sample project photo")+'">';});
-        selected.forEach(function(a){
-          const note=a.comment||a.comments||a.text||a.description||a.caption||"";
-          if(a.type==="photo"&&a.url&&(/^(data:image\/|blob:|https?:)/i).test(a.url))html+='<img class="fw-report-photo" src="'+esc(a.url)+'" alt="Project stage photo">';
-          else if(a.type==="video")html+='<p class="fw-report-muted">Video attachment: '+esc(a.name||"Video")+'</p>';
-          if(note)html+='<p>'+esc(note)+'</p>';
+        if(!selected.length)html+='<p class="fw-report-muted">No photos recorded for this stage.</p>';
+        selected.forEach(function(photo){
+          const note=photo.comment||photo.comments||photo.text||photo.description||photo.caption||"";
+          if(photo.url)html+='<figure><img class="fw-report-photo" src="'+esc(photo.url)+'" alt="'+esc(photo.name||"Stage photo")+'">'+(note?'<figcaption>'+esc(note)+'</figcaption>':'')+'</figure>';
         });
         albums.filter(a=>Number(a.stage)===i&&(a.note||a.title)).forEach(a=>{html+='<p><strong>Album: '+esc(a.title||"Stage album")+'</strong> — '+esc(a.note||"")+'</p>';});
         const journal=Array.isArray(project.journal)?project.journal.filter(x=>Number(x.stage)===i):[];
