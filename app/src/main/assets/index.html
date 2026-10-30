@@ -2553,7 +2553,9 @@ function loadDemoProjectState() {
       });
       document.getElementById("fwReportDate").value=new Date().toLocaleDateString("en-CA");
       document.getElementById("fwReportConclusion").value=project.reportConclusion||"";
+      document.getElementById("fwReportConclusion").readOnly=true;
       document.getElementById("fwReportScreen").hidden=false;
+      if(!project.reportConclusion)fwReportGenerateConclusion();
       fwReportRender();
     }
     function fwReportRender(){
@@ -2629,7 +2631,13 @@ function loadDemoProjectState() {
       document.getElementById("fwReportConclusion").value=result;p.reportConclusion=result;
       saveProjectCardRecord(fwReportProjectId);fwReportRender();
     }
-    document.addEventListener("click",event=>{if(event.target.closest("[data-fw-report-generate]"))fwReportGenerateConclusion();},true);
+    document.addEventListener("click",event=>{
+      if(event.target.closest("[data-fw-report-edit]")){
+        const area=document.getElementById("fwReportConclusion");
+        area.readOnly=false;area.focus();
+        area.scrollIntoView({behavior:"smooth",block:"center"});
+      }
+    },true);
     document.getElementById("fwReportDate").addEventListener("change",fwReportRender);
     document.getElementById("fwReportConclusion").addEventListener("input",function(){
       const project=getProjectCardRecord(fwReportProjectId);
@@ -2638,6 +2646,6 @@ function loadDemoProjectState() {
     });
 
 </script>
-<section id="fwFinanceScreen" class="fw-finance-screen" hidden aria-label="Project Finance"><div class="fw-finance-inner"><header class="fw-finance-header"><button type="button" class="fw-finance-back" data-fw-finance-close>← Back</button><div><h2>$ Project Finance</h2><small id="fwFinanceProjectName"></small></div></header><div class="fw-finance-tabs" role="tablist"><button type="button" data-fw-finance-tab="budget" class="active">Budget</button><button type="button" data-fw-finance-tab="expenses">Expenses</button></div><div id="fwFinanceSummary" class="fw-finance-summary"></div><div id="fwFinanceLedger"></div><p class="fw-finance-muted">Documents are saved on this device. Photo/PDF attachments up to 2 MB each.</p></div></section><section id="fwReportScreen" class="fw-report-screen" hidden><div class="fw-report-controls"><button type="button" data-fw-report-close>← Back to project</button><button type="button" class="fw-report-action" data-fw-report-pdf>Print / Save as PDF</button><button type="button" class="fw-report-action" data-fw-report-generate>Generate Conclusion</button><label>Report date<input id="fwReportDate" type="date"></label><label style="flex:1 1 100%">Conclusion<textarea id="fwReportConclusion" placeholder="Write your project conclusion..."></textarea></label><small>Review the report, then choose Save as PDF in the print dialog. Photos stored only on this device may be unavailable on other devices.</small></div><article class="fw-report-paper" id="fwReportPaper"></article></section></body>
+<section id="fwFinanceScreen" class="fw-finance-screen" hidden aria-label="Project Finance"><div class="fw-finance-inner"><header class="fw-finance-header"><button type="button" class="fw-finance-back" data-fw-finance-close>← Back</button><div><h2>$ Project Finance</h2><small id="fwFinanceProjectName"></small></div></header><div class="fw-finance-tabs" role="tablist"><button type="button" data-fw-finance-tab="budget" class="active">Budget</button><button type="button" data-fw-finance-tab="expenses">Expenses</button></div><div id="fwFinanceSummary" class="fw-finance-summary"></div><div id="fwFinanceLedger"></div><p class="fw-finance-muted">Documents are saved on this device. Photo/PDF attachments up to 2 MB each.</p></div></section><section id="fwReportScreen" class="fw-report-screen" hidden><div class="fw-report-controls"><button type="button" data-fw-report-close>← Back to project</button><button type="button" class="fw-report-action" data-fw-report-pdf>Print / Save as PDF</button><button type="button" class="fw-report-action" data-fw-report-edit>Edit Conclusion</button><label>Report date<input id="fwReportDate" type="date"></label><label style="flex:1 1 100%">Conclusion<textarea id="fwReportConclusion" readonly placeholder="Write your project conclusion..."></textarea></label><small>Review the report, then choose Save as PDF in the print dialog. Photos stored only on this device may be unavailable on other devices.</small></div><article class="fw-report-paper" id="fwReportPaper"></article></section></body>
 </html>
 
