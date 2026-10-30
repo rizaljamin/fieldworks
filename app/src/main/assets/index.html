@@ -1137,9 +1137,9 @@ function loadDemoProjectState() {
       return saveCreatedProjects();
     }
     function stageForProject(projectId) {
-      if (projectId === "demo-mini-renovation") return Number(MINI_RENOVATION_DEMO.stage) || 0;
+      if (projectId === "demo-mini-renovation") return Number(MINI_RENOVATION_DEMO.selectedStage ?? MINI_RENOVATION_DEMO.stage) || 0;
       const project = createdProjects.find(function(item) { return item.id === projectId; });
-      return project ? Number(project.stage) || 0 : 0;
+      return project ? Number(project.selectedStage ?? project.stage) || 0 : 0;
     }
     function makeArtifactAlbum(projectId, createdAt) {
       return {
@@ -1394,7 +1394,8 @@ function loadDemoProjectState() {
           type: file.type,
           url: file.url,
           name: file.name || (file.type === "video" ? "Video" : "Photo"),
-          albumId: album.id
+          albumId: album.id,
+          stage: Number(album.stage) || 0
         };
         artifactList.unshift(artifact);
         album.items.push(artifact.id);
@@ -1882,7 +1883,7 @@ function loadDemoProjectState() {
       const ready = (Array.isArray(items) ? items : []).map(function(item) {
         return { type:item.kind || item.type, url:item.url, name:item.name || "" };
       });
-      if (persistProjectMediaBatch(projectId, ready)) closeArtifactOverlays();
+      if (persistProjectMediaBatch(projectId, ready)) { closeArtifactOverlays(); document.getElementById("voiceArtifactOverlay").hidden = true; }
     };
     window.onFieldWorksMediaError = function(projectId, message) {
       if (projectId !== activeArtifactProjectId) return;
