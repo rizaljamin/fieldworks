@@ -4,25 +4,38 @@
 
 FieldWorks is an Android field journal for managing projects and recording progress with notes, photos, videos, and voice notes.
 
-## Version
+## Current source version
 
-**Latest successful build: V0.3.00 Build 14 (GitHub Actions run #186).** Run #186 completed successfully and produced the signed APK, signed AAB, and supporting files. [View the run and download its artifacts](https://github.com/rizaljamin/fieldworks/actions/runs/40707503354).
+**V0.4.00 Build 06** on the `main` branch (as of 4 November 2026), recorded in [`fieldworks-version.properties`](fieldworks-version.properties). The 30 October 2026 commits rolled back the UI to a pre-template Build 06 baseline after a startup regression, then restored the version properties. This is the **source baseline**, not a claim that the latest GitHub Actions build passed or that this version was uploaded to Google Play.
 
-The release/build label comes from `fieldworks-version.properties`. Android `versionCode` uses the GitHub Actions run number, so Build 14 has versionCode 186. Google sign-in now opens the explicit Android Credential Manager flow directly, with a single-request guard and a timeout error if the account picker does not respond.
+**Historical build and distribution information:** V0.3.00 Build 14 was previously documented as a successful GitHub Actions run ([run #186](https://github.com/rizaljamin/fieldworks/actions/runs/40707503354)); V0.3.00 Build 08 was previously documented as the Google Play closed-test build. These are historical statements, not freshly verified current distribution statuses.
 
-**Google Play status:** Closed testing currently uses **V0.3.00 Build 8**. Build 14 is a GitHub Actions artifact and has not been uploaded to Google Play.
+Android configuration: `compileSdk 36`, `targetSdk 36`, `minSdk 24`. The Gradle build takes Android version name/code from workflow-provided properties; the FieldWorks release/build label is maintained in `fieldworks-version.properties`.
 
-The account-binding Cloud Function is deployed to `asia-southeast1` on Node.js 22. Verify the account-binding flow with a Play test purchase before production distribution; setup details are in [the account-binding guide](docs/subscription-account-binding.md).
+**Stability note:** The Build 06 rollback followed a startup regression. Device compatibility, account switching, template entitlement rendering, and restored demo-project behavior must be regression-tested before any new release is described as stable.
 
-## Features
+## Features and functionality
 
-- **Projects and templates:** Create blank projects or start from a template. Keep a Mini Renovation sample project available separately for each local account. Project cards summarize issue and reminder counts and spending, with shortcuts to each detail section. Milestones follow the selected project type; Farms & Agriculture includes land assessment, preparation, planting, crop care, and harvest stages.
-- **Project journal:** Add notes, photos, videos, and voice notes. Each project card shows a preview of its latest saved note. Capture media with the camera or import it from device folders and Google Drive through Android’s file picker.
-- **Project progress:** Track template-specific stages and dates, set the current stage directly from its picker, move entire photo/video albums between stages, and manage follow-ups with target accomplishment dates. Record expenses by stage, category (Manpower, Materials, Logistics, Equipment, Utilities, Permits & fees, or Other), description, amount, and date; the project budget shows itemized costs alongside any older unitemized spending. Issue tracking and reminders appear at the top of project details for quick access.
-- **Issue log:** Number issues oldest first, show days open, and flag active issues yellow from 15 days and red after 30 days. Track Low, Medium, High, or Critical severity and Open, In progress, or Resolved status.
-- **Archive:** Open Archive from the sidebar directly above My Account, or from the mobile bottom navigation. Archive and restore projects, or create downloadable project backups.
-- **Google Play subscriptions:** Student and Personal six-month plans use Google Play Billing. The backend verifies purchase tokens and binds each token to one Firebase account, preventing another FieldWorks account from claiming the same subscription. The Cloud Function has been deployed to asia-southeast1. Confirm the Play Developer API service-account permissions and subscription verification with a Play test purchase before distributing a build that includes account binding. Business is marked as coming soon.
-- **Accounts and local storage:** Use guest access or sign in with Firebase email/password or Google. Project records, reminders, issues, and media are stored on the device in IndexedDB and restored when the app starts. Data persists across launches and app updates, but does not sync across devices. Clearing app storage or uninstalling removes local data.
+FieldWorks is a mobile project journal aimed at fieldwork, renovations, events, small-business projects and related activities. The repository documents the following feature areas; individual flows still require verification on the current rollback baseline:
+
+- **Projects and templates:** Create projects from available project types/templates, manage project cards and project-specific milestones, and track dates and progress. Template subscription gating has been under development; the rollback means newer template-access behavior must not be assumed present or working.
+- **Project journal and albums:** Capture or attach photos, videos, written notes and voice notes; organize media and notes by project and stage, with comments and stage-based albums.
+- **Milestones and project organization:** Track current stages, start/end dates, pinned or favorite projects, and stage-specific records. Verify the exact available controls in Build 06 before publication.
+- **Issues and reminders:** Record issues, status, severity, timestamps and target dates. Issue aging indicators are intended to distinguish items over 15 and 30 days.
+- **Budget and expenses:** Track project budgets and stage-related spending, with categories such as manpower, materials and logistics and supporting attachments where supported.
+- **Reports:** Generate project progress reports drawing on stages, issues, finance and selected media. Photo selection, full-report click behavior and report completeness are regression-test items, not verified features of this baseline.
+- **Archive and restore:** Archive project data and restore from a selected file/path where supported. Confirm archive ownership checks and preservation of existing data before using on important projects.
+- **Accounts:** Guest mode and Firebase-backed email/password or Google sign-in are documented. Project data uses local device storage (IndexedDB); cross-device project synchronization is not guaranteed. Account switching must not expose a previous user's project cards.
+- **Subscriptions:** Google Play Billing and a Firebase account-binding function have been developed. Subscription verification and entitlement changes require end-to-end testing; do not treat these as production-validated based on repository presence alone.
+
+### Known verification priorities
+
+1. Launch on Samsung A50 and newer Android devices without a startup hang.
+2. Preserve demo and existing projects through app updates and account changes.
+3. Clear or reload account-scoped project cards and template entitlements after logout/login.
+4. Verify enabled/disabled templates and subscription navigation.
+5. Verify album media, report photographs, archive/restore and budget records.
+6. Run dependency, flow and regression checks before modifying the baseline.
 
 ## Build with GitHub Actions
 
