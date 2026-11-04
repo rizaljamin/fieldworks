@@ -534,6 +534,7 @@
 
 .fw-report-entry{margin:10px 0}.fw-report-btn,.fw-report-action{background:#1b5952;color:white;border:0;border-radius:11px;padding:10px 17px;font-weight:700;cursor:pointer}.fw-report-screen{position:fixed;inset:0;z-index:9999;overflow:auto;background:#f5f7f4;padding:18px 12px 70px}.fw-report-screen[hidden]{display:none!important}.fw-report-controls{max-width:820px;margin:0 auto 15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fw-report-controls button{border:1px solid #1c5952;border-radius:10px;padding:10px 15px;background:#1c5952;color:#fff;font-weight:700;cursor:pointer}.fw-report-controls label{display:grid;gap:3px;font-size:12px}.fw-report-controls textarea{width:100%;min-width:260px;min-height:65px;border:1px solid #d0d9d2;border-radius:9px;padding:9px}.fw-report-paper{max-width:820px;margin:auto;background:#fff;padding:32px;color:#192d2b;box-shadow:0 3px 18px #0001;font:14px/1.55 Arial,sans-serif}.fw-report-paper h1{font-size:27px;margin:0}.fw-report-paper h2{font-size:18px;border-bottom:1px solid #cddbd2;padding-bottom:5px;margin-top:25px}.fw-report-paper h3{font-size:15px;margin:14px 0 5px}.fw-report-paper table{border-collapse:collapse;width:100%;margin:8px 0}.fw-report-paper td,.fw-report-paper th{padding:7px;border-bottom:1px solid #e0e7e1;text-align:left}.fw-report-paper td:last-child,.fw-report-paper th:last-child{text-align:right}.fw-report-photo{max-width:100%;max-height:290px;object-fit:contain;margin:7px 0;display:block}.fw-report-muted{color:#62736d;font-size:12px}.fw-report-paper p{white-space:pre-wrap}@media print{body>*:not(#fwReportScreen){display:none!important}#fwReportScreen{position:static!important;overflow:visible!important;padding:0!important;background:#fff!important}#fwReportScreen .fw-report-controls{display:none!important}.fw-report-paper{box-shadow:none!important;max-width:none!important;padding:0!important}.fw-report-paper section{break-inside:avoid}.fw-report-photo{break-inside:avoid} @page{size:A4;margin:15mm}}
 .fw-help-overlay{position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:#082c5080;padding:18px}.fw-help-card{width:min(100%,480px);max-height:88vh;overflow:auto;background:var(--paper);border-radius:20px;padding:23px}.fw-help-card h2{color:var(--navy)}.fw-help-actions,.fw-community-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.fw-help-actions button,.fw-community-actions button{padding:11px 15px;border:1px solid var(--teal);border-radius:10px;background:var(--teal);color:white}
+.fw-guide-list{display:grid;gap:12px;margin:16px 0 26px}.fw-guide-list details{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px}.fw-guide-list summary{cursor:pointer;font-weight:650;color:var(--navy);font-size:14px}.fw-guide-list p{font-size:13px;line-height:1.65;margin:12px 0 2px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -555,7 +556,7 @@
       <button class="side-link" type="button" data-page="templates" onclick="showFieldWorksPage('templates')"><span><svg class="project-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h4l2 2h6A2.5 2.5 0 0 1 20.5 9.5v8A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M3.5 10h17"/></svg></span>My Templates</button>
       <button class="side-link" type="button" data-page="moments" onclick="showFieldWorksPage('moments')"><span><svg class="project-nav-icon moments-wand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 20.5 9-9"/><path d="m8 20 8-8"/><path d="m15.5 3 .7 2.8 2.8.7-2.8.7-.7 2.8-.7-2.8-2.8-.7 2.8-.7z"/><path d="m6 3 .4 1.4L8 4.8l-1.6.4L6 7l-.4-1.8L4 4.8l1.6-.4z"/></svg></span>Recent moments</button>
       <button class="side-link" type="button" data-page="followups" onclick="showFieldWorksPage('followups')"><span>✦</span>Follow-ups</button>
-      <div class="side-spacer"></div>
+      <div class="side-spacer"></div><button class="side-link" type="button" data-page="help" onclick="showFieldWorksPage('help')"><span>ⓘ</span>Help &amp; Tips</button>
       <button class="side-link" type="button" data-page="archive" onclick="showFieldWorksPage('archive')"><span>▤</span>Archive</button>
       <button class="side-link" type="button" data-page="account" onclick="showFieldWorksPage('account')"><span>♙</span>My Account</button>
       <div class="side-guest">
@@ -634,7 +635,7 @@
             <p id="archivePageStatus" class="archive-status" role="status"></p>
           </article>
         </section>
-        <section id="page-account" class="page" hidden>
+        <section id="page-help" class="page" hidden><div class="sectionhead"><div><div class="eyebrow">FIELDWORKS USER GUIDE</div><h2>Help &amp; Tips</h2><p>Seven practical guides for your projects.</p></div></div><div class="fw-guide-list"><details open><summary>1. Create &amp; manage projects and templates</summary><p>From Home select Create project, enter the details and save. Or choose an enabled template under My Templates to start with predefined milestones. Disabled templates require an eligible subscription. Manage milestone dates, pinned and favourite projects under My Projects.</p></details><details><summary>2. Add photos, videos, notes &amp; voice notes</summary><p>Open a project and its milestone. Use the photo, video, notes or voice controls to add artifacts. Review the resulting albums and comments. Allow camera, file or microphone permissions when requested.</p></details><details><summary>3. Add issues &amp; reminders</summary><p>In a project, open Issues & Reminders. Add an issue with description, severity and status, or a reminder with its target date. Update statuses as work progresses.</p></details><details><summary>4. Budgeting</summary><p>Open the project's finance or Budget / Cost control. Record planned amounts in Budget and actual spending in Expenses. Assign entries to milestones and review totals and remaining funds.</p></details><details><summary>5. Reporting</summary><p>Open Report in the project. Review milestone progress, notes, issues, finance and available photos. Edit the generated conclusion and use print/PDF to save. Confirm photos are accessible on this device.</p></details><details><summary>6. Subscribe</summary><p>Sign in and open My Account. Review the available Student, Personal or Business plans, purchase through Google Play, or choose Restore purchase for an existing subscription. Access to templates depends on entitlement.</p></details><details><summary>7. Archiving</summary><p>Open Archive, choose a folder and project, and create an archive. For restore, select the archive folder and saved file. Sign in with the same username as the archive owner; keep an external backup.</p></details></div></section><section id="page-account" class="page" hidden>
           <div class="sectionhead"><div><div class="eyebrow">Your FieldWorks profile</div><h2>My Account</h2><p>Manage your sign-in and subscription.</p></div></div>
           <article class="account-page-card">
             <div class="account-page-avatar" id="accountPageAvatar">G</div>
@@ -644,7 +645,7 @@
               <button class="account-action" id="accountPageSignOut" type="button" hidden>Sign out</button>
             </div>
           </article>
-          <article class="account-page-card" style="display:block;margin-top:16px"><h3>Help &amp; FieldWorks community</h3><p>Get started or recommend FieldWorks.</p><div class="fw-community-actions"><button type="button" onclick="fwOpenHelp()">Help &amp; Tips</button><button type="button" onclick="fwRateApp()">Rate FieldWorks</button><button type="button" onclick="fwShareApp()">Share FieldWorks</button><button type="button" onclick="fwSendFeedback()">Send Feedback</button></div><p id="fwCommunityStatus" role="status"></p></article>
+          <article class="account-page-card" style="display:block;margin-top:16px"><h3>Help &amp; FieldWorks community</h3><p>Get started or recommend FieldWorks.</p><div class="fw-community-actions"><button type="button" onclick="showFieldWorksPage('help')">Help &amp; Tips</button><button type="button" onclick="fwRateApp()">Rate FieldWorks</button><button type="button" onclick="fwShareApp()">Share FieldWorks</button><button type="button" onclick="fwSendFeedback()">Send Feedback</button></div><p id="fwCommunityStatus" role="status"></p></article>
 <section class="subscription-card" aria-labelledby="subscriptionTitle">
             <div class="subscription-heading"><div><div class="eyebrow">Google Play</div><h3 id="subscriptionTitle">My subscription</h3><p id="subscriptionStatus">Sign in to check or manage a subscription.</p></div><button class="account-action restore-action" id="restoreSubscription" type="button">Restore purchase</button></div>
             <div class="plan-grid">
@@ -664,7 +665,7 @@
       <button class="tab" type="button" data-page="moments" onclick="showFieldWorksPage('moments')"><svg class="project-nav-icon moments-wand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 20.5 9-9"/><path d="m8 20 8-8"/><path d="m15.5 3 .7 2.8 2.8.7-2.8.7-.7 2.8-.7-2.8-2.8-.7 2.8-.7z"/><path d="m6 3 .4 1.4L8 4.8l-1.6.4L6 7l-.4-1.8L4 4.8l1.6-.4z"/></svg><small>Moments</small></button>
       <button class="tab" type="button" data-page="followups" onclick="showFieldWorksPage('followups')">✦<small>Follow-ups</small></button>
       <button class="tab" type="button" data-page="archive" onclick="showFieldWorksPage('archive')">▤<small>Archive</small></button>
-      <button class="tab" type="button" data-page="account" onclick="showFieldWorksPage('account')">♙<small>Account</small></button>
+      <button class="tab" type="button" data-page="help" onclick="showFieldWorksPage('help')">ⓘ<small>Help</small></button><button class="tab" type="button" data-page="account" onclick="showFieldWorksPage('account')">♙<small>Account</small></button>
     </nav>
 
     
@@ -791,7 +792,7 @@ const FW_STORE_URL="https://play.google.com/store/apps/details?id=com.fieldworks
 const FW_HELP_STEPS=["<p><b>Create a project</b> from Home or My Templates. Choose a type and enter the project details.</p>","<p><b>Track milestones</b> and attach photos, videos, notes and voice notes to project albums.</p>","<p><b>Stay organised</b> with issues, reminders, budgets and reports. Archive important work. Project data stays on this device and does not automatically sync.</p>"];
 let fwHelpStep=0;
 function fwRenderHelp(){document.getElementById("fwHelpStepLabel").textContent="Step "+(fwHelpStep+1)+" of "+FW_HELP_STEPS.length;document.getElementById("fwHelpBody").innerHTML=FW_HELP_STEPS[fwHelpStep];document.getElementById("fwHelpNext").textContent=fwHelpStep===FW_HELP_STEPS.length-1?"Finish":"Next";}
-function fwOpenHelp(){fwHelpStep=0;fwRenderHelp();document.getElementById("fwHelpOverlay").hidden=false;}
+function fwOpenHelp(){showFieldWorksPage("help");}
 function fwCloseHelp(){document.getElementById("fwHelpOverlay").hidden=true;}
 function fwNextHelp(){if(fwHelpStep<FW_HELP_STEPS.length-1){fwHelpStep++;fwRenderHelp();}else fwCloseHelp();}
 function fwShowHelpForFirstLogin(email){if(!email)return;const key="fieldworks.help-seen.v1:"+String(email).trim().toLowerCase();try{if(localStorage.getItem(key)==="yes")return;localStorage.setItem(key,"yes");}catch(e){return;}fwOpenHelp();}
@@ -807,6 +808,7 @@ function fwShowLogoutPrompt(){document.getElementById("fwLogoutOverlay").hidden=
       moments: "Recent moments",
       followups: "Follow-ups",
       archive: "Archive",
+      help: "Help & Tips",
       account: "My Account"
     };
 
