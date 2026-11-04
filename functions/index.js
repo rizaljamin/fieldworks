@@ -1,10 +1,12 @@
 const { onRequest } = require("firebase-functions/v2/https");
+const { defineJsonSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { google } = require("googleapis");
 const { createHash } = require("crypto");
 
 admin.initializeApp({ projectId: "fieldworks-512712" });
 const db = admin.firestore();
+const feedbackGmailOAuth = defineJsonSecret("FIELDWORKS_GMAIL_OAUTH");
 
 const PACKAGE_NAME = "com.fieldworks.app";
 const PRODUCT_IDS = new Set(["fw2026", "fw2026_stu"]);
@@ -186,6 +188,123 @@ exports.fieldWorksSubscription = onRequest(
         : error.message;
       console.error("FieldWorks subscription verification failed:", status, error.code || error.status || "unknown");
       res.status(status).json({ message });
+    }
+  }
+);
+
+
+// FieldWorks Feedback is a fixed-destination email endpoint, not an email relay.
+// A private OAuth refresh token grants the backend gmail.send only; it is NEVER
+// shipped in the APK or returned to users. Guest submissions are rate-limited.
+exports.fieldWorksFeedback = onRequest(
+  {
+    region: "asia-southeast1",
+    maxInstances: 3,
+    timeoutSeconds: 45,
+    secrets: [feedbackGmailOAuth],
+  },
+  async (req, res) => {
+    res.set("Cache-Control", "no-store");
+    if (req.method !== "POST") {
+      res.status(405).json({ success: false, message: "POST required." });
+      return;
+    }
+    if (!String(req.get("Content-Type") || "").toLowerCase().includes("application/json")) {
+      res.status(415).json({ success: false, message: "JSON required." });
+      return;
+    }
+
+    const feedback = typeof req.body?.feedback === "string" ? req.body.feedback.trim() : "";
+    const contact = typeof req.body?.contact === "string" ? req.body.contact.trim() : "";
+    if (!feedback || !contact || feedback.length > 3000 || contact.length > 250) {
+      res.status(400).json({ success: false, message: "Please enter feedback and a valid contact or FieldWorks User ID." });
+      return;
+    }
+
+    let verifiedUid = "";
+    try {
+      const authHeader = String(req.get("Authorization") || "");
+      if (authHeader) {
+        const match = authHeader.match(/^Bearer (.+)$/i);
+        if (!match) throw httpError(401, "Invalid FieldWorks account authorization.");
+        const decoded = await admin.auth().verifyIdToken(match[1]);
+        verifiedUid = decoded.uid;
+      }
+    } catch (_) {
+      res.status(401).json({ success: false, message: "Your FieldWorks sign-in needs refreshing. Please sign in again." });
+      return;
+    }
+
+    try {
+      const credentials = feedbackGmailOAuth.value();
+      if (!credentials || !credentials.client_id || !credentials.client_secret || !credentials.refresh_token) {
+        throw httpError(503, "FieldWorks feedback email service has not been activated.");
+      }
+
+      // Prevent unauthenticated callers from using Gmail as an open relay.
+      // The destination and subject are constants; both individual IP and
+      // app-wide daily quotas are applied transactionally before Gmail sends.
+      const day = new Date().toISOString().slice(0, 10);
+      const fingerprint = createHash("sha256")
+        .update(String(req.ip || req.socket?.remoteAddress || "unknown"), "utf8").digest("hex");
+      const limitRef = db.collection("fieldWorksFeedbackRateLimits").doc(fingerprint);
+      const globalRef = db.collection("fieldWorksFeedbackRateLimits").doc("daily-" + day);
+      const now = Date.now();
+      await db.runTransaction(async (tx) => {
+        const [individual, global] = await Promise.all([tx.get(limitRef), tx.get(globalRef)]);
+        const previous = individual.exists && individual.get("day") === day ? individual.data() : {};
+        const today = global.exists ? global.data() : {};
+        if (Number(previous.lastAttemptAt || 0) + 45000 > now) {
+          throw httpError(429, "Feedback was just submitted. Please retry after a short interval.");
+        }
+        if (Number(previous.count || 0) >= 20 || Number(today.count || 0) >= 250) {
+          throw httpError(429, "The feedback submission limit has been reached for today. Please try tomorrow.");
+        }
+        tx.set(limitRef, {
+          day, count: Number(previous.count || 0) + 1, lastAttemptAt: now,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        tx.set(globalRef, {
+          day, count: Number(today.count || 0) + 1,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+
+      const oauth = new google.auth.OAuth2(credentials.client_id, credentials.client_secret);
+      oauth.setCredentials({ refresh_token: credentials.refresh_token });
+      const gmail = google.gmail({ version: "v1", auth: oauth });
+      // User-entered content is in the body only, never email headers.
+      const body = [
+        "Feedback:", feedback, "",
+        "Contact detail / FieldWorks User ID:", contact,
+        ...(verifiedUid ? ["", "Verified FieldWorks UID:", verifiedUid] : []),
+        "", "Submitted via FieldWorks Android app.",
+        "Received at: " + new Date().toISOString(),
+      ].join("\n");
+      const encodedBody = Buffer.from(body, "utf8").toString("base64").match(/.{1,76}/g)?.join("\r\n") || "";
+      const rawMessage = [
+        "From: FieldWorks Feedback <growplot2026@gmail.com>",
+        "To: growplot2026@gmail.com",
+        "Subject: FieldWorks Feedback",
+        "MIME-Version: 1.0",
+        "Content-Type: text/plain; charset=UTF-8",
+        "Content-Transfer-Encoding: base64",
+        "",
+        encodedBody,
+      ].join("\r\n");
+      const response = await gmail.users.messages.send({
+        userId: "me", requestBody: { raw: Buffer.from(rawMessage, "utf8").toString("base64url") },
+      });
+      if (!response.data?.id) throw httpError(502, "Gmail did not confirm acceptance of the feedback.");
+      res.status(200).json({ success: true, message: "FieldWorks feedback sent successfully." });
+    } catch (error) {
+      const status = [400, 401, 403, 429, 502, 503].includes(Number(error.status))
+        ? Number(error.status) : 502;
+      const publicMessage = error.status
+        ? error.message
+        : "Feedback could not be sent by Gmail. Please try again or contact FieldWorks support.";
+      console.error("FieldWorks feedback send error", status, error.code || "unknown");
+      res.status(status).json({ success: false, message: publicMessage });
     }
   }
 );
