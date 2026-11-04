@@ -314,9 +314,15 @@ private final class CommunityBridge {
             }
         }
 
-        // The linked response sheet currently has two user-input questions.
-        // If the question text was modified, the form's question order matches
-        // the response sheet's column order.
+        // Support the currently published Form, which may have only one
+        // paragraph question despite old contact-column headers in its sheet.
+        // In that case, contact/UID is appended to the feedback message.
+        if (fields.size() == 1 && feedbackId.isEmpty()) {
+            feedbackId = fields.get(0).entryId;
+        }
+
+        // When Google Forms has two input questions, preserve the historical
+        // separate feedback and contact columns and their sheet order.
         if (fields.size() == 2) {
             if (feedbackId.isEmpty() && contactId.isEmpty()) {
                 feedbackId = fields.get(0).entryId;
@@ -340,6 +346,10 @@ private final class CommunityBridge {
             String id = htmlEntries.group(1);
             if (!htmlEntryIds.contains(id)) htmlEntryIds.add(id);
         }
+        // Some Google Forms versions expose the lone entry only in HTML.
+        if (feedbackId.isEmpty() && htmlEntryIds.size() == 1 && fields.size() <= 1) {
+            feedbackId = htmlEntryIds.get(0);
+        }
         if ((feedbackId.isEmpty() || contactId.isEmpty()) && htmlEntryIds.size() == 2) {
             if (feedbackId.isEmpty() && contactId.isEmpty()) {
                 feedbackId = htmlEntryIds.get(0);
@@ -350,12 +360,14 @@ private final class CommunityBridge {
                 contactId = htmlEntryIds.get(0).equals(feedbackId) ? htmlEntryIds.get(1) : htmlEntryIds.get(0);
             }
         }
-        if (feedbackId.isEmpty() || contactId.isEmpty() || feedbackId.equals(contactId)) {
-            throw new IOException("Could not map Google Form fields (question records="
+        // The contact question is optional. Reject only when the feedback
+        // destination is unknown, or when a supposed contact ID duplicates it.
+        if (feedbackId.isEmpty() || (!contactId.isEmpty() && feedbackId.equals(contactId))) {
+            throw new IOException("Could not map Google Form feedback question (question records="
                 + fields.size() + ", HTML entry names=" + htmlEntryIds.size()
                 + ", feedback matched=" + !feedbackId.isEmpty()
                 + ", contact matched=" + !contactId.isEmpty()
-                + "). Form structure may have changed.");
+                + "). Check the published form.");
         }
         return new String[]{ feedbackId, contactId };
     }
@@ -400,9 +412,19 @@ private final class CommunityBridge {
             String contactEntry = entryIds[1];
             connection.disconnect();
             connection = null;
-            String postData = "entry." + feedbackEntry + "=" + URLEncoder.encode(feedback.trim(), "UTF-8")
-                    + "&entry." + contactEntry + "=" + URLEncoder.encode(contact.trim(), "UTF-8")
-                    + "&fvv=1&pageHistory=0";
+            // If the published Form contains only the Feedback question,
+            // include contact or FieldWorks User ID in the single answer.
+            // If a separate Contact question exists, send the normal two-field
+            // response so historic response-sheet columns remain compatible.
+            String feedbackAnswer = feedback.trim();
+            if (contactEntry.isEmpty()) {
+                feedbackAnswer += "\\n\\nFieldWorks contact / User ID: " + contact.trim();
+            }
+            String postData = "entry." + feedbackEntry + "=" + URLEncoder.encode(feedbackAnswer, "UTF-8");
+            if (!contactEntry.isEmpty()) {
+                postData += "&entry." + contactEntry + "=" + URLEncoder.encode(contact.trim(), "UTF-8");
+            }
+            postData += "&fvv=1&pageHistory=0";
             String submitUrl = FEEDBACK_FORM_URL.replace("/viewform", "/formResponse");
             connection = (HttpURLConnection) new URL(submitUrl).openConnection();
             connection.setRequestMethod("POST");
