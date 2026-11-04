@@ -94,6 +94,7 @@ jobs:
         run: |
           node --check app/src/main/assets/feedback.js
           node tests/feedback-ui.test.js
+          node tests/share-flow.test.js
 
       - name: Build signed APK
         shell: bash

@@ -823,7 +823,7 @@ function fwChooseRating(stars){
  fwRatingRedirectTimer=setTimeout(function(){fwRatingRedirectTimer=null;fwCloseLogoutPrompt();fwRateApp();},2000);
 }
 try{fwRenderRating(Number(localStorage.getItem("fieldworks.rating.selection"))||0);}catch(e){fwRenderRating(0);}
-function fwShareApp(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.share();else if(navigator.share)navigator.share({title:"FieldWorks",url:FW_STORE_URL}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent=FW_STORE_URL;}
+function fwShareApp(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.share();else if(navigator.share)navigator.share({title:"FieldWorks",text:"FieldWorks - Manage & Monitor your physical projects @",url:FW_STORE_URL}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent="FieldWorks - Manage & Monitor your physical projects @ "+FW_STORE_URL;}
 function fwSendFeedback(){if(typeof window.fwOpenFeedback==="function"){window.fwOpenFeedback();}else{document.getElementById("fwCommunityStatus").textContent="Feedback is unavailable in this build.";}}
 function fwCloseLogoutPrompt(){document.getElementById("fwLogoutOverlay").hidden=true;}
 function fwShowLogoutPrompt(){document.getElementById("fwLogoutOverlay").hidden=false;}

@@ -201,9 +201,50 @@ public class MainActivity extends Activity {
                     }
                 });
     }
-private final class CommunityBridge {
+private static final String FIELDWORKS_SHARE_LINK =
+        "https://play.google.com/store/apps/details?id=com.fieldworks.app";
+    private static final String FIELDWORKS_SHARE_MESSAGE =
+        "FieldWorks - Manage & Monitor your physical projects @ " + FIELDWORKS_SHARE_LINK;
+
+    private void shareFieldWorksApp() {
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.putExtra(Intent.EXTRA_SUBJECT, "FieldWorks");
+        share.putExtra(Intent.EXTRA_TEXT, FIELDWORKS_SHARE_MESSAGE);
+        try {
+            // Use the existing launcher icon and existing FileProvider path.
+            // Share it as a real image attachment rather than just text.
+            File directory = new File(getFilesDir(), "fieldworks_media");
+            if (!directory.isDirectory() && !directory.mkdirs()) {
+                throw new IOException("Could not create FieldWorks share directory");
+            }
+            File icon = new File(directory, "fieldworks-share-icon.png");
+            try (InputStream input = getResources().openRawResource(R.drawable.launcher_fieldworks);
+                    FileOutputStream output = new FileOutputStream(icon, false)) {
+                byte[] buffer = new byte[8192];
+                int length;
+                while ((length = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, length);
+                }
+            }
+
+            Uri iconUri = FileProvider.getUriForFile(
+                    this, getPackageName() + ".fileprovider", icon);
+            share.setType("image/png");
+            share.putExtra(Intent.EXTRA_STREAM, iconUri);
+            share.setClipData(ClipData.newRawUri("FieldWorks icon", iconUri));
+            share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } catch (Exception error) {
+            // Still allow sharing the store link on devices with unusual
+            // attachment/provider restrictions.
+            android.util.Log.w("FieldWorks", "Unable to attach FieldWorks share icon", error);
+            share.setType("text/plain");
+        }
+        startActivity(Intent.createChooser(share, "Share FieldWorks"));
+    }
+
+    private final class CommunityBridge {
 @android.webkit.JavascriptInterface public void rate(){runOnUiThread(()->{try{startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("market://details?id=com.fieldworks.app")));}catch(android.content.ActivityNotFoundException e){startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.fieldworks.app")));}});}
-@android.webkit.JavascriptInterface public void share(){runOnUiThread(()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(android.content.Intent.EXTRA_TEXT,"Simplify your projects with FieldWorks! https://play.google.com/store/apps/details?id=com.fieldworks.app");startActivity(android.content.Intent.createChooser(i,"Share FieldWorks"));});}
+@android.webkit.JavascriptInterface public void share(){runOnUiThread(()->shareFieldWorksApp());}
 @android.webkit.JavascriptInterface public void feedback() {
     sendFieldWorksFeedbackResult(false, "Please open the in-app feedback card.", 0);
 }
