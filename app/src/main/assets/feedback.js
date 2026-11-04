@@ -1,6 +1,7 @@
 (function () {
   "use strict";
-  var active = false;
+  var pendingRequestId = "";
+  var pendingSignature = "";
   var sending = false;
   var ui = null;
 
@@ -15,9 +16,7 @@
     return id;
   }
 
-  function responseContact(input) {
-    var provided = String(input || "").trim();
-    if (provided) return provided;
+  function currentFeedbackUserId() {
     var uid = "";
     try {
       if (window.FieldWorksAuth && typeof window.FieldWorksAuth.currentUid === "function") {
@@ -25,6 +24,15 @@
       }
     } catch (_) {}
     return uid || guestId();
+  }
+
+  function requestIdFor(message, userid) {
+    var signature = userid + "\u0001" + message;
+    if (pendingSignature !== signature || !pendingRequestId) {
+      pendingSignature = signature;
+      pendingRequestId = "fw-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+    }
+    return pendingRequestId;
   }
 
   function makeUI() {
@@ -48,7 +56,8 @@
       ".fw-feedback-status{min-height:20px;margin:0;font-size:12px;white-space:pre-wrap}" +
       ".fw-feedback-status.error{color:#b22e32}.fw-feedback-status.success{color:#187057}" +
       ".fw-feedback-destination{border:1px solid #d9e4de;border-radius:11px;background:#f5faf7;padding:10px 12px;font-size:12px;display:grid;gap:7px}" +
-      ".fw-feedback-destination strong{display:inline-block;min-width:58px;color:#576d70}";
+      ".fw-feedback-destination strong{display:inline-block;min-width:58px;color:#576d70}" +
+      ".fw-feedback-userid{overflow-wrap:anywhere;font-size:11px;color:#16364c}";
     document.head.appendChild(style);
 
     var overlay = document.createElement("div");
@@ -60,16 +69,13 @@
     overlay.innerHTML =
       '<section class="fw-feedback-card">' +
       '<div class="fw-feedback-head"><h2>Send Feedback</h2><button type="button" class="fw-feedback-close" aria-label="Close feedback">×</button></div>' +
-      '<p>Write the message here. Submit opens the email composer. When you finish or close it, FieldWorks returns to your existing screen.</p>' +
-      '<div class="fw-feedback-destination" aria-label="Email details">' +
-      '<div><strong>To:</strong> growplot2026@gmail.com</div>' +
-      '<div><strong>Subject:</strong> FieldWorks Feedback</div>' +
+      '<p>Send feedback directly to the FieldWorks Firebase collection. No email application is needed.</p>' +
+      '<div class="fw-feedback-destination" aria-label="Firebase feedback details">' +
+      '<div><strong>Saved in:</strong> feedback collection</div>' +
+      '<div><strong>User ID:</strong> <span class="fw-feedback-userid" id="fwFeedbackUserId"></span></div>' +
       '</div>' +
       '<form class="fw-feedback-form">' +
-      '<label for="fwFeedbackText">Provide your feedback <textarea id="fwFeedbackText" maxlength="3000" required placeholder="Tell us what works, what does not, or what to improve."></textarea></label>' +
-      '<label for="fwFeedbackContact">Contact detail (email or telephone) — optional' +
-      '<input id="fwFeedbackContact" maxlength="250" autocomplete="off" placeholder="Leave blank to use your FieldWorks User ID">' +
-      '<small>If blank, we use your signed-in User ID, or a guest ID when not signed in.</small></label>' +
+      '<label for="fwFeedbackText">Feedback message <textarea id="fwFeedbackText" maxlength="3000" required placeholder="Tell us what works, what does not, or what to improve."></textarea></label>' +
       '<button class="fw-feedback-submit" type="submit">Submit</button>' +
       '<p class="fw-feedback-status" role="status" aria-live="polite"></p>' +
       '</form></section>';
@@ -88,17 +94,19 @@
       var status = overlay.querySelector(".fw-feedback-status");
       if (!feedback) { status.textContent = "Please enter your feedback."; status.className = "fw-feedback-status error"; return; }
       if (!window.FieldWorksCommunity || typeof window.FieldWorksCommunity.submitFeedback !== "function") {
-        status.textContent = "Email feedback is unavailable in this version of FieldWorks.";
+        status.textContent = "Firebase feedback submission is unavailable in this build.";
         status.className = "fw-feedback-status error";
         return;
       }
-      var contact = responseContact(overlay.querySelector("#fwFeedbackContact").value);
+      var userid = currentFeedbackUserId();
+      overlay.querySelector("#fwFeedbackUserId").textContent = userid;
+      var requestId = requestIdFor(feedback, userid);
       sending = true;
       overlay.querySelector(".fw-feedback-submit").disabled = true;
-      status.textContent = "Opening email composer…";
+      status.textContent = "Saving feedback to Firebase…";
       status.className = "fw-feedback-status";
       try {
-        window.FieldWorksCommunity.submitFeedback(feedback, contact);
+        window.FieldWorksCommunity.submitFeedback(feedback, userid, requestId);
       } catch (error) {
         sending = false;
         overlay.querySelector(".fw-feedback-submit").disabled = false;
@@ -112,6 +120,7 @@
 
   window.fwOpenFeedback = function () {
     var overlay = makeUI();
+    overlay.querySelector("#fwFeedbackUserId").textContent = currentFeedbackUserId();
     overlay.hidden = false;
     overlay.querySelector("#fwFeedbackText").focus();
   };
@@ -120,18 +129,17 @@
     sending = false;
     overlay.querySelector(".fw-feedback-submit").disabled = false;
     var status = overlay.querySelector(".fw-feedback-status");
-    if (result && result.phase === "returned") {
-      // Return to the original FieldWorks screen; never assume the user sent.
-      status.textContent = (result && result.message) || "Back in FieldWorks. Check your email app's Sent folder to confirm delivery.";
-      status.className = "fw-feedback-status";
-      overlay.hidden = true;
+    if (result && result.success === true && Number(result.feedback_id) >= 1) {
+      status.textContent = (result && result.message) ||
+        ("Feedback #" + result.feedback_id + " saved successfully.");
+      status.className = "fw-feedback-status success";
+      overlay.querySelector("#fwFeedbackText").value = "";
+      pendingSignature = "";
+      pendingRequestId = "";
       var communityStatus = document.getElementById("fwCommunityStatus");
       if (communityStatus) communityStatus.textContent = status.textContent;
-    } else if (result && result.success === true) {
-      status.textContent = (result && result.message) || "Email composer opened; finish sending from your email app.";
-      status.className = "fw-feedback-status";
     } else {
-      status.textContent = (result && result.message) || "Could not open the email composer. Please retry.";
+      status.textContent = (result && result.message) || "Feedback could not be saved to Firebase. Please retry.";
       status.className = "fw-feedback-status error";
     }
   };
