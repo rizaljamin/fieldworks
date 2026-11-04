@@ -38,6 +38,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Locale;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import javax.crypto.Cipher;
@@ -96,6 +98,8 @@ public class MainActivity extends Activity {
     private boolean voicePermissionPending;
     private BillingClient billingClient;
     private final ExecutorService subscriptionExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService feedbackExecutor = Executors.newSingleThreadExecutor();
+    private static final String FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd3sKlhWMaVDizORNlHYNq62nLSJ3dV9rWhHpAGGqBjA6yVaw/viewform";
     private static final String SUBSCRIPTION_FUNCTION_URL = "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksSubscription";
     private volatile boolean restoreRequested;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
@@ -200,7 +204,147 @@ private final class CommunityBridge {
 @android.webkit.JavascriptInterface public void rate(){runOnUiThread(()->{try{startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("market://details?id=com.fieldworks.app")));}catch(android.content.ActivityNotFoundException e){startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.fieldworks.app")));}});}
 @android.webkit.JavascriptInterface public void share(){runOnUiThread(()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(android.content.Intent.EXTRA_TEXT,"Simplify your projects with FieldWorks! https://play.google.com/store/apps/details?id=com.fieldworks.app");startActivity(android.content.Intent.createChooser(i,"Share FieldWorks"));});}
 @android.webkit.JavascriptInterface public void feedback(){runOnUiThread(()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLSd3sKlhWMaVDizORNlHYNq62nLSJ3dV9rWhHpAGGqBjA6yVaw/viewform"));try{startActivity(i);}catch(android.content.ActivityNotFoundException e){android.widget.Toast.makeText(MainActivity.this,"No browser available to open feedback form",android.widget.Toast.LENGTH_LONG).show();}});}
+@android.webkit.JavascriptInterface public void submitFeedback(String feedback, String contact){
+    feedbackExecutor.execute(() -> submitFeedbackToGoogleForm(feedback, contact));
 }
+}
+
+    // Read the published Google Form's current entry IDs rather than hardcoding guessed IDs.
+    // Never report success unless its formResponse endpoint returns a confirmation.
+    private String readFeedbackResponse(HttpURLConnection connection) throws Exception {
+        int code = connection.getResponseCode();
+        InputStream input = code >= 400 ? connection.getErrorStream() : connection.getInputStream();
+        if (input == null) return "";
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            StringBuilder result = new StringBuilder();
+            char[] buffer = new char[4096];
+            int count;
+            while ((count = reader.read(buffer)) >= 0) {
+                if (result.length() + count > 2000000) throw new IOException("Form response exceeded safe size limit");
+                result.append(buffer, 0, count);
+            }
+            return result.toString();
+        }
+    }
+
+    private int matchingJsonArrayEnd(String text, int start) {
+        int depth = 0;
+        boolean quoted = false;
+        boolean escaped = false;
+        for (int i = start; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (quoted) {
+                if (escaped) escaped = false;
+                else if (c == '\\\\') escaped = true;
+                else if (c == '"') quoted = false;
+            } else if (c == '"') quoted = true;
+            else if (c == '[') depth++;
+            else if (c == ']') {
+                depth--;
+                if (depth == 0) return i;
+            }
+        }
+        return -1;
+    }
+
+    private String findPublishedFormEntry(Object value, String heading) {
+        if (!(value instanceof JSONArray)) return "";
+        JSONArray array = (JSONArray) value;
+        if (heading.equalsIgnoreCase(array.optString(1, "").trim())) {
+            JSONArray fields = array.optJSONArray(4);
+            if (fields != null) {
+                for (int i = 0; i < fields.length(); i++) {
+                    JSONArray field = fields.optJSONArray(i);
+                    if (field != null && field.opt(0) instanceof Number) {
+                        return String.valueOf(field.optLong(0));
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < array.length(); i++) {
+            String id = findPublishedFormEntry(array.opt(i), heading);
+            if (!id.isEmpty()) return id;
+        }
+        return "";
+    }
+
+    private void feedbackSubmissionResult(boolean success, String message) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put("success", success);
+            data.put("message", message);
+        } catch (Exception ignored) {}
+        sendBillingCallback("onFieldWorksFeedbackResult", data);
+    }
+
+    private void submitFeedbackToGoogleForm(String feedback, String contact) {
+        if (feedback == null || feedback.trim().isEmpty() || contact == null || contact.trim().isEmpty()) {
+            feedbackSubmissionResult(false, "Please enter feedback. A FieldWorks user or guest ID is required.");
+            return;
+        }
+        if (feedback.length() > 3000 || contact.length() > 250) {
+            feedbackSubmissionResult(false, "Feedback or contact is too long.");
+            return;
+        }
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) new URL(FEEDBACK_FORM_URL).openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(12000);
+            connection.setReadTimeout(15000);
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36");
+            String formHtml = readFeedbackResponse(connection);
+            if (connection.getResponseCode() != 200) throw new IOException("Google Form is currently unavailable");
+            int marker = formHtml.indexOf("FB_PUBLIC_LOAD_DATA_");
+            if (marker < 0) throw new IOException("Google Form field definitions are unavailable");
+            int arrayStart = formHtml.indexOf('[', marker);
+            if (arrayStart < 0) throw new IOException("Google Form could not be parsed");
+            int arrayEnd = matchingJsonArrayEnd(formHtml, arrayStart);
+            if (arrayEnd < arrayStart) throw new IOException("Google Form data is incomplete");
+            JSONArray formData = new JSONArray(formHtml.substring(arrayStart, arrayEnd + 1));
+            String feedbackEntry = findPublishedFormEntry(formData, "Provide your Feedback here");
+            String contactEntry = findPublishedFormEntry(formData, "Contact Detail (email/Telephone Number)");
+            if (feedbackEntry.isEmpty() || contactEntry.isEmpty() || feedbackEntry.equals(contactEntry)) {
+                throw new IOException("The Google Form fields have changed or cannot be mapped");
+            }
+            connection.disconnect();
+            connection = null;
+            String postData = "entry." + feedbackEntry + "=" + URLEncoder.encode(feedback.trim(), "UTF-8")
+                    + "&entry." + contactEntry + "=" + URLEncoder.encode(contact.trim(), "UTF-8")
+                    + "&fvv=1&pageHistory=0";
+            String submitUrl = FEEDBACK_FORM_URL.replace("/viewform", "/formResponse");
+            connection = (HttpURLConnection) new URL(submitUrl).openConnection();
+            connection.setRequestMethod("POST");
+            connection.setConnectTimeout(12000);
+            connection.setReadTimeout(20000);
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            connection.setRequestProperty("Referer", FEEDBACK_FORM_URL);
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36");
+            byte[] requestBody = postData.getBytes(StandardCharsets.UTF_8);
+            try (OutputStream output = connection.getOutputStream()) {
+                output.write(requestBody);
+            }
+            String response = readFeedbackResponse(connection);
+            String normalized = response.toLowerCase(Locale.ROOT);
+            boolean confirmed = connection.getResponseCode() == 200
+                && (normalized.contains("responseconfirmationmessage")
+                    || normalized.contains("your response has been recorded")
+                    || normalized.contains("your response has been submitted")
+                    || normalized.contains("thank you for submitting"));
+            if (!confirmed) {
+                feedbackSubmissionResult(false, "Google Forms did not confirm the submission. Please check your connection or try again.");
+                return;
+            }
+            feedbackSubmissionResult(true, "Google Forms accepted your feedback.");
+        } catch (Exception error) {
+            feedbackSubmissionResult(false, "Could not submit to Google Forms: " +
+                (error.getMessage() == null ? "network or form error" : error.getMessage()) + ". Please retry.");
+        } finally {
+            if (connection != null) connection.disconnect();
+        }
+    }
+
     private final class MediaBridge {
         @JavascriptInterface
         public void capture(String kind, String projectId) {
