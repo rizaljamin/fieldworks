@@ -81,13 +81,14 @@ public class MainActivity extends Activity {
     private static final int MEDIA_PICKER_REQUEST = 2303;
     private static final int AUDIO_PERMISSION_REQUEST = 2304;
     private static final int ARCHIVE_DIRECTORY_REQUEST = 2307;
-    private static final int FEEDBACK_EMAIL_REQUEST = 2308;
     private static final byte[] ARCHIVE_MAGIC = new byte[]{'F','W','A','R',1};
     private String pendingArchiveProjectId = "";
     private final List<Uri> pendingArchiveFiles = new ArrayList<>();
     private final ExecutorService archiveExecutor = Executors.newSingleThreadExecutor();
     private static final int MAX_MEDIA_PER_PICK = 5;
     private WebView webView;
+    private boolean feedbackEmailExternalOpen = false;
+    private boolean feedbackEmailWasPaused = false;
     private File captureFile;
     private String captureKind = "";
     private String captureProjectId = "";
@@ -256,14 +257,19 @@ private final class CommunityBridge {
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "FieldWorks Feedback");
         emailIntent.putExtra(Intent.EXTRA_TEXT, body);
         try {
-            // The email client is external; Android cannot embed it in a WebView
-            // or confirm that Send was pressed. When it closes, return to the
-            // existing FieldWorks screen without rebuilding project state.
-            startActivityForResult(emailIntent, FEEDBACK_EMAIL_REQUEST);
+            // Email apps are external. We observe FieldWorks onPause/onResume
+            // to detect return, not a misleading email "sent" activity result.
+            feedbackEmailExternalOpen = true;
+            feedbackEmailWasPaused = false;
+            startActivity(emailIntent);
         } catch (android.content.ActivityNotFoundException error) {
+            feedbackEmailExternalOpen = false;
+            feedbackEmailWasPaused = false;
             sendFieldWorksFeedbackResult(false,
                 "No email app found. Set up Gmail or another email client and retry.");
         } catch (Exception error) {
+            feedbackEmailExternalOpen = false;
+            feedbackEmailWasPaused = false;
             sendFieldWorksFeedbackResult(false,
                 "Could not open an email app. Please retry.");
         }
@@ -871,12 +877,6 @@ private final class CommunityBridge {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == FEEDBACK_EMAIL_REQUEST) {
-            // Most email apps do not return a trustworthy sent/cancelled status.
-            // Returning from an external composer is NOT proof of delivery.
-            notifyFieldWorksFeedbackEmailReturned();
-            return;
-        }
         if (requestCode == ARCHIVE_DIRECTORY_REQUEST) {
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
                 Uri tree = data.getData();
@@ -1282,6 +1282,24 @@ private final class CommunityBridge {
         @JavascriptInterface
         public void signOut() {
             FirebaseAuth.getInstance().signOut();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (feedbackEmailExternalOpen) feedbackEmailWasPaused = true;
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Unlike activity results, this observes when FieldWorks actually
+        // regains the foreground after the external email app closes.
+        if (feedbackEmailExternalOpen && feedbackEmailWasPaused) {
+            feedbackEmailExternalOpen = false;
+            feedbackEmailWasPaused = false;
+            notifyFieldWorksFeedbackEmailReturned();
         }
     }
 
