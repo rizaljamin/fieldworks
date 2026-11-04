@@ -205,7 +205,7 @@ private final class CommunityBridge {
 @android.webkit.JavascriptInterface public void rate(){runOnUiThread(()->{try{startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("market://details?id=com.fieldworks.app")));}catch(android.content.ActivityNotFoundException e){startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.fieldworks.app")));}});}
 @android.webkit.JavascriptInterface public void share(){runOnUiThread(()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(android.content.Intent.EXTRA_TEXT,"Simplify your projects with FieldWorks! https://play.google.com/store/apps/details?id=com.fieldworks.app");startActivity(android.content.Intent.createChooser(i,"Share FieldWorks"));});}
 @android.webkit.JavascriptInterface public void feedback() {
-    sendFieldWorksFeedbackResult(false, "Please open the in-app feedback card.");
+    sendFieldWorksFeedbackResult(false, "Please open the in-app feedback card.", 0);
 }
 @android.webkit.JavascriptInterface public void submitFeedback(String feedback, String userid, String requestId) {
     submitFieldWorksFeedback(feedback, userid, requestId);
