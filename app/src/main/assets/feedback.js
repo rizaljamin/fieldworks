@@ -57,7 +57,7 @@
     overlay.innerHTML =
       '<section class="fw-feedback-card">' +
       '<div class="fw-feedback-head"><h2>Send Feedback</h2><button type="button" class="fw-feedback-close" aria-label="Close feedback">×</button></div>' +
-      '<p>Your feedback is sent directly to FieldWorks at growplot2026@gmail.com. Tap Submit to send it without leaving the app.</p>' +
+      '<p>Enter your feedback here. Submit opens your email app with the message, recipient, and device details already filled in.</p>' +
       '<form class="fw-feedback-form">' +
       '<label for="fwFeedbackText">Provide your feedback <textarea id="fwFeedbackText" maxlength="3000" required placeholder="Tell us what works, what does not, or what to improve."></textarea></label>' +
       '<label for="fwFeedbackContact">Contact detail (email or telephone) — optional' +
@@ -81,14 +81,14 @@
       var status = overlay.querySelector(".fw-feedback-status");
       if (!feedback) { status.textContent = "Please enter your feedback."; status.className = "fw-feedback-status error"; return; }
       if (!window.FieldWorksCommunity || typeof window.FieldWorksCommunity.submitFeedback !== "function") {
-        status.textContent = "Direct feedback submission is unavailable in this version of FieldWorks.";
+        status.textContent = "Email feedback is unavailable in this version of FieldWorks.";
         status.className = "fw-feedback-status error";
         return;
       }
       var contact = responseContact(overlay.querySelector("#fwFeedbackContact").value);
       sending = true;
       overlay.querySelector(".fw-feedback-submit").disabled = true;
-      status.textContent = "Submitting feedback…";
+      status.textContent = "Opening email app…";
       status.className = "fw-feedback-status";
       try {
         window.FieldWorksCommunity.submitFeedback(feedback, contact);
@@ -114,11 +114,10 @@
     overlay.querySelector(".fw-feedback-submit").disabled = false;
     var status = overlay.querySelector(".fw-feedback-status");
     if (result && result.success === true) {
-      status.textContent = (result && result.message) || "Feedback sent successfully.";
+      status.textContent = (result && result.message) || "Email draft opened. Review it and tap Send in your email app.";
       status.className = "fw-feedback-status success";
-      overlay.querySelector(".fw-feedback-form").reset();
     } else {
-      status.textContent = (result && result.message) || "Feedback could not be sent. Please retry.";
+      status.textContent = (result && result.message) || "Could not open the email draft. Please retry.";
       status.className = "fw-feedback-status error";
     }
   };
