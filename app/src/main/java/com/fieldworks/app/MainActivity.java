@@ -247,25 +247,75 @@ private final class CommunityBridge {
         return -1;
     }
 
-    private String findPublishedFormEntry(Object value, String heading) {
-        if (!(value instanceof JSONArray)) return "";
-        JSONArray array = (JSONArray) value;
-        if (heading.equalsIgnoreCase(array.optString(1, "").trim())) {
-            JSONArray fields = array.optJSONArray(4);
-            if (fields != null) {
-                for (int i = 0; i < fields.length(); i++) {
-                    JSONArray field = fields.optJSONArray(i);
-                    if (field != null && field.opt(0) instanceof Number) {
-                        return String.valueOf(field.optLong(0));
-                    }
-                }
-            }
+    private static final class FeedbackFormField {
+        final String title;
+        final String entryId;
+        FeedbackFormField(String title, String entryId) {
+            this.title = title;
+            this.entryId = entryId;
         }
-        for (int i = 0; i < array.length(); i++) {
-            String id = findPublishedFormEntry(array.opt(i), heading);
-            if (!id.isEmpty()) return id;
+    }
+
+    private String feedbackFieldEntryId(JSONArray item) {
+        JSONArray entries = item.optJSONArray(4);
+        if (entries == null) return "";
+        for (int i = 0; i < entries.length(); i++) {
+            JSONArray entry = entries.optJSONArray(i);
+            if (entry == null || entry.length() == 0) continue;
+            Object raw = entry.opt(0);
+            String id = raw instanceof Number ? String.valueOf(((Number) raw).longValue())
+                : raw instanceof String ? ((String) raw).trim() : "";
+            if (!id.isEmpty() && id.matches("[0-9]+") && !id.equals("0")) return id;
         }
         return "";
+    }
+
+    private String[] mapPublishedFeedbackEntries(JSONArray formData) throws IOException {
+        // The published Google Forms schema stores question items at data[1][1].
+        // Read only short-answer and paragraph fields so other arrays cannot be
+        // mistaken for question IDs.
+        JSONArray details = formData.optJSONArray(1);
+        JSONArray questions = details == null ? null : details.optJSONArray(1);
+        if (questions == null) throw new IOException("Google Form question list is unavailable");
+        List<FeedbackFormField> textFields = new ArrayList<>();
+        String feedbackId = "";
+        String contactId = "";
+        for (int i = 0; i < questions.length(); i++) {
+            JSONArray question = questions.optJSONArray(i);
+            if (question == null) continue;
+            int type = question.optInt(3, -1);
+            if (type != 0 && type != 1) continue; // short or paragraph text
+            String title = question.optString(1, "").trim();
+            String entryId = feedbackFieldEntryId(question);
+            if (entryId.isEmpty()) continue;
+            textFields.add(new FeedbackFormField(title, entryId));
+            String label = title.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+            if (label.contains("feedback") || label.contains("suggestion") || label.contains("comment")) {
+                if (feedbackId.isEmpty()) feedbackId = entryId;
+            } else if (label.contains("contact") || label.contains("email")
+                    || label.contains("telephone") || label.contains("phone")) {
+                if (contactId.isEmpty()) contactId = entryId;
+            }
+        }
+        // The connected response sheet has exactly two questions (feedback,
+        // contact). Only use positional fallback when exactly two text fields
+        // exist, to avoid guessing if the form changes its structure.
+        if (textFields.size() == 2) {
+            if (feedbackId.isEmpty() && contactId.isEmpty()) {
+                feedbackId = textFields.get(0).entryId;
+                contactId = textFields.get(1).entryId;
+            } else if (feedbackId.isEmpty()) {
+                feedbackId = textFields.get(0).entryId.equals(contactId)
+                    ? textFields.get(1).entryId : textFields.get(0).entryId;
+            } else if (contactId.isEmpty()) {
+                contactId = textFields.get(0).entryId.equals(feedbackId)
+                    ? textFields.get(1).entryId : textFields.get(0).entryId;
+            }
+        }
+        if (feedbackId.isEmpty() || contactId.isEmpty() || feedbackId.equals(contactId)) {
+            throw new IOException("The published form's feedback and contact fields could not be identified");
+        }
+        return new String[]{ feedbackId, contactId };
     }
 
     private void feedbackSubmissionResult(boolean success, String message) {
@@ -295,18 +345,17 @@ private final class CommunityBridge {
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36");
             String formHtml = readFeedbackResponse(connection);
             if (connection.getResponseCode() != 200) throw new IOException("Google Form is currently unavailable");
-            int marker = formHtml.indexOf("FB_PUBLIC_LOAD_DATA_");
-            if (marker < 0) throw new IOException("Google Form field definitions are unavailable");
-            int arrayStart = formHtml.indexOf('[', marker);
-            if (arrayStart < 0) throw new IOException("Google Form could not be parsed");
+            java.util.regex.Matcher formDataAssignment = java.util.regex.Pattern
+                .compile("FB_PUBLIC_LOAD_DATA_\\s*=\\s*\\[")
+                .matcher(formHtml);
+            if (!formDataAssignment.find()) throw new IOException("Google Form field definitions are unavailable");
+            int arrayStart = formDataAssignment.end() - 1;
             int arrayEnd = matchingJsonArrayEnd(formHtml, arrayStart);
             if (arrayEnd < arrayStart) throw new IOException("Google Form data is incomplete");
             JSONArray formData = new JSONArray(formHtml.substring(arrayStart, arrayEnd + 1));
-            String feedbackEntry = findPublishedFormEntry(formData, "Provide your Feedback here");
-            String contactEntry = findPublishedFormEntry(formData, "Contact Detail (email/Telephone Number)");
-            if (feedbackEntry.isEmpty() || contactEntry.isEmpty() || feedbackEntry.equals(contactEntry)) {
-                throw new IOException("The Google Form fields have changed or cannot be mapped");
-            }
+            String[] entryIds = mapPublishedFeedbackEntries(formData);
+            String feedbackEntry = entryIds[0];
+            String contactEntry = entryIds[1];
             connection.disconnect();
             connection = null;
             String postData = "entry." + feedbackEntry + "=" + URLEncoder.encode(feedback.trim(), "UTF-8")
