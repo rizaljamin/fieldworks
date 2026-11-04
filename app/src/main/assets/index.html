@@ -803,6 +803,7 @@
 <div id="fwHelpOverlay" class="fw-help-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="fwHelpTitle"><section class="fw-help-card"><h2 id="fwHelpTitle">Welcome to FieldWorks</h2><p id="fwHelpStepLabel"></p><div id="fwHelpBody"></div><div class="fw-help-actions"><button type="button" onclick="fwCloseHelp()">Skip / Close</button><button id="fwHelpNext" type="button" onclick="fwNextHelp()">Next</button></div></section></div>
 <script>
 const FW_STORE_URL="https://play.google.com/store/apps/details?id=com.fieldworks.app";
+const FW_FEEDBACK_FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSd3sKlhWMaVDizORNlHYNq62nLSJ3dV9rWhHpAGGqBjA6yVaw/viewform";
 const FW_HELP_STEPS=["<p><b>Create a project</b> from Home or My Templates. Choose a type and enter the project details.</p>","<p><b>Track milestones</b> and attach photos, videos, notes and voice notes to project albums.</p>","<p><b>Stay organised</b> with issues, reminders, budgets and reports. Archive important work. Project data stays on this device and does not automatically sync.</p>"];
 let fwHelpStep=0;
 function fwRenderHelp(){document.getElementById("fwHelpStepLabel").textContent="Step "+(fwHelpStep+1)+" of "+FW_HELP_STEPS.length;document.getElementById("fwHelpBody").innerHTML=FW_HELP_STEPS[fwHelpStep];document.getElementById("fwHelpNext").textContent=fwHelpStep===FW_HELP_STEPS.length-1?"Finish":"Next";}
@@ -823,7 +824,7 @@ function fwChooseRating(stars){
 }
 try{fwRenderRating(Number(localStorage.getItem("fieldworks.rating.selection"))||0);}catch(e){fwRenderRating(0);}
 function fwShareApp(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.share();else if(navigator.share)navigator.share({title:"FieldWorks",url:FW_STORE_URL}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent=FW_STORE_URL;}
-function fwSendFeedback(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.feedback();else if(navigator.share)navigator.share({title:"FieldWorks feedback",text:"Feedback about FieldWorks: "}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent="Feedback sharing requires a compatible app.";}
+function fwSendFeedback(){if(window.FieldWorksCommunity&&typeof window.FieldWorksCommunity.feedback==="function"){window.FieldWorksCommunity.feedback();}else{window.open(FW_FEEDBACK_FORM_URL,"_blank");}}
 function fwCloseLogoutPrompt(){document.getElementById("fwLogoutOverlay").hidden=true;}
 function fwShowLogoutPrompt(){document.getElementById("fwLogoutOverlay").hidden=false;}
     const pageTitles = {
