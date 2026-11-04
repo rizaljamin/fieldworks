@@ -195,7 +195,7 @@ exports.fieldWorksSubscription = onRequest(
 // The counter and feedback document are written in one Firestore transaction.
 // Every persisted feedback document has ONLY the three requested fields.
 exports.fieldWorksFeedback = onRequest(
-  { region: "asia-southeast1", maxInstances: 5, timeoutSeconds: 45 },
+  { region: "asia-southeast1", maxInstances: 5, timeoutSeconds: 45, invoker: "public" },
   async (req, res) => {
     res.set("Cache-Control", "no-store");
     if (req.method !== "POST") {
