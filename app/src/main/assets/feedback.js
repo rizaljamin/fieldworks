@@ -45,7 +45,9 @@
       ".fw-feedback-submit{background:#138c92;color:white;border:0;border-radius:11px;padding:12px;font-weight:800}" +
       ".fw-feedback-submit:disabled{opacity:.6;cursor:wait}" +
       ".fw-feedback-status{min-height:20px;margin:0;font-size:12px;white-space:pre-wrap}" +
-      ".fw-feedback-status.error{color:#b22e32}.fw-feedback-status.success{color:#187057}";
+      ".fw-feedback-status.error{color:#b22e32}.fw-feedback-status.success{color:#187057}" +
+      ".fw-feedback-destination{border:1px solid #d9e4de;border-radius:11px;background:#f5faf7;padding:10px 12px;font-size:12px;display:grid;gap:7px}" +
+      ".fw-feedback-destination strong{display:inline-block;min-width:58px;color:#576d70}";
     document.head.appendChild(style);
 
     var overlay = document.createElement("div");
@@ -57,7 +59,11 @@
     overlay.innerHTML =
       '<section class="fw-feedback-card">' +
       '<div class="fw-feedback-head"><h2>Send Feedback</h2><button type="button" class="fw-feedback-close" aria-label="Close feedback">×</button></div>' +
-      '<p>Enter your feedback here. Submit opens your email app with the message, recipient, and device details already filled in.</p>' +
+      '<p>Write the message here. Submit opens the email composer. When you finish or close it, FieldWorks returns to your existing screen.</p>' +
+      '<div class="fw-feedback-destination" aria-label="Email details">' +
+      '<div><strong>To:</strong> growplot2026@gmail.com</div>' +
+      '<div><strong>Subject:</strong> FieldWorks Feedback</div>' +
+      '</div>' +
       '<form class="fw-feedback-form">' +
       '<label for="fwFeedbackText">Provide your feedback <textarea id="fwFeedbackText" maxlength="3000" required placeholder="Tell us what works, what does not, or what to improve."></textarea></label>' +
       '<label for="fwFeedbackContact">Contact detail (email or telephone) — optional' +
@@ -88,7 +94,7 @@
       var contact = responseContact(overlay.querySelector("#fwFeedbackContact").value);
       sending = true;
       overlay.querySelector(".fw-feedback-submit").disabled = true;
-      status.textContent = "Opening email app…";
+      status.textContent = "Opening email composer…";
       status.className = "fw-feedback-status";
       try {
         window.FieldWorksCommunity.submitFeedback(feedback, contact);
@@ -113,11 +119,18 @@
     sending = false;
     overlay.querySelector(".fw-feedback-submit").disabled = false;
     var status = overlay.querySelector(".fw-feedback-status");
-    if (result && result.success === true) {
-      status.textContent = (result && result.message) || "Email draft opened. Review it and tap Send in your email app.";
-      status.className = "fw-feedback-status success";
+    if (result && result.phase === "returned") {
+      // Return to the original FieldWorks screen; never assume the user sent.
+      status.textContent = (result && result.message) || "Back in FieldWorks. Check your email app's Sent folder to confirm delivery.";
+      status.className = "fw-feedback-status";
+      overlay.hidden = true;
+      var communityStatus = document.getElementById("fwCommunityStatus");
+      if (communityStatus) communityStatus.textContent = status.textContent;
+    } else if (result && result.success === true) {
+      status.textContent = (result && result.message) || "Email composer opened; finish sending from your email app.";
+      status.className = "fw-feedback-status";
     } else {
-      status.textContent = (result && result.message) || "Could not open the email draft. Please retry.";
+      status.textContent = (result && result.message) || "Could not open the email composer. Please retry.";
       status.className = "fw-feedback-status error";
     }
   };
