@@ -644,7 +644,7 @@
               <button class="account-action" id="accountPageSignOut" type="button" hidden>Sign out</button>
             </div>
           </article>
-          <article class="account-page-card" style="display:block;margin-top:16px"><h3>Help &amp; FieldWorks community</h3><p>Get started or recommend FieldWorks.</p><div class="fw-community-actions"><button type="button" onclick="fwOpenHelp()">Help &amp; Tips</button><button type="button" onclick="fwRateApp()">Rate FieldWorks</button><button type="button" onclick="fwShareApp()">Share FieldWorks</button></div><p id="fwCommunityStatus" role="status"></p></article>
+          <article class="account-page-card" style="display:block;margin-top:16px"><h3>Help &amp; FieldWorks community</h3><p>Get started or recommend FieldWorks.</p><div class="fw-community-actions"><button type="button" onclick="fwOpenHelp()">Help &amp; Tips</button><button type="button" onclick="fwRateApp()">Rate FieldWorks</button><button type="button" onclick="fwShareApp()">Share FieldWorks</button><button type="button" onclick="fwSendFeedback()">Send Feedback</button></div><p id="fwCommunityStatus" role="status"></p></article>
 <section class="subscription-card" aria-labelledby="subscriptionTitle">
             <div class="subscription-heading"><div><div class="eyebrow">Google Play</div><h3 id="subscriptionTitle">My subscription</h3><p id="subscriptionStatus">Sign in to check or manage a subscription.</p></div><button class="account-action restore-action" id="restoreSubscription" type="button">Restore purchase</button></div>
             <div class="plan-grid">
@@ -784,7 +784,8 @@
     </div>
   </div>
 
-  <div id="fwHelpOverlay" class="fw-help-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="fwHelpTitle"><section class="fw-help-card"><h2 id="fwHelpTitle">Welcome to FieldWorks</h2><p id="fwHelpStepLabel"></p><div id="fwHelpBody"></div><div class="fw-help-actions"><button type="button" onclick="fwCloseHelp()">Skip / Close</button><button id="fwHelpNext" type="button" onclick="fwNextHelp()">Next</button></div></section></div>
+  <div id="fwLogoutOverlay" class="fw-help-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="fwLogoutTitle"><section class="fw-help-card"><h2 id="fwLogoutTitle">Enjoying FieldWorks?</h2><p>Help us improve and share FieldWorks with others.</p><div class="fw-community-actions"><button type="button" onclick="fwRateApp();fwCloseLogoutPrompt()">Rate FieldWorks</button><button type="button" onclick="fwShareApp();fwCloseLogoutPrompt()">Share App</button><button type="button" onclick="fwSendFeedback();fwCloseLogoutPrompt()">Send Feedback</button><button type="button" onclick="fwCloseLogoutPrompt()">Not Now</button></div></section></div>
+<div id="fwHelpOverlay" class="fw-help-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="fwHelpTitle"><section class="fw-help-card"><h2 id="fwHelpTitle">Welcome to FieldWorks</h2><p id="fwHelpStepLabel"></p><div id="fwHelpBody"></div><div class="fw-help-actions"><button type="button" onclick="fwCloseHelp()">Skip / Close</button><button id="fwHelpNext" type="button" onclick="fwNextHelp()">Next</button></div></section></div>
 <script>
 const FW_STORE_URL="https://play.google.com/store/apps/details?id=com.fieldworks.app";
 const FW_HELP_STEPS=["<p><b>Create a project</b> from Home or My Templates. Choose a type and enter the project details.</p>","<p><b>Track milestones</b> and attach photos, videos, notes and voice notes to project albums.</p>","<p><b>Stay organised</b> with issues, reminders, budgets and reports. Archive important work. Project data stays on this device and does not automatically sync.</p>"];
@@ -796,6 +797,9 @@ function fwNextHelp(){if(fwHelpStep<FW_HELP_STEPS.length-1){fwHelpStep++;fwRende
 function fwShowHelpForFirstLogin(email){if(!email)return;const key="fieldworks.help-seen.v1:"+String(email).trim().toLowerCase();try{if(localStorage.getItem(key)==="yes")return;localStorage.setItem(key,"yes");}catch(e){return;}fwOpenHelp();}
 function fwRateApp(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.rate();else window.open(FW_STORE_URL,"_blank");}
 function fwShareApp(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.share();else if(navigator.share)navigator.share({title:"FieldWorks",url:FW_STORE_URL}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent=FW_STORE_URL;}
+function fwSendFeedback(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.feedback();else if(navigator.share)navigator.share({title:"FieldWorks feedback",text:"Feedback about FieldWorks: "}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent="Feedback sharing requires a compatible app.";}
+function fwCloseLogoutPrompt(){document.getElementById("fwLogoutOverlay").hidden=true;}
+function fwShowLogoutPrompt(){document.getElementById("fwLogoutOverlay").hidden=false;}
     const pageTitles = {
       home: "Home",
       projects: "My Projects",
@@ -2271,6 +2275,8 @@ function loadDemoProjectState() {
       updateAuthUI("");
       setAccountStatus("Signed out. Guest mode is active.", false);
       setSubscriptionMessage("Sign in to check or manage a subscription.", false);
+      closeLoginCard();
+      fwShowLogoutPrompt();
     }
     function setSubscriptionMessage(message, error) {
       const status = document.getElementById("billingStatus");
