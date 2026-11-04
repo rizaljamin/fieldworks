@@ -30,8 +30,10 @@ A signed-in UID is verified against Firebase Authentication, not trusted from th
 
 ```sh
 firebase login
-firebase deploy --only functions:fieldWorksFeedback,firestore:rules --project fieldworks-512712
+firebase deploy --only functions:fieldWorksFeedback --project fieldworks-512712
 ```
+
+Deploy **the function only** until the current production Firestore rules have been reviewed. Deploying the repository's entire rules file without comparing existing rules could unintentionally block unrelated FieldWorks features.
 
 The function must accept HTTPS calls from app guests (`invoker: "public"`), and the Firebase project must support Cloud Functions. Never place a Firebase Admin service-account private key in this public GitHub repository or the Android APK.
 
