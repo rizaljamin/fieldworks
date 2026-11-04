@@ -32,6 +32,7 @@
     var style = document.createElement("style");
     style.textContent =
       ".fw-feedback-overlay{position:fixed;inset:0;z-index:80;background:#082c507a;display:grid;place-items:center;padding:16px}" +
+      ".fw-feedback-overlay[hidden]{display:none}" +
       ".fw-feedback-card{width:min(100%,470px);max-height:95vh;overflow:auto;border-radius:18px;background:#fffefa;padding:22px;box-shadow:0 20px 65px #082c5050;color:#16364c}" +
       ".fw-feedback-head{display:flex;align-items:center;justify-content:space-between;gap:12px}" +
       ".fw-feedback-head h2{font-size:20px;margin:0;color:#082c50}" +
