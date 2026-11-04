@@ -26,6 +26,23 @@
     return uid || guestId();
   }
 
+  // Present a friendly sender to the user; keep Firebase UID for the backend only.
+  function currentFeedbackAccountLabel() {
+    try {
+      if (window.FieldWorksAuth && typeof window.FieldWorksAuth.currentEmail === "function") {
+        var email = String(window.FieldWorksAuth.currentEmail() || "").trim();
+        if (email) return email;
+      }
+    } catch (_) {}
+    try {
+      if (window.FieldWorksAuth && typeof window.FieldWorksAuth.currentUid === "function" &&
+          String(window.FieldWorksAuth.currentUid() || "").trim()) {
+        return "Signed-in FieldWorks account";
+      }
+    } catch (_) {}
+    return "Guest";
+  }
+
   function requestIdFor(message, userid) {
     var signature = userid + "\u0001" + message;
     if (pendingSignature !== signature || !pendingRequestId) {
@@ -57,7 +74,7 @@
       ".fw-feedback-status.error{color:#b22e32}.fw-feedback-status.success{color:#187057}" +
       ".fw-feedback-destination{border:1px solid #d9e4de;border-radius:11px;background:#f5faf7;padding:10px 12px;font-size:12px;display:grid;gap:7px}" +
       ".fw-feedback-destination strong{display:inline-block;min-width:58px;color:#576d70}" +
-      ".fw-feedback-userid{overflow-wrap:anywhere;font-size:11px;color:#16364c}";
+      ".fw-feedback-account{overflow-wrap:anywhere;font-size:11px;color:#16364c}";
     document.head.appendChild(style);
 
     var overlay = document.createElement("div");
@@ -69,10 +86,10 @@
     overlay.innerHTML =
       '<section class="fw-feedback-card">' +
       '<div class="fw-feedback-head"><h2>Send Feedback</h2><button type="button" class="fw-feedback-close" aria-label="Close feedback">×</button></div>' +
-      '<p>Send feedback directly to the FieldWorks Firebase collection. No email application is needed.</p>' +
-      '<div class="fw-feedback-destination" aria-label="Firebase feedback details">' +
-      '<div><strong>Saved in:</strong> fieldWorksFeedback collection</div>' +
-      '<div><strong>User ID:</strong> <span class="fw-feedback-userid" id="fwFeedbackUserId"></span></div>' +
+      '<p>Share your comments and suggestions with our support team.</p>' +
+      '<div class="fw-feedback-destination" aria-label="Feedback recipient and sender">' +
+      '<div><strong>To:</strong> FieldWorks Support Team</div>' +
+      '<div><strong>From:</strong> <span class="fw-feedback-account" id="fwFeedbackFrom"></span></div>' +
       '</div>' +
       '<form class="fw-feedback-form">' +
       '<label for="fwFeedbackText">Feedback message <textarea id="fwFeedbackText" maxlength="3000" required placeholder="Tell us what works, what does not, or what to improve."></textarea></label>' +
@@ -99,7 +116,7 @@
         return;
       }
       var userid = currentFeedbackUserId();
-      overlay.querySelector("#fwFeedbackUserId").textContent = userid;
+      overlay.querySelector("#fwFeedbackFrom").textContent = currentFeedbackAccountLabel();
       var requestId = requestIdFor(feedback, userid);
       sending = true;
       overlay.querySelector(".fw-feedback-submit").disabled = true;
@@ -120,7 +137,9 @@
 
   window.fwOpenFeedback = function () {
     var overlay = makeUI();
-    overlay.querySelector("#fwFeedbackUserId").textContent = currentFeedbackUserId();
+    overlay.querySelector("#fwFeedbackFrom").textContent = currentFeedbackAccountLabel();
+    var communityStatus = document.getElementById("fwCommunityStatus");
+    if (communityStatus) communityStatus.textContent = "";
     overlay.hidden = false;
     overlay.querySelector("#fwFeedbackText").focus();
   };
@@ -130,14 +149,13 @@
     overlay.querySelector(".fw-feedback-submit").disabled = false;
     var status = overlay.querySelector(".fw-feedback-status");
     if (result && result.success === true && Number(result.feedback_id) >= 1) {
-      status.textContent = (result && result.message) ||
-        ("Feedback #" + result.feedback_id + " saved successfully.");
+      status.textContent = "Thank You for your feedback and we will review and take necessary steps required";
       status.className = "fw-feedback-status success";
       overlay.querySelector("#fwFeedbackText").value = "";
       pendingSignature = "";
       pendingRequestId = "";
       var communityStatus = document.getElementById("fwCommunityStatus");
-      if (communityStatus) communityStatus.textContent = status.textContent;
+      if (communityStatus) communityStatus.textContent = "";
     } else {
       status.textContent = (result && result.message) || "Feedback could not be saved to Firebase. Please retry.";
       status.className = "fw-feedback-status error";

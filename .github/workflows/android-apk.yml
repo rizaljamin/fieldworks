@@ -88,6 +88,12 @@ jobs:
           echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
           echo "ANDROID_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
 
+      - name: Test feedback card and callback flow
+        shell: bash
+        run: |
+          node --check app/src/main/assets/feedback.js
+          node tests/feedback-ui.test.js
+
       - name: Build signed APK
         shell: bash
         run: |
