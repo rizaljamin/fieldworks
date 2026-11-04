@@ -81,6 +81,7 @@ public class MainActivity extends Activity {
     private static final int MEDIA_PICKER_REQUEST = 2303;
     private static final int AUDIO_PERMISSION_REQUEST = 2304;
     private static final int ARCHIVE_DIRECTORY_REQUEST = 2307;
+    private static final int FEEDBACK_EMAIL_REQUEST = 2308;
     private static final byte[] ARCHIVE_MAGIC = new byte[]{'F','W','A','R',1};
     private String pendingArchiveProjectId = "";
     private final List<Uri> pendingArchiveFiles = new ArrayList<>();
@@ -218,6 +219,16 @@ private final class CommunityBridge {
         sendBillingCallback("onFieldWorksFeedbackResult", data);
     }
 
+    private void notifyFieldWorksFeedbackEmailReturned() {
+        JSONObject data = new JSONObject();
+        try {
+            data.put("phase", "returned");
+            data.put("message",
+                "Back in FieldWorks. Email delivery is not confirmed; check your email app's Sent folder.");
+        } catch (Exception ignored) {}
+        sendBillingCallback("onFieldWorksFeedbackResult", data);
+    }
+
     private void openFieldWorksFeedbackEmail(String feedback, String contact) {
         String message = feedback == null ? "" : feedback.trim();
         String sender = contact == null ? "" : contact.trim();
@@ -245,10 +256,10 @@ private final class CommunityBridge {
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "FieldWorks Feedback");
         emailIntent.putExtra(Intent.EXTRA_TEXT, body);
         try {
-            startActivity(emailIntent);
-            // Intent handoff does not indicate whether the recipient received mail.
-            sendFieldWorksFeedbackResult(true,
-                "Email draft opened. Review it and tap Send in your email app.");
+            // The email client is external; Android cannot embed it in a WebView
+            // or confirm that Send was pressed. When it closes, return to the
+            // existing FieldWorks screen without rebuilding project state.
+            startActivityForResult(emailIntent, FEEDBACK_EMAIL_REQUEST);
         } catch (android.content.ActivityNotFoundException error) {
             sendFieldWorksFeedbackResult(false,
                 "No email app found. Set up Gmail or another email client and retry.");
@@ -860,6 +871,12 @@ private final class CommunityBridge {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FEEDBACK_EMAIL_REQUEST) {
+            // Most email apps do not return a trustworthy sent/cancelled status.
+            // Returning from an external composer is NOT proof of delivery.
+            notifyFieldWorksFeedbackEmailReturned();
+            return;
+        }
         if (requestCode == ARCHIVE_DIRECTORY_REQUEST) {
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
                 Uri tree = data.getData();
