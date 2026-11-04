@@ -804,7 +804,6 @@
 <div id="fwHelpOverlay" class="fw-help-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="fwHelpTitle"><section class="fw-help-card"><h2 id="fwHelpTitle">Welcome to FieldWorks</h2><p id="fwHelpStepLabel"></p><div id="fwHelpBody"></div><div class="fw-help-actions"><button type="button" onclick="fwCloseHelp()">Skip / Close</button><button id="fwHelpNext" type="button" onclick="fwNextHelp()">Next</button></div></section></div>
 <script>
 const FW_STORE_URL="https://play.google.com/store/apps/details?id=com.fieldworks.app";
-const FW_FEEDBACK_FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSd3sKlhWMaVDizORNlHYNq62nLSJ3dV9rWhHpAGGqBjA6yVaw/viewform";
 const FW_HELP_STEPS=["<p><b>Create a project</b> from Home or My Templates. Choose a type and enter the project details.</p>","<p><b>Track milestones</b> and attach photos, videos, notes and voice notes to project albums.</p>","<p><b>Stay organised</b> with issues, reminders, budgets and reports. Archive important work. Project data stays on this device and does not automatically sync.</p>"];
 let fwHelpStep=0;
 function fwRenderHelp(){document.getElementById("fwHelpStepLabel").textContent="Step "+(fwHelpStep+1)+" of "+FW_HELP_STEPS.length;document.getElementById("fwHelpBody").innerHTML=FW_HELP_STEPS[fwHelpStep];document.getElementById("fwHelpNext").textContent=fwHelpStep===FW_HELP_STEPS.length-1?"Finish":"Next";}
