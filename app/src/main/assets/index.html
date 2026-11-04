@@ -812,7 +812,15 @@ function fwNextHelp(){if(fwHelpStep<FW_HELP_STEPS.length-1){fwHelpStep++;fwRende
 function fwShowHelpForFirstLogin(email){if(!email)return;const key="fieldworks.help-seen.v1:"+String(email).trim().toLowerCase();try{if(localStorage.getItem(key)==="yes")return;localStorage.setItem(key,"yes");}catch(e){return;}fwOpenHelp();}
 function fwRateApp(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.rate();else window.open(FW_STORE_URL,"_blank");}
 function fwRenderRating(stars){document.querySelectorAll(".fw-rating-stars button").forEach(function(button){const selected=Number(button.dataset.rating)<=stars;button.classList.toggle("selected",selected);button.setAttribute("aria-pressed",String(Number(button.dataset.rating)===stars));});}
-function fwChooseRating(stars){if(!Number.isInteger(stars)||stars<1||stars>5)return;fwRenderRating(stars);try{localStorage.setItem("fieldworks.rating.selection",String(stars));}catch(e){}fwCloseLogoutPrompt();fwRateApp();}
+let fwRatingRedirectTimer=null;
+function fwChooseRating(stars){
+ if(!Number.isInteger(stars)||stars<1||stars>5)return;
+ if(fwRatingRedirectTimer!==null){clearTimeout(fwRatingRedirectTimer);fwRatingRedirectTimer=null;}
+ fwRenderRating(stars);
+ try{localStorage.setItem("fieldworks.rating.selection",String(stars));}catch(e){}
+ document.querySelectorAll(".fw-rating-stars").forEach(function(group){group.setAttribute("aria-label",stars+" of 5 stars selected. Opening Google Play in 2 seconds.");});
+ fwRatingRedirectTimer=setTimeout(function(){fwRatingRedirectTimer=null;fwCloseLogoutPrompt();fwRateApp();},2000);
+}
 try{fwRenderRating(Number(localStorage.getItem("fieldworks.rating.selection"))||0);}catch(e){fwRenderRating(0);}
 function fwShareApp(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.share();else if(navigator.share)navigator.share({title:"FieldWorks",url:FW_STORE_URL}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent=FW_STORE_URL;}
 function fwSendFeedback(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.feedback();else if(navigator.share)navigator.share({title:"FieldWorks feedback",text:"Feedback about FieldWorks: "}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent="Feedback sharing requires a compatible app.";}
