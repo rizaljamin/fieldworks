@@ -6,7 +6,7 @@ FieldWorks is an application that perform physical project monitoring via journa
 
 ## Current source version
 
-**V0.4.01 Build 01** on the `main` branch (as of 4 November 2026), recorded in [`fieldworks-version.properties`](fieldworks-version.properties). The 30 October 2026 commits rolled back the UI to a pre-template Build 06 baseline after a startup regression, then restored the version properties. This is a **version-only upgrade** from the V0.4.00 Build 06 rollback baseline (no application feature code changed), not a claim that the latest GitHub Actions build passed or that this version was uploaded to Google Play.
+**V0.4.01 Build 01** on the `main` branch (as of 4 November 2026), recorded in [`fieldworks-version.properties`](fieldworks-version.properties). The 30 October 2026 commits rolled back the UI to a pre-template Build 06 baseline after a startup regression, then restored the version properties. This version began as an upgrade from the V0.4.00 Build 06 rollback baseline. The current source now also includes the Rate, Share and first-login Help changes described below. This is not a claim that the latest GitHub Actions build passed or that this version was uploaded to Google Play.
 
 **Historical build and distribution information:** V0.3.00 Build 14 was previously documented as a successful GitHub Actions run ([run #186](https://github.com/rizaljamin/fieldworks/actions/runs/40707503354)); V0.3.00 Build 08 was previously documented as the Google Play closed-test build. These are historical statements, not freshly verified current distribution statuses.
 
@@ -36,6 +36,13 @@ FieldWorks is a mobile project journal aimed at fieldwork, renovations, events, 
 4. Verify enabled/disabled templates and subscription navigation.
 5. Verify album media, report photographs, archive/restore and budget records.
 6. Run dependency, flow and regression checks before modifying the baseline.
+
+### V0.4.01 engagement enhancements (source committed; APK validation pending)
+
+- **Rate FieldWorks:** My Account button opens the FieldWorks Google Play listing using Android's market intent, with a browser fallback if no Play Store handler is available. This is a store-listing link, not the Play In-App Review API.
+- **Share FieldWorks:** My Account button invokes Android's native share chooser with the public Play Store URL.
+- **Help & Tips:** Three-step, skippable onboarding covering projects, milestones, albums, issues, finance, reports and local data. The walkthrough is shown after the first successful sign-in for each email on that device, tracked by a separate localStorage key; it can be reopened from My Account.
+- **Regression requirement:** Validate Android build, Play Store intent fallback, sharing, first-login and repeat-login behavior, and unchanged project/authentication/restore flows on devices including Samsung A50 before release.
 
 ## Build with GitHub Actions
 
