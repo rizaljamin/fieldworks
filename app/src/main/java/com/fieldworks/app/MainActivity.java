@@ -293,7 +293,24 @@ private final class CommunityBridge {
                     }
                 }
             }
-            JSONObject response = new JSONObject(responseBody.toString());
+            if (code == 404) {
+                sendFieldWorksFeedbackResult(false,
+                    "Firebase feedback service is not deployed. Ask the FieldWorks administrator to activate it.", 0);
+                return;
+            }
+            if (code == 403) {
+                sendFieldWorksFeedbackResult(false,
+                    "Firebase feedback service is not authorized for app requests.", 0);
+                return;
+            }
+            JSONObject response;
+            try {
+                response = new JSONObject(responseBody.toString());
+            } catch (Exception parseError) {
+                sendFieldWorksFeedbackResult(false,
+                    "Firebase feedback service returned HTTP " + code + " without a valid response.", 0);
+                return;
+            }
             long feedbackId = response.optLong("feedback_id", 0);
             boolean saved = code == 200 && response.optBoolean("success", false) && feedbackId >= 1;
             String resultMessage = response.optString("message", "");
