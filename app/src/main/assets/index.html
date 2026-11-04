@@ -562,7 +562,7 @@
         <div class="side-brand-copy">
           <strong>FieldWorks</strong>
           <small>Project journal</small>
-          <small class="app-version">V0.4.01 Build 25</small>
+          <small class="app-version">V0.4.01 Build 26</small>
         </div>
       </div>
       <div class="side-label">YOUR WORKSPACE</div>
@@ -577,7 +577,7 @@
       <div class="side-guest">
         <small id="sideAccountLabel">WORKING AS</small>
         <b id="sideAccountName">Guest</b>
-        <p id="sideAccountMessage">FieldWorks debug menu preview.</p>
+        <p id="sideAccountMessage">FieldWorks Guest & Trial copy</p>
       </div>
     </aside>
 
@@ -2392,7 +2392,7 @@ function loadDemoProjectState() {
       const sideMessage = document.getElementById("sideAccountMessage");
       if (sideLabel) sideLabel.textContent = signedIn ? "SIGNED IN AS" : "WORKING AS";
       if (sideName) sideName.textContent = signedInEmail || "Guest";
-      if (sideMessage) sideMessage.textContent = signedIn ? "Your account is connected. Project data stays on this device." : "FieldWorks debug menu preview.";
+      if (sideMessage) sideMessage.textContent = signedIn ? "Your account is connected. Project data stays on this device." : "FieldWorks Guest & Trial copy";
       document.getElementById("guestPillLabel").textContent = signedIn ? email : "Guest mode";
       const profile = document.getElementById("profileButton");
       if (signedIn) profile.textContent = email.trim().charAt(0).toUpperCase(); else profile.innerHTML = '<svg class="profile-login-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>';
