@@ -2,7 +2,7 @@
 
 # FieldWorks Android
 
-FieldWorks is an Android field journal for managing projects and recording progress with notes, photos, videos, and voice notes.
+FieldWorks is an application that perform physical project monitoring via journalling for managing projects and recording progress with notes, photos, videos, and voice notes.It intend to provide casual but systematic monitoring of any projects such as construction, Events, F&B Catering services etc
 
 ## Current source version
 
