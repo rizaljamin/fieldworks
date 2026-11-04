@@ -243,7 +243,7 @@ exports.fieldWorksFeedback = onRequest(
       const remoteAddress = String(req.ip || req.socket?.remoteAddress || "unknown");
       const ipFingerprint = createHash("sha256").update(remoteAddress, "utf8").digest("hex");
       const receiptFingerprint = createHash("sha256").update(uid + "\n" + requestId, "utf8").digest("hex");
-      const counterRef = db.collection("fieldWorksCounters").doc("feedback");
+      const counterRef = db.collection("fieldWorksCounters").doc("fieldWorksFeedback");
       const receiptRef = db.collection("fieldWorksFeedbackRequests").doc(receiptFingerprint);
       const ipRef = db.collection("fieldWorksFeedbackRateLimits").doc(ipFingerprint);
       const dailyRef = db.collection("fieldWorksFeedbackRateLimits").doc("daily-" + today);
@@ -270,7 +270,7 @@ exports.fieldWorksFeedback = onRequest(
         const previous = counter.exists ? Number(counter.get("lastId") || 0) : 0;
         const nextId = previous + 1;
         if (!Number.isSafeInteger(nextId) || nextId < 1) throw httpError(500, "Invalid feedback counter.");
-        const feedbackRef = db.collection("feedback").doc(String(nextId));
+        const feedbackRef = db.collection("fieldWorksFeedback").doc(String(nextId));
         tx.create(feedbackRef, {
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
           userid: uid,

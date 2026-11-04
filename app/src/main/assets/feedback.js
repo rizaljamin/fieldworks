@@ -71,7 +71,7 @@
       '<div class="fw-feedback-head"><h2>Send Feedback</h2><button type="button" class="fw-feedback-close" aria-label="Close feedback">×</button></div>' +
       '<p>Send feedback directly to the FieldWorks Firebase collection. No email application is needed.</p>' +
       '<div class="fw-feedback-destination" aria-label="Firebase feedback details">' +
-      '<div><strong>Saved in:</strong> feedback collection</div>' +
+      '<div><strong>Saved in:</strong> fieldWorksFeedback collection</div>' +
       '<div><strong>User ID:</strong> <span class="fw-feedback-userid" id="fwFeedbackUserId"></span></div>' +
       '</div>' +
       '<form class="fw-feedback-form">' +

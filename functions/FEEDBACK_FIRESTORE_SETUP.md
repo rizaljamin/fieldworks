@@ -1,51 +1,47 @@
-# FieldWorks in-app Feedback → Firebase Firestore
+# FieldWorks Feedback → Firestore fieldWorksFeedback
 
-This replaces the previous Google Forms / Gmail API feedback proposals.
+## Collection selected by the user
 
-## Intended data
+The user has already created a top-level Firestore collection named **fieldWorksFeedback** in Firebase project `fieldworks-512712`. The initially created random-ID document is empty. It is not a submitted feedback entry and is not used for sequential IDs.
 
-On Submit, FieldWorks sends a JSON POST to the HTTPS Cloud Function `fieldWorksFeedback` in Firebase project `fieldworks-512712`, region `asia-southeast1`.
-
-The function writes to the Cloud Firestore **top-level collection** `feedback`, with numeric string document IDs starting from `1`:
+When a real user taps **Submit** in the FieldWorks feedback card, the Android app calls its native `FieldWorksCommunity.submitFeedback(message, userid, requestId)` bridge. Native Android obtains the current Firebase Auth ID token when signed in (guest IDs are supported), then sends a JSON POST to the HTTPS Cloud Function `fieldWorksFeedback` in `asia-southeast1`. The trusted function uses a Firestore transaction to write to:
 
 ```text
-feedback/
+fieldWorksFeedback/
   1/
     timestamp: <Firestore server timestamp>
     userid: "Firebase Auth UID or guest-..."
-    feedback_message: "User's message"
+    feedback_message: "Actual submitted user text"
   2/
     timestamp: ...
     userid: ...
     feedback_message: ...
 ```
 
-The counter is stored separately at `fieldWorksCounters/feedback` with `lastId` = latest number. Transactions guarantee unique sequential IDs on simultaneous submissions. A request receipt in `fieldWorksFeedbackRequests` prevents duplicate documents if a phone times out and retries the same request. Basic IP/app rate-limit documents live in `fieldWorksFeedbackRateLimits`.
+The first **actual** submission writes document ID `1` if no numeric feedback records exist. No fake/test feedback is pre-inserted. Subsequent submissions receive IDs `2`, `3`, etc. The existing empty random-ID document may remain: it does not consume a sequential ID.
 
-A signed-in user's UID is **verified by Firebase Authentication**. A guest is identified by a persistent locally generated `guest-...` ID. For privacy, the feedback collection contains only the user's requested fields.
+The counter is separate: `fieldWorksCounters/fieldWorksFeedback` (`lastId`). The counter and feedback record are created atomically in one Firestore transaction. A request receipt in `fieldWorksFeedbackRequests` avoids duplicates on retries; IP and daily rate-limit records live in `fieldWorksFeedbackRateLimits`. The feedback document stores **only** `timestamp`, `userid`, and `feedback_message`.
 
-The user stays in the FieldWorks Feedback card; the status indicates “Feedback #N saved successfully” only after the function's successful Firestore transaction.
+A signed-in UID is verified against Firebase Authentication, not trusted from the request body. Guest IDs are persistent locally generated identifiers, not verified identities. The app confirms "Feedback #N saved successfully" only after the server returns a committed document ID; otherwise the message stays in the form.
 
-## Required deployment
+## Deployment still required
 
-**Committing GitHub code or building the APK does not deploy this Firebase function or create live Firestore documents.** Cloud Firestore creates the new collection automatically when the first document is written by the deployed function.
+**GitHub commits and APK builds do not deploy Cloud Functions or write to Firestore.** Before claiming the feature works live, an authorized operator must deploy the revised function and rules:
 
-1. Confirm that Cloud Firestore has been provisioned for Firebase project [fieldworks-512712](https://console.firebase.google.com/project/fieldworks-512712/firestore). Ensure that this project supports Cloud Functions and has a suitable billing plan.
-2. On a trusted developer machine with Firebase CLI access and suitable permissions, run the following from the FieldWorks GitHub repository root:
+```sh
+firebase login
+firebase deploy --only functions:fieldWorksFeedback,firestore:rules --project fieldworks-512712
+```
 
-   ```sh
-   firebase login
-   firebase use fieldworks-512712
-   firebase deploy --only functions:fieldWorksFeedback,firestore:rules --project fieldworks-512712
-   ```
+The function must accept HTTPS calls from app guests (`invoker: "public"`), and the Firebase project must support Cloud Functions. Never place a Firebase Admin service-account private key in this public GitHub repository or the Android APK.
 
-3. The Cloud Function must be invokable by the Android app including **Guest** users (HTTPS invocation is public but function validates the body, verifies signed-in user tokens, checks guest IDs, and rate limits submissions).
-4. Build and install the current FieldWorks Android APK (newer than Build 18) from the GitHub Actions signed APK workflow. This APK sends feedback via an Android background request; no external email application or OAuth Gmail secret is needed.
-5. In the app, submit a short test as guest and a second test while signed in. Check the Firebase Console **feedback** collection and verify document IDs `1`, `2`, etc., fields `timestamp`, `userid`, `feedback_message`. A previously existing numeric counter is respected; IDs may not start at `1` if data already exists.
-6. Test network failure and repeated Submit: the UI must preserve feedback on failure, and retrying the same message uses a stable request ID to avoid duplicate records.
+## Acceptance verification
 
-## Important
+1. Confirm the deployed Cloud Function `fieldWorksFeedback` exists in project `fieldworks-512712` (region `asia-southeast1`).
+2. Install FieldWorks V0.4.01 Build 22 or newer.
+3. As a guest, enter meaningful feedback and press Submit. Confirm that the UI reports `Feedback #1 saved successfully` only after the backend has saved it.
+4. Inspect `fieldWorksFeedback/1` and verify exactly three fields: a server `timestamp`, the app guest `userid`, and the submitted `feedback_message`.
+5. Repeat as a signed-in user. Confirm `fieldWorksFeedback/2` with the authenticated Firebase UID.
+6. Retry a submission after simulated network timeout: the same request ID must not create a duplicate document; a new submission must receive a new ID. On genuine failure the form must not report success or clear the message.
 
-The previous Gmail OAuth secret `FIELDWORKS_GMAIL_OAUTH` is no longer used by the latest Firestore feedback handler. Do not set up Gmail API for this feature.
-
-The Firestore rules explicitly deny direct reads/writes to `feedback` and its counter/receipt/limit collections from client devices. The trusted Cloud Function uses Firebase Admin SDK and bypasses client rules. Reading feedback should be done by an authorized project administrator from the Firebase Console or a future authenticated admin interface.
+Firestore Security Rules deny client access to this collection and counter/receipt/rate-limit records. The Cloud Function's Firebase Admin SDK performs the trusted writes. The previous Google Forms/Gmail feedback flow is not used for this feature.

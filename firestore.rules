@@ -11,7 +11,7 @@ service cloud.firestore {
 
     // FieldWorks feedback is written and assigned a running ID only by
     // the trusted Cloud Function using the Firebase Admin SDK.
-    match /feedback/{feedbackId} {
+    match /fieldWorksFeedback/{feedbackId} {
       allow read, write: if false;
     }
 
