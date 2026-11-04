@@ -562,7 +562,7 @@
         <div class="side-brand-copy">
           <strong>FieldWorks</strong>
           <small>Project journal</small>
-          <small class="app-version">V0.4.00 Build 01</small>
+          <small class="app-version">V0.4.01 Build 25</small>
         </div>
       </div>
       <div class="side-label">YOUR WORKSPACE</div>
@@ -823,6 +823,17 @@ function fwChooseRating(stars){
  fwRatingRedirectTimer=setTimeout(function(){fwRatingRedirectTimer=null;fwCloseLogoutPrompt();fwRateApp();},2000);
 }
 try{fwRenderRating(Number(localStorage.getItem("fieldworks.rating.selection"))||0);}catch(e){fwRenderRating(0);}
+// Read the installed APK version to prevent a stale hard-coded sidebar label.
+function fwSyncAppVersion(){
+  try{
+    const bridge=window.FieldWorksCommunity;
+    if(!bridge||typeof bridge.versionName!=="function")return;
+    const installed=String(bridge.versionName()||"").trim();
+    if(!/^V[0-9]+\\.[0-9]+\\.[0-9]+ Build [0-9]+$/.test(installed))return;
+    document.querySelectorAll(".app-version").forEach(el=>{el.textContent=installed;});
+  }catch(error){/* Retain packaged label if the native bridge is unavailable. */}
+}
+fwSyncAppVersion();
 function fwShareApp(){if(window.FieldWorksCommunity)window.FieldWorksCommunity.share();else if(navigator.share)navigator.share({title:"FieldWorks",text:"FieldWorks - Manage & Monitor your physical projects @",url:FW_STORE_URL}).catch(function(){});else document.getElementById("fwCommunityStatus").textContent="FieldWorks - Manage & Monitor your physical projects @ "+FW_STORE_URL;}
 function fwSendFeedback(){if(typeof window.fwOpenFeedback==="function"){window.fwOpenFeedback();}else{document.getElementById("fwCommunityStatus").textContent="Feedback is unavailable in this build.";}}
 function fwCloseLogoutPrompt(){document.getElementById("fwLogoutOverlay").hidden=true;}

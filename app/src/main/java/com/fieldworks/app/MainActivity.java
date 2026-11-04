@@ -7,6 +7,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -217,14 +222,36 @@ private static final String FIELDWORKS_SHARE_LINK =
             if (!directory.isDirectory() && !directory.mkdirs()) {
                 throw new IOException("Could not create FieldWorks share directory");
             }
-            File icon = new File(directory, "fieldworks-share-icon.png");
-            try (InputStream input = getResources().openRawResource(R.drawable.launcher_fieldworks);
-                    FileOutputStream output = new FileOutputStream(icon, false)) {
-                byte[] buffer = new byte[8192];
-                int length;
-                while ((length = input.read(buffer)) != -1) {
-                    output.write(buffer, 0, length);
+            // WhatsApp displays shared image attachments as media bubbles.
+            // Use a landscape card with a smaller centered actual app icon
+            // instead of a full-frame 1:1 icon.
+            File icon = new File(directory, "fieldworks-share-card.png");
+            Bitmap sourceIcon = BitmapFactory.decodeResource(
+                    getResources(), R.drawable.launcher_fieldworks);
+            if (sourceIcon == null) {
+                throw new IOException("FieldWorks icon is unavailable");
+            }
+            final int cardWidth = 720;
+            final int cardHeight = 270;
+            final int logoSize = 170;
+            Bitmap card = Bitmap.createBitmap(
+                    cardWidth, cardHeight, Bitmap.Config.ARGB_8888);
+            try {
+                Canvas canvas = new Canvas(card);
+                canvas.drawColor(Color.WHITE);
+                int left = (cardWidth - logoSize) / 2;
+                int top = (cardHeight - logoSize) / 2;
+                Rect logoArea = new Rect(left, top, left + logoSize, top + logoSize);
+                canvas.drawBitmap(sourceIcon, null, logoArea,
+                        new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
+                try (FileOutputStream output = new FileOutputStream(icon, false)) {
+                    if (!card.compress(Bitmap.CompressFormat.PNG, 100, output)) {
+                        throw new IOException("Could not encode FieldWorks share image");
+                    }
                 }
+            } finally {
+                card.recycle();
+                sourceIcon.recycle();
             }
 
             Uri iconUri = FileProvider.getUriForFile(
@@ -245,6 +272,15 @@ private static final String FIELDWORKS_SHARE_LINK =
     private final class CommunityBridge {
 @android.webkit.JavascriptInterface public void rate(){runOnUiThread(()->{try{startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("market://details?id=com.fieldworks.app")));}catch(android.content.ActivityNotFoundException e){startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.fieldworks.app")));}});}
 @android.webkit.JavascriptInterface public void share(){runOnUiThread(()->shareFieldWorksApp());}
+@android.webkit.JavascriptInterface public String versionName(){
+    try {
+        android.content.pm.PackageInfo packageInfo =
+                getPackageManager().getPackageInfo(getPackageName(), 0);
+        return packageInfo.versionName == null ? "" : packageInfo.versionName;
+    } catch (Exception error) {
+        return "";
+    }
+}
 @android.webkit.JavascriptInterface public void feedback() {
     sendFieldWorksFeedbackResult(false, "Please open the in-app feedback card.", 0);
 }

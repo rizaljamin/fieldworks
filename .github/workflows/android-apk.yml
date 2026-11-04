@@ -96,16 +96,28 @@ jobs:
           node tests/feedback-ui.test.js
           node tests/share-flow.test.js
 
-      - name: Build signed APK
+      - name: Build signed APK and Play Store AAB
         shell: bash
         run: |
-          gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease
+          gradle --no-daemon -PversionCode="$VERSION_CODE" -PversionName="$VERSION_NAME" :app:assembleRelease :app:bundleRelease
           cp app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/$APK_FILENAME"
+          AAB_FILENAME="FieldWorks $VERSION_NAME.aab"
+          cp app/build/outputs/bundle/release/app-release.aab "app/build/outputs/bundle/release/$AAB_FILENAME"
+          jarsigner -verify "app/build/outputs/bundle/release/$AAB_FILENAME"
+          echo "AAB_FILENAME=$AAB_FILENAME" >> "$GITHUB_ENV"
 
       - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APK_FILENAME }}
           path: app/build/outputs/apk/release/${{ env.APK_FILENAME }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload signed Play Store AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.AAB_FILENAME }}
+          path: app/build/outputs/bundle/release/${{ env.AAB_FILENAME }}
           if-no-files-found: error
           retention-days: 30
