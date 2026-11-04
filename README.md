@@ -6,13 +6,13 @@ FieldWorks is an Android field journal for managing projects and recording progr
 
 ## Current source version
 
-**V0.4.00 Build 06** on the `main` branch (as of 4 November 2026), recorded in [`fieldworks-version.properties`](fieldworks-version.properties). The 30 October 2026 commits rolled back the UI to a pre-template Build 06 baseline after a startup regression, then restored the version properties. This is the **source baseline**, not a claim that the latest GitHub Actions build passed or that this version was uploaded to Google Play.
+**V0.4.01 Build 01** on the `main` branch (as of 4 November 2026), recorded in [`fieldworks-version.properties`](fieldworks-version.properties). The 30 October 2026 commits rolled back the UI to a pre-template Build 06 baseline after a startup regression, then restored the version properties. This is a **version-only upgrade** from the V0.4.00 Build 06 rollback baseline (no application feature code changed), not a claim that the latest GitHub Actions build passed or that this version was uploaded to Google Play.
 
 **Historical build and distribution information:** V0.3.00 Build 14 was previously documented as a successful GitHub Actions run ([run #186](https://github.com/rizaljamin/fieldworks/actions/runs/40707503354)); V0.3.00 Build 08 was previously documented as the Google Play closed-test build. These are historical statements, not freshly verified current distribution statuses.
 
 Android configuration: `compileSdk 36`, `targetSdk 36`, `minSdk 24`. The Gradle build takes Android version name/code from workflow-provided properties; the FieldWorks release/build label is maintained in `fieldworks-version.properties`.
 
-**Stability note:** The Build 06 rollback followed a startup regression. Device compatibility, account switching, template entitlement rendering, and restored demo-project behavior must be regression-tested before any new release is described as stable.
+**Stability note:** V0.4.01 Build 01 inherits the Build 06 rollback application code, which followed a startup regression. Device compatibility, account switching, template entitlement rendering, and restored demo-project behavior must be regression-tested before any new release is described as stable.
 
 ## Features and functionality
 
