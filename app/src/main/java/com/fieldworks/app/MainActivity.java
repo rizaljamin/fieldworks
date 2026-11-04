@@ -98,8 +98,6 @@ public class MainActivity extends Activity {
     private boolean voicePermissionPending;
     private BillingClient billingClient;
     private final ExecutorService subscriptionExecutor = Executors.newSingleThreadExecutor();
-    private final ExecutorService feedbackExecutor = Executors.newSingleThreadExecutor();
-    private static final String FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd3sKlhWMaVDizORNlHYNq62nLSJ3dV9rWhHpAGGqBjA6yVaw/viewform";
     private static final String SUBSCRIPTION_FUNCTION_URL = "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksSubscription";
     private volatile boolean restoreRequested;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
@@ -203,176 +201,16 @@ public class MainActivity extends Activity {
 private final class CommunityBridge {
 @android.webkit.JavascriptInterface public void rate(){runOnUiThread(()->{try{startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("market://details?id=com.fieldworks.app")));}catch(android.content.ActivityNotFoundException e){startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.fieldworks.app")));}});}
 @android.webkit.JavascriptInterface public void share(){runOnUiThread(()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(android.content.Intent.EXTRA_TEXT,"Simplify your projects with FieldWorks! https://play.google.com/store/apps/details?id=com.fieldworks.app");startActivity(android.content.Intent.createChooser(i,"Share FieldWorks"));});}
-@android.webkit.JavascriptInterface public void feedback(){runOnUiThread(()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLSd3sKlhWMaVDizORNlHYNq62nLSJ3dV9rWhHpAGGqBjA6yVaw/viewform"));try{startActivity(i);}catch(android.content.ActivityNotFoundException e){android.widget.Toast.makeText(MainActivity.this,"No browser available to open feedback form",android.widget.Toast.LENGTH_LONG).show();}});}
-@android.webkit.JavascriptInterface public void submitFeedback(String feedback, String contact){
-    feedbackExecutor.execute(() -> submitFeedbackToGoogleForm(feedback, contact));
+@android.webkit.JavascriptInterface public void feedback() {
+    runOnUiThread(() -> sendFieldWorksFeedbackResult(false,
+        "Please use the in-app Send Feedback form to compose an email."));
+}
+@android.webkit.JavascriptInterface public void submitFeedback(String feedback, String contact) {
+    runOnUiThread(() -> openFieldWorksFeedbackEmail(feedback, contact));
 }
 }
 
-    // Read the published Google Form's current entry IDs rather than hardcoding guessed IDs.
-    // Never report success unless its formResponse endpoint returns a confirmation.
-    private String readFeedbackResponse(HttpURLConnection connection) throws Exception {
-        int code = connection.getResponseCode();
-        InputStream input = code >= 400 ? connection.getErrorStream() : connection.getInputStream();
-        if (input == null) return "";
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-            StringBuilder result = new StringBuilder();
-            char[] buffer = new char[4096];
-            int count;
-            while ((count = reader.read(buffer)) >= 0) {
-                if (result.length() + count > 2000000) throw new IOException("Form response exceeded safe size limit");
-                result.append(buffer, 0, count);
-            }
-            return result.toString();
-        }
-    }
-
-    private int matchingJsonArrayEnd(String text, int start) {
-        int depth = 0;
-        boolean quoted = false;
-        boolean escaped = false;
-        for (int i = start; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (quoted) {
-                if (escaped) escaped = false;
-                else if (c == '\\') escaped = true;
-                else if (c == '"') quoted = false;
-            } else if (c == '"') quoted = true;
-            else if (c == '[') depth++;
-            else if (c == ']') {
-                depth--;
-                if (depth == 0) return i;
-            }
-        }
-        return -1;
-    }
-
-    private static final class FeedbackFormField {
-        final String title;
-        final String entryId;
-        FeedbackFormField(String title, String entryId) {
-            this.title = title;
-            this.entryId = entryId;
-        }
-    }
-
-    private String feedbackFieldEntryId(JSONArray item) {
-        JSONArray entries = item.optJSONArray(4);
-        if (entries == null) return "";
-        for (int i = 0; i < entries.length(); i++) {
-            JSONArray entry = entries.optJSONArray(i);
-            if (entry == null || entry.length() == 0) continue;
-            Object raw = entry.opt(0);
-            String id = raw instanceof Number ? String.valueOf(((Number) raw).longValue())
-                : raw instanceof String ? ((String) raw).trim() : "";
-            if (!id.isEmpty() && id.matches("[0-9]+") && !id.equals("0")) return id;
-        }
-        return "";
-    }
-
-
-    private void collectFeedbackQuestionFields(Object value, List<FeedbackFormField> results, int depth) {
-        if (!(value instanceof JSONArray) || depth > 12 || results.size() >= 50) return;
-        JSONArray array = (JSONArray) value;
-        Object titleRaw = array.opt(1);
-        if (titleRaw instanceof String) {
-            String title = ((String) titleRaw).trim();
-            String entryId = feedbackFieldEntryId(array);
-            if (!title.isEmpty() && title.length() < 350 && !entryId.isEmpty()) {
-                boolean duplicate = false;
-                for (FeedbackFormField existing : results) {
-                    if (existing.entryId.equals(entryId)) { duplicate = true; break; }
-                }
-                if (!duplicate) results.add(new FeedbackFormField(title, entryId));
-                return;
-            }
-        }
-        for (int i = 0; i < array.length(); i++) {
-            Object nested = array.opt(i);
-            if (nested instanceof JSONArray) collectFeedbackQuestionFields(nested, results, depth + 1);
-        }
-    }
-
-    private String[] mapPublishedFeedbackEntries(JSONArray formData, String formHtml) throws IOException {
-        List<FeedbackFormField> fields = new ArrayList<>();
-        JSONArray details = formData.optJSONArray(1);
-        JSONArray questions = details == null ? null : details.optJSONArray(1);
-        // Prefer actual question records; do not assume Google's numeric question
-        // type codes are stable across published-form versions.
-        if (questions != null) collectFeedbackQuestionFields(questions, fields, 0);
-        if (fields.isEmpty()) collectFeedbackQuestionFields(formData, fields, 0);
-        String feedbackId = "";
-        String contactId = "";
-        for (FeedbackFormField field : fields) {
-            String label = field.title.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
-            if (label.contains("feedback") || label.contains("suggestion")
-                    || label.contains("comment") || label.contains("message")) {
-                if (feedbackId.isEmpty()) feedbackId = field.entryId;
-            } else if (label.contains("contact") || label.contains("email")
-                    || label.contains("telephone") || label.contains("phone")) {
-                if (contactId.isEmpty()) contactId = field.entryId;
-            }
-        }
-
-        // Support the currently published Form, which may have only one
-        // paragraph question despite old contact-column headers in its sheet.
-        // In that case, contact/UID is appended to the feedback message.
-        if (fields.size() == 1 && feedbackId.isEmpty()) {
-            feedbackId = fields.get(0).entryId;
-        }
-
-        // When Google Forms has two input questions, preserve the historical
-        // separate feedback and contact columns and their sheet order.
-        if (fields.size() == 2) {
-            if (feedbackId.isEmpty() && contactId.isEmpty()) {
-                feedbackId = fields.get(0).entryId;
-                contactId = fields.get(1).entryId;
-            } else if (feedbackId.isEmpty()) {
-                feedbackId = fields.get(0).entryId.equals(contactId)
-                    ? fields.get(1).entryId : fields.get(0).entryId;
-            } else if (contactId.isEmpty()) {
-                contactId = fields.get(0).entryId.equals(feedbackId)
-                    ? fields.get(1).entryId : fields.get(0).entryId;
-            }
-        }
-
-        // Some published forms include entry IDs directly in input names. This
-        // is a fallback only when exactly two distinct values are present.
-        List<String> htmlEntryIds = new ArrayList<>();
-        java.util.regex.Matcher htmlEntries = java.util.regex.Pattern
-            .compile("name\\s*=\\s*\"entry\\.([0-9]+)\"")
-            .matcher(formHtml);
-        while (htmlEntries.find() && htmlEntryIds.size() < 10) {
-            String id = htmlEntries.group(1);
-            if (!htmlEntryIds.contains(id)) htmlEntryIds.add(id);
-        }
-        // Some Google Forms versions expose the lone entry only in HTML.
-        if (feedbackId.isEmpty() && htmlEntryIds.size() == 1 && fields.size() <= 1) {
-            feedbackId = htmlEntryIds.get(0);
-        }
-        if ((feedbackId.isEmpty() || contactId.isEmpty()) && htmlEntryIds.size() == 2) {
-            if (feedbackId.isEmpty() && contactId.isEmpty()) {
-                feedbackId = htmlEntryIds.get(0);
-                contactId = htmlEntryIds.get(1);
-            } else if (feedbackId.isEmpty()) {
-                feedbackId = htmlEntryIds.get(0).equals(contactId) ? htmlEntryIds.get(1) : htmlEntryIds.get(0);
-            } else if (contactId.isEmpty()) {
-                contactId = htmlEntryIds.get(0).equals(feedbackId) ? htmlEntryIds.get(1) : htmlEntryIds.get(0);
-            }
-        }
-        // The contact question is optional. Reject only when the feedback
-        // destination is unknown, or when a supposed contact ID duplicates it.
-        if (feedbackId.isEmpty() || (!contactId.isEmpty() && feedbackId.equals(contactId))) {
-            throw new IOException("Could not map Google Form feedback question (question records="
-                + fields.size() + ", HTML entry names=" + htmlEntryIds.size()
-                + ", feedback matched=" + !feedbackId.isEmpty()
-                + ", contact matched=" + !contactId.isEmpty()
-                + "). Check the published form.");
-        }
-        return new String[]{ feedbackId, contactId };
-    }
-
-    private void feedbackSubmissionResult(boolean success, String message) {
+    private void sendFieldWorksFeedbackResult(boolean success, String message) {
         JSONObject data = new JSONObject();
         try {
             data.put("success", success);
@@ -381,80 +219,38 @@ private final class CommunityBridge {
         sendBillingCallback("onFieldWorksFeedbackResult", data);
     }
 
-    private void submitFeedbackToGoogleForm(String feedback, String contact) {
-        if (feedback == null || feedback.trim().isEmpty() || contact == null || contact.trim().isEmpty()) {
-            feedbackSubmissionResult(false, "Please enter feedback. A FieldWorks user or guest ID is required.");
+    private void openFieldWorksFeedbackEmail(String feedback, String contact) {
+        String message = feedback == null ? "" : feedback.trim();
+        String sender = contact == null ? "" : contact.trim();
+        if (message.isEmpty() || sender.isEmpty()) {
+            sendFieldWorksFeedbackResult(false,
+                "Please enter feedback. A FieldWorks user or guest ID is required.");
             return;
         }
-        if (feedback.length() > 3000 || contact.length() > 250) {
-            feedbackSubmissionResult(false, "Feedback or contact is too long.");
+        if (message.length() > 3000 || sender.length() > 250) {
+            sendFieldWorksFeedbackResult(false, "Feedback or contact is too long.");
             return;
         }
-        HttpURLConnection connection = null;
+
+        String body = "Feedback:" + "\n" + message
+            + "\n\nContact detail / FieldWorks User ID:" + "\n" + sender
+            + "\n\nSent from FieldWorks Android app.";
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:growplot2026@gmail.com"));
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"growplot2026@gmail.com"});
+        intent.putExtra(Intent.EXTRA_SUBJECT, "FieldWorks Feedback");
+        intent.putExtra(Intent.EXTRA_TEXT, body);
         try {
-            connection = (HttpURLConnection) new URL(FEEDBACK_FORM_URL).openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(12000);
-            connection.setReadTimeout(15000);
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36");
-            String formHtml = readFeedbackResponse(connection);
-            if (connection.getResponseCode() != 200) throw new IOException("Google Form is currently unavailable");
-            java.util.regex.Matcher formDataAssignment = java.util.regex.Pattern
-                .compile("FB_PUBLIC_LOAD_DATA_\\s*=\\s*\\[")
-                .matcher(formHtml);
-            if (!formDataAssignment.find()) throw new IOException("Google Form field definitions are unavailable");
-            int arrayStart = formDataAssignment.end() - 1;
-            int arrayEnd = matchingJsonArrayEnd(formHtml, arrayStart);
-            if (arrayEnd < arrayStart) throw new IOException("Google Form data is incomplete");
-            JSONArray formData = new JSONArray(formHtml.substring(arrayStart, arrayEnd + 1));
-            String[] entryIds = mapPublishedFeedbackEntries(formData, formHtml);
-            String feedbackEntry = entryIds[0];
-            String contactEntry = entryIds[1];
-            connection.disconnect();
-            connection = null;
-            // If the published Form contains only the Feedback question,
-            // include contact or FieldWorks User ID in the single answer.
-            // If a separate Contact question exists, send the normal two-field
-            // response so historic response-sheet columns remain compatible.
-            String feedbackAnswer = feedback.trim();
-            if (contactEntry.isEmpty()) {
-                feedbackAnswer += "\n\nFieldWorks contact / User ID: " + contact.trim();
-            }
-            String postData = "entry." + feedbackEntry + "=" + URLEncoder.encode(feedbackAnswer, "UTF-8");
-            if (!contactEntry.isEmpty()) {
-                postData += "&entry." + contactEntry + "=" + URLEncoder.encode(contact.trim(), "UTF-8");
-            }
-            postData += "&fvv=1&pageHistory=0";
-            String submitUrl = FEEDBACK_FORM_URL.replace("/viewform", "/formResponse");
-            connection = (HttpURLConnection) new URL(submitUrl).openConnection();
-            connection.setRequestMethod("POST");
-            connection.setConnectTimeout(12000);
-            connection.setReadTimeout(20000);
-            connection.setDoOutput(true);
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-            connection.setRequestProperty("Referer", FEEDBACK_FORM_URL);
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36");
-            byte[] requestBody = postData.getBytes(StandardCharsets.UTF_8);
-            try (OutputStream output = connection.getOutputStream()) {
-                output.write(requestBody);
-            }
-            String response = readFeedbackResponse(connection);
-            String normalized = response.toLowerCase(Locale.ROOT);
-            boolean confirmed = connection.getResponseCode() == 200
-                && (normalized.contains("responseconfirmationmessage")
-                    || normalized.contains("your response has been recorded")
-                    || normalized.contains("your response has been submitted")
-                    || normalized.contains("thank you for submitting"));
-            if (!confirmed) {
-                feedbackSubmissionResult(false, "Google Forms did not confirm the submission. Please check your connection or try again.");
-                return;
-            }
-            feedbackSubmissionResult(true, "Google Forms accepted your feedback.");
+            startActivity(intent);
+            // ACTION_SENDTO does not report if the user actually presses Send.
+            sendFieldWorksFeedbackResult(true,
+                "Email draft opened. Review it and tap Send in your email app.");
+        } catch (android.content.ActivityNotFoundException error) {
+            sendFieldWorksFeedbackResult(false,
+                "No email app was found. Please configure an email app and retry.");
         } catch (Exception error) {
-            feedbackSubmissionResult(false, "Could not submit to Google Forms: " +
-                (error.getMessage() == null ? "network or form error" : error.getMessage()) + ". Please retry.");
-        } finally {
-            if (connection != null) connection.disconnect();
+            sendFieldWorksFeedbackResult(false,
+                "Could not open an email app. Please retry.");
         }
     }
 
