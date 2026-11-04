@@ -196,6 +196,10 @@ public class MainActivity extends Activity {
                     }
                 });
     }
+private final class CommunityBridge {
+@android.webkit.JavascriptInterface public void rate(){runOnUiThread(()->{try{startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("market://details?id=com.fieldworks.app")));}catch(android.content.ActivityNotFoundException e){startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.fieldworks.app")));}});}
+@android.webkit.JavascriptInterface public void share(){runOnUiThread(()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(android.content.Intent.EXTRA_TEXT,"Simplify your projects with FieldWorks! https://play.google.com/store/apps/details?id=com.fieldworks.app");startActivity(android.content.Intent.createChooser(i,"Share FieldWorks"));});}
+}
     private final class MediaBridge {
         @JavascriptInterface
         public void capture(String kind, String projectId) {
@@ -1240,6 +1244,7 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(false);
         webView.addJavascriptInterface(new AuthBridge(), "FieldWorksAuth");
         webView.addJavascriptInterface(new MediaBridge(), "FieldWorksMedia");
+        webView.addJavascriptInterface(new CommunityBridge(), "FieldWorksCommunity");
         webView.addJavascriptInterface(new BillingBridge(), "FieldWorksBilling");
         webView.addJavascriptInterface(new ArchiveBridge(), "FieldWorksArchive");
         setContentView(appFrame);
