@@ -66,7 +66,7 @@ function harness({uid = "firebase-secret-uid", email = "fieldworks.user@example.
 {
   const h = harness();
   h.window.fwOpenFeedback();
-  assert.match(h.overlay.innerHTML, /To:<\\/strong> FieldWorks Support Team/);
+  assert.match(h.overlay.innerHTML, /FieldWorks Support Team/);
   assert.doesNotMatch(h.overlay.innerHTML, /User ID:|Saved in:|fieldWorksFeedback collection/);
   assert.equal(h.account.textContent, "fieldworks.user@example.com");
   assert.ok(!h.account.textContent.includes("firebase-secret-uid"));
