@@ -98,6 +98,9 @@ public class MainActivity extends Activity {
     private boolean voicePermissionPending;
     private BillingClient billingClient;
     private final ExecutorService subscriptionExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService feedbackExecutor = Executors.newSingleThreadExecutor();
+    private static final String FEEDBACK_FUNCTION_URL =
+        "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksFeedback";
     private static final String SUBSCRIPTION_FUNCTION_URL = "https://asia-southeast1-fieldworks-512712.cloudfunctions.net/fieldWorksSubscription";
     private volatile boolean restoreRequested;
     private final Map<String, ProductDetails> subscriptionProducts = new HashMap<>();
@@ -202,11 +205,10 @@ private final class CommunityBridge {
 @android.webkit.JavascriptInterface public void rate(){runOnUiThread(()->{try{startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("market://details?id=com.fieldworks.app")));}catch(android.content.ActivityNotFoundException e){startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.fieldworks.app")));}});}
 @android.webkit.JavascriptInterface public void share(){runOnUiThread(()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(android.content.Intent.EXTRA_TEXT,"Simplify your projects with FieldWorks! https://play.google.com/store/apps/details?id=com.fieldworks.app");startActivity(android.content.Intent.createChooser(i,"Share FieldWorks"));});}
 @android.webkit.JavascriptInterface public void feedback() {
-    runOnUiThread(() -> sendFieldWorksFeedbackResult(false,
-        "Please use the in-app Send Feedback form to compose an email."));
+    sendFieldWorksFeedbackResult(false, "Use the FieldWorks in-app feedback form.");
 }
 @android.webkit.JavascriptInterface public void submitFeedback(String feedback, String contact) {
-    runOnUiThread(() -> openFieldWorksFeedbackEmail(feedback, contact));
+    submitFieldWorksFeedback(feedback, contact);
 }
 }
 
@@ -219,38 +221,86 @@ private final class CommunityBridge {
         sendBillingCallback("onFieldWorksFeedbackResult", data);
     }
 
-    private void openFieldWorksFeedbackEmail(String feedback, String contact) {
-        String message = feedback == null ? "" : feedback.trim();
-        String sender = contact == null ? "" : contact.trim();
+    private void submitFieldWorksFeedback(String feedback, String contact) {
+        final String message = feedback == null ? "" : feedback.trim();
+        final String sender = contact == null ? "" : contact.trim();
         if (message.isEmpty() || sender.isEmpty()) {
             sendFieldWorksFeedbackResult(false,
-                "Please enter feedback. A FieldWorks user or guest ID is required.");
+                "Please enter feedback and a contact detail or FieldWorks User ID.");
             return;
         }
         if (message.length() > 3000 || sender.length() > 250) {
             sendFieldWorksFeedbackResult(false, "Feedback or contact is too long.");
             return;
         }
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            // Guests can send too, subject to the server's abuse limits.
+            feedbackExecutor.execute(() -> postFieldWorksFeedback(message, sender, ""));
+            return;
+        }
+        final String expectedUid = user.getUid();
+        user.getIdToken(false).addOnSuccessListener(tokenResult -> {
+            FirebaseUser current = FirebaseAuth.getInstance().getCurrentUser();
+            if (current == null || !expectedUid.equals(current.getUid())) {
+                sendFieldWorksFeedbackResult(false, "Account changed. Please retry your feedback.");
+                return;
+            }
+            String token = tokenResult.getToken();
+            if (token == null || token.isEmpty()) {
+                sendFieldWorksFeedbackResult(false, "Please sign in again to submit feedback.");
+                return;
+            }
+            feedbackExecutor.execute(() -> postFieldWorksFeedback(message, sender, token));
+        }).addOnFailureListener(error -> {
+            sendFieldWorksFeedbackResult(false, "Could not verify your FieldWorks account. Please retry.");
+        });
+    }
 
-        String body = "Feedback:" + "\n" + message
-            + "\n\nContact detail / FieldWorks User ID:" + "\n" + sender
-            + "\n\nSent from FieldWorks Android app.";
-        Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("mailto:growplot2026@gmail.com"));
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"growplot2026@gmail.com"});
-        intent.putExtra(Intent.EXTRA_SUBJECT, "FieldWorks Feedback");
-        intent.putExtra(Intent.EXTRA_TEXT, body);
+    private void postFieldWorksFeedback(String feedback, String contact, String idToken) {
+        HttpURLConnection connection = null;
         try {
-            startActivity(intent);
-            // ACTION_SENDTO does not report if the user actually presses Send.
-            sendFieldWorksFeedbackResult(true,
-                "Email draft opened. Review it and tap Send in your email app.");
-        } catch (android.content.ActivityNotFoundException error) {
-            sendFieldWorksFeedbackResult(false,
-                "No email app was found. Please configure an email app and retry.");
+            JSONObject request = new JSONObject();
+            request.put("feedback", feedback);
+            request.put("contact", contact);
+            connection = (HttpURLConnection) new URL(FEEDBACK_FUNCTION_URL).openConnection();
+            connection.setRequestMethod("POST");
+            connection.setConnectTimeout(15000);
+            connection.setReadTimeout(30000);
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+            if (idToken != null && !idToken.isEmpty()) {
+                connection.setRequestProperty("Authorization", "Bearer " + idToken);
+            }
+            byte[] payload = request.toString().getBytes(StandardCharsets.UTF_8);
+            connection.setFixedLengthStreamingMode(payload.length);
+            try (OutputStream stream = connection.getOutputStream()) {
+                stream.write(payload);
+            }
+            int status = connection.getResponseCode();
+            InputStream input = status >= 200 && status < 300
+                ? connection.getInputStream() : connection.getErrorStream();
+            StringBuilder responseText = new StringBuilder();
+            if (input != null) {
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                    char[] buffer = new char[1024];
+                    int len;
+                    while ((len = reader.read(buffer)) != -1 && responseText.length() < 8192) {
+                        responseText.append(buffer, 0, Math.min(len, 8192 - responseText.length()));
+                    }
+                }
+            }
+            JSONObject result = new JSONObject(responseText.toString());
+            boolean accepted = status >= 200 && status < 300 && result.optBoolean("success", false);
+            String resultMessage = result.optString("message",
+                accepted ? "Feedback sent to FieldWorks." : "Feedback could not be sent.");
+            sendFieldWorksFeedbackResult(accepted, resultMessage);
         } catch (Exception error) {
             sendFieldWorksFeedbackResult(false,
-                "Could not open an email app. Please retry.");
+                "Cannot reach FieldWorks feedback service. Please check your connection and retry.");
+        } finally {
+            if (connection != null) connection.disconnect();
         }
     }
 
