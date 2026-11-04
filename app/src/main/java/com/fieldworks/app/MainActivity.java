@@ -418,7 +418,7 @@ private final class CommunityBridge {
             // response so historic response-sheet columns remain compatible.
             String feedbackAnswer = feedback.trim();
             if (contactEntry.isEmpty()) {
-                feedbackAnswer += "\\n\\nFieldWorks contact / User ID: " + contact.trim();
+                feedbackAnswer += "\n\nFieldWorks contact / User ID: " + contact.trim();
             }
             String postData = "entry." + feedbackEntry + "=" + URLEncoder.encode(feedbackAnswer, "UTF-8");
             if (!contactEntry.isEmpty()) {
