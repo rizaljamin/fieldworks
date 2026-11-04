@@ -10,6 +10,7 @@ function element() {
     textContent: "", value: "", hidden: false, disabled: false, className: "",
     handlers: {},
     addEventListener(event, fn) { this.handlers[event] = fn; },
+    setAttribute(name, value) { this[name] = value; },
     focus() {},
   };
 }
