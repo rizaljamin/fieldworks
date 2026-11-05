@@ -2585,7 +2585,7 @@ function loadDemoProjectState() {
       return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
     }
     function fwFinanceCalendarMonth(value) {
-      const match=/^(\\d{4})-(\\d{2})$/.exec(String(value||""));
+      const match=/^(\d{4})-(\d{2})$/.exec(String(value||""));
       if(match&&Number(match[2])>=1&&Number(match[2])<=12)
         return new Date(Number(match[1]),Number(match[2])-1,1);
       const today=new Date();
@@ -2677,7 +2677,7 @@ function loadDemoProjectState() {
         fwFinanceRender();
       } else if(event.target.name==="date"&&event.target.closest(".fw-finance-form")&&fwFinanceEditing){
         const date=String(event.target.value||"");
-        if(/^\\d{4}-\\d{2}-\\d{2}$/.test(date))fwFinanceEditing.calendarMonth=date.slice(0,7);
+        if(/^\d{4}-\d{2}-\d{2}$/.test(date))fwFinanceEditing.calendarMonth=date.slice(0,7);
         fwFinanceDrawCalendar(event.target.closest(".fw-finance-form"));
       }
     },true);
@@ -2695,7 +2695,7 @@ function loadDemoProjectState() {
       const calendarDay=event.target.closest("[data-fw-calendar-date]");
       if(calendarDay&&fwFinanceEditing){
         const form=calendarDay.closest(".fw-finance-form");
-        if(form&&/^\\d{4}-\\d{2}-\\d{2}$/.test(calendarDay.dataset.fwCalendarDate||"")){
+        if(form&&/^\d{4}-\d{2}-\d{2}$/.test(calendarDay.dataset.fwCalendarDate||"")){
           form.elements.date.value=calendarDay.dataset.fwCalendarDate;
           fwFinanceEditing.calendarMonth=calendarDay.dataset.fwCalendarDate.slice(0,7);
           fwFinanceDrawCalendar(form);
