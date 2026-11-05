@@ -550,9 +550,27 @@
 @media(min-width:701px){.fw-mobile-brand img{display:none}}
 @media(max-width:700px){.top-heading .fw-mobile-brand{display:flex;align-items:center}.top-heading .fw-mobile-brand img{display:block}}
 .fw-help-screenshots{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:12px}.fw-help-screenshots figure{margin:0;min-width:0}.fw-help-screenshots img{display:block;width:100%;height:auto;max-height:460px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#fff}.fw-help-screenshots figcaption{font-size:11px;text-align:center;color:var(--muted);margin-top:5px}.fw-guide-list h4{margin:16px 0 4px;color:var(--navy)}
+/* Native Android: move logo, header and first project list together below
+   system UI on narrow phones and wide/tablet layouts. */
+@media (min-width: 701px) {
+  html.fw-native-android .sidebar { padding-top: 61px; }
+  html.fw-native-android .shell { padding-top: 56px; }
+}
+@media (max-width: 700px) {
+  html.fw-native-android .shell {
+    padding-top: max(76px, calc(env(safe-area-inset-top, 0px) + 52px));
+  }
+}
+
 </style>
 </head>
 <body>
+  <script>
+    // Apply extra spacing only in the installed Android WebView.
+    if (window.FieldWorksCommunity) {
+      document.documentElement.classList.add("fw-native-android");
+    }
+  </script>
   
 
   <div id="dashboard">
@@ -562,7 +580,7 @@
         <div class="side-brand-copy">
           <strong>FieldWorks</strong>
           <small>Project journal</small>
-          <small class="app-version">V0.4.01 Build 26</small>
+          <small class="app-version">V0.4.01 Build 27</small>
         </div>
       </div>
       <div class="side-label">YOUR WORKSPACE</div>

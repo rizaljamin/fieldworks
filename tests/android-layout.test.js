@@ -1,0 +1,16 @@
+"use strict";
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const html = fs.readFileSync("app/src/main/assets/index.html", "utf8");
+const java = fs.readFileSync("app/src/main/java/com/fieldworks/app/MainActivity.java", "utf8");
+const version = fs.readFileSync("fieldworks-version.properties", "utf8");
+assert.match(html, /if \(window\.FieldWorksCommunity\) \{\s*document\.documentElement\.classList\.add\("fw-native-android"\)/);
+assert.match(html, /@media \(min-width: 701px\) \{\s*html\.fw-native-android \.sidebar \{ padding-top: 61px; \}\s*html\.fw-native-android \.shell \{ padding-top: 56px; \}/);
+assert.match(html, /@media \(max-width: 700px\) \{\s*html\.fw-native-android \.shell \{\s*padding-top: max\(76px/);
+assert.ok(html.indexOf('class="shell"') < html.indexOf('id="page-home"'));
+assert.ok(html.indexOf('id="page-home"') < html.indexOf("Favourite Projects"));
+assert.ok(java.includes("params.setMargins(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom)"));
+assert.ok(html.includes("FieldWorks Guest & Trial copy"));
+assert.ok(html.includes('function fwSendFeedback()'));
+assert.ok(version.includes("buildNumber=27"));
+console.log("Android phone/tablet safe-layout and Home flow: PASS");
