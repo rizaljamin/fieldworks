@@ -96,6 +96,7 @@ jobs:
           node tests/feedback-ui.test.js
           node tests/share-flow.test.js
           node tests/android-layout.test.js
+          node tests/finance-stage-calendar.test.js
 
       - name: Build signed APK and Play Store AAB
         shell: bash

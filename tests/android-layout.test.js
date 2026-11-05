@@ -12,5 +12,5 @@ assert.ok(html.indexOf('id="page-home"') < html.indexOf("Favourite Projects"));
 assert.ok(java.includes("params.setMargins(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom)"));
 assert.ok(html.includes("FieldWorks Guest & Trial copy"));
 assert.ok(html.includes('function fwSendFeedback()'));
-assert.ok(version.includes("buildNumber=27"));
+assert.ok(version.includes("buildNumber=28"));
 console.log("Android phone/tablet safe-layout and Home flow: PASS");
